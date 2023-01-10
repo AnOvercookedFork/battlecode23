@@ -26,7 +26,12 @@ public strictfp class LauncherRobot extends Robot {
     			finalTarget = targets[i];
     		}
     	}
-    	return finalTarget.location;
+    	if(maxScore > 0) {
+    		return finalTarget.location;
+    	}
+    	else {
+    		return null; // maybe?
+    	}
     }
     
     public int scoreTarget(RobotInfo info) {
