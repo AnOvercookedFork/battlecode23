@@ -26,17 +26,13 @@ public strictfp class CarrierRobot extends Robot {
 
         while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                 && getWeight() < GameConstants.CARRIER_CAPACITY
-                && tryCollect()) {
-            //
-        }
-        while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
+                && tryCollect()) {}
+        while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                 && getWeight() < GameConstants.CARRIER_CAPACITY
                 && tryFindResources()) {
             while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY
-                    && tryCollect()) {
-                //
-            }
+                    && tryCollect()) {}
         }
         
         if (getWeight() == GameConstants.CARRIER_CAPACITY) {
@@ -130,6 +126,7 @@ public strictfp class CarrierRobot extends Robot {
         MapLocation curr = rc.getLocation();
         boolean success = false;
         while (curr.distanceSquaredTo(collectTarget) > 2 && tryFuzzy(collectTarget)) {
+            curr = rc.getLocation();
             success = true;
         }
         return success;
@@ -155,7 +152,7 @@ public strictfp class CarrierRobot extends Robot {
         MapLocation hq = selectHQ();
         MapLocation curr = rc.getLocation();
         while (curr.distanceSquaredTo(hq) > 2 && tryFuzzy(hq)) {
-            //
+            curr = rc.getLocation();
         }
 
         boolean success = false;

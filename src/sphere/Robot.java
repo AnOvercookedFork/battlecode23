@@ -61,25 +61,25 @@ public strictfp abstract class Robot {
             return true;
         }
 
-        left = d.rotateLeft();
+        left = left.rotateLeft();
         if (rc.canMove(left)) {
             rc.move(left);
             return true;
         }
 
-        right = d.rotateRight();
+        right = right.rotateRight();
         if (rc.canMove(right)) {
             rc.move(right);
             return true;
         }
 
-        left = d.rotateLeft();
+        left = left.rotateLeft();
         if (rc.canMove(left)) {
             rc.move(left);
             return true;
         }
 
-        right = d.rotateRight();
+        right = right.rotateRight();
         if (rc.canMove(right)) {
             rc.move(right);
             return true;
