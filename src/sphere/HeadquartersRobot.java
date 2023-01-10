@@ -9,6 +9,12 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public void run() throws GameActionException {
+        MapLocation curr = rc.getLocation();
+        for (Direction d : directions) {
+            if (rc.canBuildRobot(RobotType.CARRIER, curr.add(d))) {
+                rc.buildRobot(RobotType.CARRIER, curr.add(d));
+            }
+        }
 
     }
 }

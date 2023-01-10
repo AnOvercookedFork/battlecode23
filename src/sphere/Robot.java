@@ -19,10 +19,73 @@ public strictfp abstract class Robot {
         Direction.WEST,
         Direction.NORTHWEST,
     };
-    
+
+    static final ResourceType[] resourceTypes = {
+        ResourceType.ADAMANTIUM,
+        ResourceType.MANA,
+        ResourceType.ELIXIR,
+    };
+
     public Robot(RobotController rc) {
         this.rc = rc;
     }
 
     public abstract void run() throws GameActionException;
+
+    public MapLocation randomLocation() {
+        int width = rc.getMapWidth();
+        int height = rc.getMapHeight();
+        int x = rng.nextInt(width);
+        int y = rng.nextInt(height);
+        return new MapLocation(x, y);
+    }
+
+    public boolean tryFuzzy(MapLocation location) throws GameActionException {
+        MapLocation curr = rc.getLocation();
+        Direction d = curr.directionTo(location);
+
+        if (rc.canMove(d)) {
+            rc.move(d);
+            return true;
+        }
+
+        Direction left = d.rotateLeft();
+        if (rc.canMove(left)) {
+            rc.move(left);
+            return true;
+        }
+
+        Direction right = d.rotateRight();
+        if (rc.canMove(right)) {
+            rc.move(right);
+            return true;
+        }
+
+        left = d.rotateLeft();
+        if (rc.canMove(left)) {
+            rc.move(left);
+            return true;
+        }
+
+        right = d.rotateRight();
+        if (rc.canMove(right)) {
+            rc.move(right);
+            return true;
+        }
+
+        left = d.rotateLeft();
+        if (rc.canMove(left)) {
+            rc.move(left);
+            return true;
+        }
+
+        right = d.rotateRight();
+        if (rc.canMove(right)) {
+            rc.move(right);
+            return true;
+        }
+
+        return false;
+    }
+
 }
