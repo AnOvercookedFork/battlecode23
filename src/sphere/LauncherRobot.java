@@ -12,11 +12,16 @@ public strictfp class LauncherRobot extends Robot {
     }
 
     public void run() throws GameActionException {
-
+    	if(rc.getActionCooldownTurns() == 0) {
+    		MapLocation target = getTarget(rc);
+    		if(rc.canAttack(target)) {
+    			rc.attack(target);
+    		}
+    	}
     }
     
     public MapLocation getTarget(RobotController rc) throws GameActionException {
-    	RobotInfo[] targets = rc.senseNearbyRobots(20, rc.getTeam().opponent());  // costs about 100 bytecode
+    	RobotInfo[] targets = rc.senseNearbyRobots(16, rc.getTeam().opponent());  // costs about 100 bytecode
     	RobotInfo finalTarget = targets[0];
     	int maxScore = scoreTarget(targets[0]);
     	for(int i = 1; i < targets.length; i++) { // find max score (can optimize for bytecode if needed later)
