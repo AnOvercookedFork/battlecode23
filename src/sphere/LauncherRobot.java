@@ -51,6 +51,9 @@ public strictfp class LauncherRobot extends Robot {
     		else if(info.getResourceAmount(ResourceType.ADAMANTIUM) + info.getResourceAmount(ResourceType.ELIXIR) + info.getResourceAmount(ResourceType.MANA) > RESOURCE_THRESHOLD){
     			score = 3;
     		}
+    		else {
+    			score = 1; // could rewrite this to set to 1 then add if conditions are met
+    		}
     		break;
     	case DESTABILIZER:
     		score = 6;
