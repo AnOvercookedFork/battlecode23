@@ -15,27 +15,6 @@ public strictfp class AmplifierRobot extends Robot {
         }
     }
     
-    public void processArea() throws GameActionException {
-        WellInfo[] wells = rc.senseNearbyWells();
-        for(WellInfo well: wells) {
-            Communications.tryAddWell(rc, well);
-        }
-        
-        int[] islands = rc.senseNearbyIslands();
-        for(int island: islands) {
-            if(rc.senseTeamOccupyingIsland(island) != rc.getTeam()) {
-                Communications.tryAddIsland(rc, rc.senseNearbyIslandLocations(island)[0]);
-            }
-        }
-        
-        RobotInfo[] targets = rc.senseNearbyRobots(-1);
-        for(RobotInfo target: targets) {
-            if(target.type == RobotType.HEADQUARTERS && target.team == rc.getTeam()) {
-                Communications.tryAddHQ(rc, target.getLocation());
-            }
-        }
-    }
-    
     public boolean tryMove() throws GameActionException {
         MapLocation curr = rc.getLocation();
         boolean success = false;
