@@ -7,8 +7,12 @@ public strictfp class CarrierRobot extends Robot {
     MapLocation collectTarget;
     double collectTargetWeight;
 
+    MapLocation islandTarget;
+    double islandTargetWeight;
+
     public static final double RANDOM_LOC_WEIGHT = 0;
     public static final double KNOWN_LOC_WEIGHT = 100;
+    public static final double MIN_HEALTH_TAKE_ANCHOR = 10;
 
     public static MapLocation[] hqs;
 
@@ -24,15 +28,27 @@ public strictfp class CarrierRobot extends Robot {
             tryTransferHQ();
         }
 
-        while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
-                && getWeight() < GameConstants.CARRIER_CAPACITY
-                && tryCollect()) {}
-        while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
-                && getWeight() < GameConstants.CARRIER_CAPACITY
-                && tryFindResources()) {
+        if (shouldTakeAnchor() && rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
+            tryTakeAnchor();
+        }
+
+        if (rc.getAnchor() != null) {
+            tryPlaceAnchor();
+            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
+                    && tryFindIsland()) {
+                if (tryPlaceAnchor()) break;
+            }
+        } else {
             while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY
                     && tryCollect()) {}
+            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
+                    && getWeight() < GameConstants.CARRIER_CAPACITY
+                    && tryFindResources()) {
+                while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
+                        && getWeight() < GameConstants.CARRIER_CAPACITY
+                        && tryCollect()) {}
+            }
         }
         
         if (getWeight() == GameConstants.CARRIER_CAPACITY) {
@@ -169,6 +185,80 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
 
+        return success;
+    }
+
+    public boolean shouldTakeAnchor() throws GameActionException {
+        return rc.getHealth() > MIN_HEALTH_TAKE_ANCHOR && getWeight() == 0;
+    }
+
+    public boolean tryTakeAnchor() throws GameActionException {
+        for (int i = 0; i < GameConstants.MAX_STARTING_HEADQUARTERS; i++) {
+            if (hqs[i] != null) {
+                if (rc.canTakeAnchor(hqs[i], Anchor.ACCELERATING)) {
+                    rc.takeAnchor(hqs[i], Anchor.STANDARD);
+                    return true;
+                }
+                if (rc.canTakeAnchor(hqs[i], Anchor.STANDARD)) {
+                    rc.takeAnchor(hqs[i], Anchor.STANDARD);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean tryPlaceAnchor() throws GameActionException {
+        if (rc.canPlaceAnchor()) {
+            rc.placeAnchor();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean tryFindIsland() throws GameActionException {
+        if (islandTarget != null) {
+            if (rc.canSenseLocation(islandTarget)) {
+                int island = rc.senseIsland(islandTarget);
+                if (island == -1 || rc.senseAnchor(island) != null) {
+                    islandTarget = null;
+                }
+            }
+        }
+
+        if (islandTarget == null) {
+            islandTarget = randomLocation();
+            islandTargetWeight = RANDOM_LOC_WEIGHT;
+        }
+
+        int[] nearbyIslands = rc.senseNearbyIslands();
+        MapLocation nearestLoc = null;
+        int nearestLocDist = Integer.MAX_VALUE;
+        MapLocation curr = rc.getLocation();
+        int dist;
+        for (int nearbyIsland : nearbyIslands) {
+            if (rc.senseAnchor(nearbyIsland) == null) {
+                MapLocation[] locs = rc.senseNearbyIslandLocations(nearbyIsland);
+                for (MapLocation loc : locs) {
+                    dist = curr.distanceSquaredTo(loc);
+                    if (dist < nearestLocDist) {
+                        nearestLoc = loc;
+                        nearestLocDist = dist;
+                    }
+                }
+            }
+        }
+
+        if (nearestLoc != null) {
+            islandTarget = nearestLoc;
+            islandTargetWeight = KNOWN_LOC_WEIGHT;
+        }
+
+        boolean success = false;
+        while (curr.distanceSquaredTo(islandTarget) > 0 && tryFuzzy(islandTarget)) {
+            curr = rc.getLocation();
+            success = true;
+        }
         return success;
     }
 }
