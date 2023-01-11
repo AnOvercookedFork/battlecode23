@@ -96,7 +96,7 @@ public strictfp class LauncherRobot extends Robot {
     	RobotInfo finalTarget = null;
         int maxScore = -1;
         for(int i = 0; i < targets.length; i++) { // find max score (can optimize for bytecode if needed later)
-            int score = scoreTarget(targets[i]);
+            int score = scoreTarget(targets[i], rc);
             if(score > maxScore) {
                 maxScore = score;
                 finalTarget = targets[i];
@@ -110,7 +110,7 @@ public strictfp class LauncherRobot extends Robot {
     	}
     }
     
-    public int scoreTarget(RobotInfo info) {
+    public int scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
         int score = 0;
         
         switch(info.getType()) {
@@ -141,6 +141,15 @@ public strictfp class LauncherRobot extends Robot {
                 break;
         }
     	
+        
+        if(rc.senseIsland(info.location) != -1) {
+        	score += 10;
+        }
+        
+        if(info.getHealth() < info.getType().getMaxHealth()) {
+        	score += 15;
+        }
+        
         if(info.getHealth() <= EXECUTE_THRESHOLD) {
             score += 100;   // could add variable for this too
     	}
