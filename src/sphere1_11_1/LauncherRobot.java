@@ -1,7 +1,6 @@
 package sphere1_11_1;
 
 import battlecode.common.*;
-import Robot;
 
 public strictfp class LauncherRobot extends Robot {
     private static final int EXECUTE_THRESHOLD = 6; // increased priority against robots with this hp or under

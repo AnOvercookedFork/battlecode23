@@ -1,13 +1,6 @@
 package sphere1_11_1;
 
 import battlecode.common.*;
-import AmplifierRobot;
-import BoosterRobot;
-import CarrierRobot;
-import DestabilizerRobot;
-import HeadquartersRobot;
-import LauncherRobot;
-import Robot;
 
 public strictfp class RobotPlayer {
 

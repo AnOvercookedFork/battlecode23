@@ -1,7 +1,6 @@
 package sphere1_11_1;
 
 import battlecode.common.*;
-import Communications;
 
 import java.util.Random;
 

@@ -1,7 +1,6 @@
-package sphere1_11_1;
+package sphere;
 
 import battlecode.common.*;
-import Robot;
 
 public strictfp class HeadquartersRobot extends Robot {
 

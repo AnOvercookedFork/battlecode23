@@ -1,8 +1,6 @@
 package sphere1_11_1;
 
 import battlecode.common.*;
-import Communications;
-import Robot;
 
 public strictfp class AmplifierRobot extends Robot {
 
