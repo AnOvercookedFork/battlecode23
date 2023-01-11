@@ -8,7 +8,7 @@ public strictfp abstract class Robot {
 
     static RobotController rc;
 
-    static final Random rng = new Random(2023);
+    static final Random rng = new Random();
 
     static final Direction[] directions = {
         Direction.NORTH,
