@@ -39,10 +39,12 @@ public strictfp class CarrierRobot extends Robot {
                 if (tryPlaceAnchor()) break;
             }
         } else {
+            boolean finishedDeposit = tryFinishDeposit();
             while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY
                     && tryCollect()) {}
-            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
+            while (finishedDeposit
+                    && rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY
                     && tryFindResources()) {
                 while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
@@ -175,10 +177,10 @@ public strictfp class CarrierRobot extends Robot {
 
         for (ResourceType type : resourceTypes) {
             int amount = rc.getResourceAmount(type);
+            if (amount == 0) continue;
             for (MapLocation hqLoc : hqs) {
                 if (hqLoc == null) continue;
-                if (amount > 0
-                        && rc.canTransferResource(hqLoc, type, amount)) {
+                if (rc.canTransferResource(hqLoc, type, amount)) {
                     rc.transferResource(hqLoc, type, amount);
                     success = true;
                 }
@@ -186,6 +188,28 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         return success;
+    }
+
+    public boolean tryFinishDeposit() throws GameActionException {
+
+        boolean hqNearby = false;
+        MapLocation curr = rc.getLocation();
+        
+        for (ResourceType type : resourceTypes) {
+            int amount = rc.getResourceAmount(type);
+            if (amount == 0) continue;
+            for (MapLocation hqLoc : hqs) {
+                if (hqLoc == null) continue;
+                if (hqLoc.distanceSquaredTo(curr) <= 2) {
+                    hqNearby = true;
+                    if (rc.canTransferResource(hqLoc, type, amount)) {
+                        rc.transferResource(hqLoc, type, amount);
+                    }
+                }
+            }
+        }
+
+        return !hqNearby || getWeight() == 0;
     }
 
     public boolean shouldTakeAnchor() throws GameActionException {

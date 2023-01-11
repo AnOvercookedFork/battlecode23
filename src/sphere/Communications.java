@@ -15,6 +15,7 @@ public strictfp class Communications {
 
     // should be called at the start of each robots turn, ideally
     public static void readArray(RobotController rc) throws GameActionException {
+        canWrite = false;
         if (lastRead < rc.getRoundNum()) {
             lastRead = rc.getRoundNum();
             for (int i = 0; i < 64; i++) {
@@ -33,7 +34,7 @@ public strictfp class Communications {
     }
 
     public static void tryAddIsland(RobotController rc, MapLocation location) throws GameActionException {
-        if (canWrite) {
+        if (rc.canWriteSharedArray(0, 0)) {
             for (int i = 0; i < 10; i++) {
                 if (array[ISLAND_INDEX + i] >> 12 == 0) { // 13th bit will be set to 1 so 0,0 is a valid location
                     array[ISLAND_INDEX + i] = 1 << 12 + locToInt(location);
@@ -62,7 +63,7 @@ public strictfp class Communications {
             System.out.println("Unknown resource type?");
         }
 
-        if (canWrite) {
+        if (rc.canWriteSharedArray(0, 0)) {
             for (int i = 0; i < 5; i++) {
                 if (array[index + i] >> 12 == 0) {
                     array[index + i] = 1 << 12 + locToInt(well.getMapLocation());
@@ -76,7 +77,7 @@ public strictfp class Communications {
     }
 
     public static void tryAddHQ(RobotController rc, MapLocation location) throws GameActionException {
-        if (canWrite) {
+        if (rc.canWriteSharedArray(0, 0)) {
             for (int i = 0; i < 4; i++) {
                 if (array[HQ_INDEX + i] >> 12 == 0) { // 13th bit will be set to 1 so 0,0 is a valid location
                     array[HQ_INDEX + i] = 1 << 12 + locToInt(location);
