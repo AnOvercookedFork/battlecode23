@@ -209,7 +209,9 @@ public strictfp class CarrierRobot extends Robot {
     }
 
     public boolean tryPlaceAnchor() throws GameActionException {
-        if (rc.canPlaceAnchor()) {
+        MapLocation curr = rc.getLocation();
+        int island = rc.senseIsland(curr);
+        if (island != -1 && rc.senseAnchor(island) == null && rc.canPlaceAnchor()) {
             rc.placeAnchor();
             return true;
         }
