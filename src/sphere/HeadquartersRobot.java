@@ -1,11 +1,11 @@
-package sphere;
+package sphere1_11_1;
 
 import battlecode.common.*;
+import Robot;
 
 public strictfp class HeadquartersRobot extends Robot {
 
     int turns = 0;
-    int numAnchors = 0;
 
     public static final int MAX_ANCHORS = 1;
 
@@ -23,7 +23,6 @@ public strictfp class HeadquartersRobot extends Robot {
 
         if (rc.canBuildAnchor(Anchor.STANDARD) && buildAnchor) {
             rc.buildAnchor(Anchor.STANDARD);
-            numAnchors++;
         }
         /*if (turns < 100 || rc.canBuildAnchor(Anchor.STANDARD)) {
             for (Direction d : directions) {
@@ -51,7 +50,7 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public boolean shouldBuildAnchor() {
-        return numAnchors < MAX_ANCHORS && turns > 100;
+        return rc.getNumAnchors(Anchor.STANDARD) + rc.getNumAnchors(Anchor.ACCELERATING) < MAX_ANCHORS && turns > 100;
     }
 
     public MapLocation closestBuildLocation(RobotType type, MapLocation target) throws GameActionException {
