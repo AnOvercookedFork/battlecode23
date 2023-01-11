@@ -40,6 +40,27 @@ public strictfp abstract class Robot {
         return new MapLocation(x, y);
     }
 
+    public void processArea() throws GameActionException {
+        WellInfo[] wells = rc.senseNearbyWells();
+        for(WellInfo well: wells) {
+            Communications.tryAddWell(rc, well);
+        }
+        
+        int[] islands = rc.senseNearbyIslands();
+        for(int island: islands) {
+            if(rc.senseTeamOccupyingIsland(island) != rc.getTeam()) {
+                Communications.tryAddIsland(rc, rc.senseNearbyIslandLocations(island)[0]);
+            }
+        }
+        
+        RobotInfo[] targets = rc.senseNearbyRobots(-1);
+        for(RobotInfo target: targets) {
+            if(target.type == RobotType.HEADQUARTERS && target.team == rc.getTeam()) {
+                Communications.tryAddHQ(rc, target.getLocation());
+            }
+        }
+    }
+    
     public boolean tryFuzzy(MapLocation location) throws GameActionException {
         MapLocation curr = rc.getLocation();
         Direction d = curr.directionTo(location);
@@ -88,4 +109,48 @@ public strictfp abstract class Robot {
         return false;
     }
 
+    public boolean tryFuzzy(Direction d) throws GameActionException {
+        if (rc.canMove(d)) {
+            rc.move(d);
+            return true;
+        }
+
+        Direction left = d.rotateLeft();
+        if (rc.canMove(left)) {
+            rc.move(left);
+            return true;
+        }
+
+        Direction right = d.rotateRight();
+        if (rc.canMove(right)) {
+            rc.move(right);
+            return true;
+        }
+
+        left = left.rotateLeft();
+        if (rc.canMove(left)) {
+            rc.move(left);
+            return true;
+        }
+
+        right = right.rotateRight();
+        if (rc.canMove(right)) {
+            rc.move(right);
+            return true;
+        }
+
+        left = left.rotateLeft();
+        if (rc.canMove(left)) {
+            rc.move(left);
+            return true;
+        }
+
+        right = right.rotateRight();
+        if (rc.canMove(right)) {
+            rc.move(right);
+            return true;
+        }
+
+        return false;
+    }
 }
