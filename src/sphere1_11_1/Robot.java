@@ -1,7 +1,6 @@
 package sphere1_11_1;
 
 import battlecode.common.*;
-import sphere2.Communications;
 
 import java.util.Random;
 
@@ -9,7 +8,7 @@ public strictfp abstract class Robot {
 
     static RobotController rc;
 
-    static final Random rng = new Random(2023);
+    static final Random rng = new Random();
 
     static final Direction[] directions = {
         Direction.NORTH,

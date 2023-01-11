@@ -1,7 +1,6 @@
 package sphere1_11_1;
 
 import battlecode.common.*;
-import sphere2.Robot;
 
 public strictfp class LauncherRobot extends Robot {
     private static final int EXECUTE_THRESHOLD = 6; // increased priority against robots with this hp or under
@@ -66,7 +65,8 @@ public strictfp class LauncherRobot extends Robot {
                     nearest = target;
                     nearestDist = dist;
                 }
-                if (dist < nearestDangerousDist && target.type.damage > 0) {
+                if (dist < nearestDangerousDist && target.type.damage > 0
+                        && target.type.actionRadiusSquared >= dist) {
                     nearestDangerous = target;
                     nearestDangerousDist = dist;
                 }
@@ -82,12 +82,19 @@ public strictfp class LauncherRobot extends Robot {
 
         targetWeight *= 0.8;
 
-        while ((nearestDangerous == null
-                    || curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared)
-                && tryFuzzy(target)) {
-            curr = rc.getLocation();
+        if (nearestDangerous != null) {
+            Direction away = nearestDangerous.location.directionTo(curr);
+            tryFuzzy(away);
             success = true;
+        } else {
+            while ((nearestDangerous == null
+                        || curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared)
+                    && tryFuzzy(target)) {
+                curr = rc.getLocation();
+                success = true;
+            }
         }
+        
         return success;
 
     }
