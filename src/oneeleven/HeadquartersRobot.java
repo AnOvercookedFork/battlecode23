@@ -1,4 +1,4 @@
-package sphere;
+package oneeleven;
 
 import battlecode.common.*;
 
@@ -6,9 +6,9 @@ public strictfp class HeadquartersRobot extends Robot {
 
     int turns = 0;
     int numAnchors = 0;
-
+    
     public static final int MAX_ANCHORS = 1;
-
+    
     public HeadquartersRobot(RobotController rc) {
         super(rc);
     }
