@@ -100,7 +100,7 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         if (nearestDangerousEnemy != null) {
-            if (rc.getHealth() <= PANIC_HEALTH && getWeight() > 0 && rc.canAttack(nearestDangerousEnemy)) {
+            if (rc.getHealth() <= PANIC_HEALTH && getWeight() >= 5 && rc.canAttack(nearestDangerousEnemy)) {
                 rc.attack(nearestDangerousEnemy);
             }
             Direction fleeDir = nearestDangerousEnemy.directionTo(curr);
