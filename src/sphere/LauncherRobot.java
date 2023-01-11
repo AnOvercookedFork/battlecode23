@@ -141,8 +141,13 @@ public strictfp class LauncherRobot extends Robot {
                 break;
         }
     	
+        
         if(rc.senseIsland(info.location) != -1) {
         	score += 10;
+        }
+        
+        if(info.getHealth() < info.getType().getMaxHealth()) {
+        	score += 15;
         }
         
         if(info.getHealth() <= EXECUTE_THRESHOLD) {
