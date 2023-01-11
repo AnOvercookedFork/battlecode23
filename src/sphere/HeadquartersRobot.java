@@ -9,6 +9,8 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public void run() throws GameActionException {
+        processArea();
+        
         MapLocation curr = rc.getLocation();
         MapLocation l;
         for (Direction d : directions) {
