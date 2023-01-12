@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_11_2;
 
 import battlecode.common.*;
 
