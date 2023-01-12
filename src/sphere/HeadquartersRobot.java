@@ -13,9 +13,13 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public void run() throws GameActionException {
+        Communications.readArray(rc);
         processArea();
         
         MapLocation curr = rc.getLocation();
+        if(curr.equals(Communications.intToLoc(Communications.array[Communications.HQ_INDEX]))) {
+            primaryComms();
+        }
         MapLocation l;
 
         boolean buildAnchor = shouldBuildAnchor();
@@ -47,7 +51,11 @@ public strictfp class HeadquartersRobot extends Robot {
         turns++;
 
     }
-
+    
+    public void primaryComms() throws GameActionException {
+        Communications.updateAmpCount(rc);
+    }
+    
     public boolean shouldBuildAnchor() {
         return rc.getNumAnchors(Anchor.STANDARD) + rc.getNumAnchors(Anchor.ACCELERATING) < MAX_ANCHORS && turns > 100;
     }
