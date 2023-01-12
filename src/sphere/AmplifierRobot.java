@@ -10,6 +10,7 @@ public strictfp class AmplifierRobot extends Robot {
 
     public void run() throws GameActionException {
         Communications.readArray(rc);
+        Communications.incrementAmpCount(rc);
         while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryMove()) {
             processArea();
         }

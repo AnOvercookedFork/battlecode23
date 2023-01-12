@@ -3,15 +3,16 @@ package sphere;
 import battlecode.common.*;
 
 public strictfp class Communications {
-    private static final int ISLAND_INDEX = 0; // size 10
-    private static final int AD_INDEX = 10; // size 5
-    private static final int MN_INDEX = 15; // size 5
-    private static final int EL_INDEX = 20; // size 5
-    private static final int HQ_INDEX = 25; // size 4
+    public static final int ISLAND_INDEX = 0; // size 10
+    public static final int AD_INDEX = 10; // size 5
+    public static final int MN_INDEX = 15; // size 5
+    public static final int EL_INDEX = 20; // size 5
+    public static final int HQ_INDEX = 25; // size 4
+    public static final int AMP_INDEX = 29; // size 2
 
-    private static int[] array = new int[64];
+    public static int[] array = new int[64];
     private static int lastRead = -1;
-    private static boolean canWrite = false;
+    public static boolean canWrite = false;
 
     // should be called at the start of each robots turn, ideally
     public static void readArray(RobotController rc) throws GameActionException {
@@ -25,11 +26,11 @@ public strictfp class Communications {
         }
     }
 
-    private static int locToInt(MapLocation loc) {
+    public static int locToInt(MapLocation loc) {
         return loc.x + loc.y << 6;
     }
 
-    private static MapLocation intToLoc(int i) {
+    public static MapLocation intToLoc(int i) {
         return new MapLocation(i % 64, (i >> 6) % 64);
     }
 
@@ -88,5 +89,24 @@ public strictfp class Communications {
                 }
             }
         }
+    }
+    
+    public static int getAmpCount() {
+        return array[AMP_INDEX + 1];
+    }
+    
+    public static void updateAmpCount(RobotController rc) throws GameActionException {
+        if(canWrite) { // should always be able to write
+            array[AMP_INDEX + 1] = array[AMP_INDEX];
+            array[AMP_INDEX] = 0;
+            
+            rc.writeSharedArray(AMP_INDEX + 1, array[AMP_INDEX + 1]);
+            rc.writeSharedArray(AMP_INDEX, array[AMP_INDEX]);
+        }
+    }
+    
+    public static void incrementAmpCount(RobotController rc) throws GameActionException {
+        array[AMP_INDEX] += 1;
+        rc.writeSharedArray(AMP_INDEX, array[AMP_INDEX]);
     }
 }
