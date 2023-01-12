@@ -1,6 +1,7 @@
 package sphere;
 
 import battlecode.common.*;
+
 import java.util.Random;
 
 public strictfp abstract class Robot {
@@ -153,4 +154,5 @@ public strictfp abstract class Robot {
 
         return false;
     }
+
 }

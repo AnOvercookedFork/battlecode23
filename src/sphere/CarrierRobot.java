@@ -9,10 +9,15 @@ public strictfp class CarrierRobot extends Robot {
 
     MapLocation islandTarget;
     double islandTargetWeight;
+    
+    MapLocation enemyLastSeenLoc = null;
+    int turnsSinceSeenEnemy = 0;
 
     public static final double RANDOM_LOC_WEIGHT = 0;
     public static final double KNOWN_LOC_WEIGHT = 100;
     public static final double MIN_HEALTH_TAKE_ANCHOR = 10;
+    public static final int PANIC_HEALTH = 6;
+    public static final int FLEE_TURNS = 2;
 
     public static MapLocation[] hqs;
 
@@ -36,9 +41,11 @@ public strictfp class CarrierRobot extends Robot {
             tryPlaceAnchor();
             while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && tryFindIsland()) {
+                processNearbyRobots();
                 if (tryPlaceAnchor()) break;
             }
-        } else {
+        }
+        if (rc.getAnchor() == null) {
             boolean finishedDeposit = tryFinishDeposit();
             while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY
@@ -47,6 +54,7 @@ public strictfp class CarrierRobot extends Robot {
                     && rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY
                     && tryFindResources()) {
+                processNearbyRobots();
                 while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                         && getWeight() < GameConstants.CARRIER_CAPACITY
                         && tryCollect()) {}
@@ -75,8 +83,11 @@ public strictfp class CarrierRobot extends Robot {
         }
     }
 
-    public void processNearbyRobots() {
+    public void processNearbyRobots() throws GameActionException {
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
+        MapLocation curr = rc.getLocation();
+        MapLocation nearestDangerousEnemy = null;
+        int nearestDangerousEnemyDist = Integer.MAX_VALUE;
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == rc.getTeam()) {
                 if (robot.type == RobotType.HEADQUARTERS) {
@@ -85,7 +96,35 @@ public strictfp class CarrierRobot extends Robot {
                 }
             } else {
                 // Process enemy robots here
+                if (robot.type.damage > 0) {
+                    int dist = robot.location.distanceSquaredTo(curr);
+                    if (dist < nearestDangerousEnemyDist) {
+                        nearestDangerousEnemyDist = dist;
+                        nearestDangerousEnemy = robot.location;
+                    }
+                }
             }
+        }
+
+        if (nearestDangerousEnemy != null) {
+            enemyLastSeenLoc = nearestDangerousEnemy;
+            turnsSinceSeenEnemy = 0;
+
+            if (rc.getHealth() <= PANIC_HEALTH && getWeight() >= 5 && rc.canAttack(nearestDangerousEnemy)) {
+                rc.attack(nearestDangerousEnemy);
+            }
+
+            if (collectTargetWeight < KNOWN_LOC_WEIGHT) {
+                collectTarget = null;
+            }
+        } else {
+            turnsSinceSeenEnemy++;
+        }
+
+        if (enemyLastSeenLoc != null && turnsSinceSeenEnemy <= FLEE_TURNS) {
+            Direction fleeDir = enemyLastSeenLoc.directionTo(curr);
+            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
+                    && tryFuzzy(fleeDir)) {}
         }
     }
 
@@ -127,6 +166,15 @@ public strictfp class CarrierRobot extends Robot {
     }
 
     public boolean tryFindResources() throws GameActionException {
+        if (collectTarget != null && collectTargetWeight < KNOWN_LOC_WEIGHT) {
+            if (rc.canSenseLocation(collectTarget)) {
+                WellInfo well = rc.senseWell(collectTarget);
+                if (well == null) {
+                    collectTarget = null;
+                }
+            }
+        }
+
         if (collectTarget == null) {
             collectTarget = randomLocation();
             collectTargetWeight = RANDOM_LOC_WEIGHT;
@@ -142,12 +190,7 @@ public strictfp class CarrierRobot extends Robot {
         }
         
         MapLocation curr = rc.getLocation();
-        boolean success = false;
-        while (curr.distanceSquaredTo(collectTarget) > 2 && tryFuzzy(collectTarget)) {
-            curr = rc.getLocation();
-            success = true;
-        }
-        return success;
+        return curr.distanceSquaredTo(collectTarget) > 2 && tryFuzzy(collectTarget);
     }
 
     public MapLocation selectHQ() throws GameActionException {
@@ -280,11 +323,6 @@ public strictfp class CarrierRobot extends Robot {
             islandTargetWeight = KNOWN_LOC_WEIGHT;
         }
 
-        boolean success = false;
-        while (curr.distanceSquaredTo(islandTarget) > 0 && tryFuzzy(islandTarget)) {
-            curr = rc.getLocation();
-            success = true;
-        }
-        return success;
+        return curr.distanceSquaredTo(islandTarget) > 0 && tryFuzzy(islandTarget);
     }
 }
