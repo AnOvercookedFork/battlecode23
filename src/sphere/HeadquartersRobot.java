@@ -1,6 +1,8 @@
 package sphere;
 
 import battlecode.common.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public strictfp class HeadquartersRobot extends Robot {
 
@@ -13,7 +15,11 @@ public strictfp class HeadquartersRobot extends Robot {
     int enemiesNearby = 0;
     int carriersNearby = 0;
     int launchersNearby = 0;
-
+    ArrayList<Integer> resources;
+    HashSet<Integer> resourcesSet;
+    int carouselIndex = 0;
+    
+    
     public HeadquartersRobot(RobotController rc) {
         super(rc);
     }
@@ -93,7 +99,34 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public void primaryComms() throws GameActionException {
+        if(resources == null) {
+            resources = new ArrayList<Integer>();
+            resourcesSet = new HashSet<Integer>();
+            
+        }
         Communications.updateAmpCount(rc);
+        
+        // update well carousel
+        for(int i = 0; i < 15; i++) {
+            if(!resourcesSet.contains(Communications.array[Communications.AD_INDEX + i])) {
+                resources.add(Communications.array[Communications.AD_INDEX + i]);
+                resourcesSet.add(Communications.array[Communications.AD_INDEX + i]);
+            }
+        }
+        
+        // move well carousel to comms
+        // not using turns mod resourcesSet.size() in case wells are repeatedly added
+        if(carouselIndex >= resourcesSet.size()) {
+            carouselIndex -= resourcesSet.size();
+        }
+        
+        for(int i = 0; i < Communications.CAROUSEL_SIZE; i++) {
+            rc.writeSharedArray(Communications.CAROUSEL_INDEX + i, resources.get(carouselIndex));
+            carouselIndex++;
+            if(carouselIndex >= resourcesSet.size()) {
+                carouselIndex -= resourcesSet.size();
+            }
+        }
     }
     
     public boolean shouldBuildAnchor() {

@@ -9,6 +9,8 @@ public strictfp class Communications {
     public static final int EL_INDEX = 20; // size 5
     public static final int HQ_INDEX = 25; // size 4
     public static final int AMP_INDEX = 29; // size 2
+    public static final int CAROUSEL_INDEX = 31; // size 5
+    public static final int CAROUSEL_SIZE = 5; // special case because this may be changed
 
     public static int[] array = new int[64];
     private static int lastRead = -1;
