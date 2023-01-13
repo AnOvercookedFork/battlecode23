@@ -166,17 +166,17 @@ public strictfp class MapCache {
     public void updateEnemyCache(RobotInfo[] nearbyRobots) throws GameActionException {
         EnemyData edata;
 
+        Team team = rc.getTeam();
         for (int i = 0; i < enemyCacheSize; i++) {
             edata = enemyCache[(enemyCachePtr + i) % ENEMY_CACHE_SIZE];
             if (edata == null) continue;
             if (rc.canSenseLocation(edata.location)) {
                 RobotInfo robot = rc.senseRobotAtLocation(edata.location);
-                if (robot == null) {
+                if (robot == null || robot.getTeam() == team) {
                     enemyCache[(enemyCachePtr + i) % ENEMY_CACHE_SIZE] = null;
                 }
             }
         }
-        Team team = rc.getTeam();
         for (RobotInfo nearbyRobot : nearbyRobots) {
             if (nearbyRobot.team == team || nearbyRobot.type == RobotType.HEADQUARTERS) continue;
             int idx = -1;

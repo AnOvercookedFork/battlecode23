@@ -18,7 +18,7 @@ public strictfp class CarrierRobot extends Robot {
     public static final double RANDOM_LOC_WEIGHT = 0;
     public static final double KNOWN_LOC_WEIGHT = 100;
     public static final double MIN_HEALTH_TAKE_ANCHOR = 10;
-    public static final int PANIC_HEALTH = 6;
+    public static final int PANIC_HEALTH = 12;
     public static final int FLEE_TURNS = 2;
     public static final int WELL_CACHE_SIZE = 16;
 
@@ -35,6 +35,8 @@ public strictfp class CarrierRobot extends Robot {
 
     public void run() throws GameActionException {
         processNearbyRobots();
+
+        cache.updateIslandCache();
 
         if (getWeight() == GameConstants.CARRIER_CAPACITY) {
             tryTransferHQ();
@@ -342,6 +344,20 @@ public strictfp class CarrierRobot extends Robot {
         if (nearestLoc != null) {
             islandTarget = nearestLoc;
             islandTargetWeight = KNOWN_LOC_WEIGHT;
+        } else if (islandTargetWeight < KNOWN_LOC_WEIGHT) {
+            for (MapCache.IslandData island : cache.islandCache) {
+                if (island != null && island.team == Team.NEUTRAL) {
+                    dist = curr.distanceSquaredTo(island.location);
+                    if (dist < nearestLocDist) {
+                        nearestLoc = island.location;
+                        nearestLocDist = dist;
+                    }
+                }
+            }
+            if (nearestLoc != null) {
+                islandTarget = nearestLoc;
+                islandTargetWeight = KNOWN_LOC_WEIGHT;
+            }
         }
 
         return curr.distanceSquaredTo(islandTarget) > 0 && snav.tryNavigate(islandTarget);

@@ -164,11 +164,12 @@ public strictfp class LauncherRobot extends Robot {
                 finalTarget = enemy.location;
             }
         }
-        if (finalTarget != null) {
-            System.out.println("Attacking an obscured location!");
+        if (maxScore > 0 && finalTarget != null) {
+            rc.setIndicatorLine(curr, finalTarget, 255, 0, 0);
+            return finalTarget;
         }
 
-    	return finalTarget;
+    	return null;
     }
     
     public int scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
