@@ -9,6 +9,7 @@ public strictfp class LauncherRobot extends Robot {
     MapLocation target;
     double targetWeight;
     MapLocation leader;
+    MapCache cache;
     StinkyNavigation snav;
 
     public static final double RANDOM_LOC_WEIGHT = 100;
@@ -22,6 +23,7 @@ public strictfp class LauncherRobot extends Robot {
         target = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
         targetWeight = INITIAL_LOC_WEIGHT;
         snav = new StinkyNavigation(rc);
+        cache = new MapCache(rc);
     }
 
     public void run() throws GameActionException {
@@ -57,6 +59,7 @@ public strictfp class LauncherRobot extends Robot {
 
             }
         }
+        cache.updateEnemyCache(nearbyRobots);
     }
 
     public boolean tryAttack() throws GameActionException {
@@ -136,22 +139,36 @@ public strictfp class LauncherRobot extends Robot {
     }
     
     public MapLocation getTarget(RobotController rc) throws GameActionException {
-    	RobotInfo[] targets = rc.senseNearbyRobots(RobotType.LAUNCHER.actionRadiusSquared, rc.getTeam().opponent());  // costs about 100 bytecode
-    	RobotInfo finalTarget = null;
+    	RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());  // costs about 100 bytecode
+        cache.updateEnemyCache(targets);
+    	MapLocation finalTarget = null;
         int maxScore = -1;
-        for(int i = 0; i < targets.length; i++) { // find max score (can optimize for bytecode if needed later)
-            int score = scoreTarget(targets[i], rc);
+        MapLocation curr = rc.getLocation();
+        for(RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
+            if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared)) continue;
+            int score = scoreTarget(target, rc);
             if(score > maxScore) {
                 maxScore = score;
-                finalTarget = targets[i];
+                finalTarget = target.location;
             }
     	}
     	if(maxScore > 0) {
-    	    return finalTarget.location;
+    	    return finalTarget;
     	}
-    	else {
-    	    return null; // maybe?
-    	}
+        int round = rc.getRoundNum();
+        for (MapCache.EnemyData enemy : cache.enemyCache) {
+            if (enemy == null || enemy.roundSeen < round
+                    || !enemy.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared)) continue;
+            if (enemy.priority > maxScore) {
+                maxScore = enemy.priority;
+                finalTarget = enemy.location;
+            }
+        }
+        if (finalTarget != null) {
+            System.out.println("Attacking an obscured location!");
+        }
+
+    	return finalTarget;
     }
     
     public int scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {

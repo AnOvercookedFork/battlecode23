@@ -23,27 +23,13 @@ public strictfp class CarrierRobot extends Robot {
     public static final int WELL_CACHE_SIZE = 16;
 
     public static MapLocation[] hqs;
-
-    class WellData {
-        MapLocation location;
-        ResourceType type;
-        int rate;
-
-        public WellData(MapLocation location, ResourceType type, int rate) {
-            this.location = location;
-            this.type = type;
-            this.rate = rate;
-        }
-    }
-
-    WellData[] wellCache;
-    int wellCachePtr = 0;
-    int wellCacheSize = 0;
+    
+    MapCache cache;
 
     public CarrierRobot(RobotController rc) {
         super(rc);
         hqs = new MapLocation[GameConstants.MAX_STARTING_HEADQUARTERS];
-        wellCache = new WellData[WELL_CACHE_SIZE];
+        cache = new MapCache(rc);
         snav = new StinkyNavigation(rc);
     }
 
@@ -172,56 +158,13 @@ public strictfp class CarrierRobot extends Robot {
         return success;
     }
 
-    public void setWellCache(int i, WellInfo winfo) {
-        int idx = (wellCachePtr + i) % WELL_CACHE_SIZE;
-        if (wellCache[idx] == null) {
-            wellCache[idx] = new WellData(winfo.getMapLocation(), winfo.getResourceType(), winfo.getRate());
-        } else {
-            wellCache[idx].type = winfo.getResourceType();
-            wellCache[idx].rate = winfo.getRate();
-        }
-    }
-
-    public void updateWells(WellInfo[] nearbyWells) {
-        WellData wdata;
-        for (WellInfo well : nearbyWells) {
-            int idx = -1;
-            for (int i = 0; i < wellCacheSize; i++) {
-                wdata = wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE];
-                if (well.getMapLocation().equals(wdata.location)) {
-                    idx = i;
-                    break;
-                }
-            }
-            if (idx >= 0) {
-                setWellCache(idx, well);
-            } else {
-                if (wellCacheSize < WELL_CACHE_SIZE) {
-                    setWellCache((wellCachePtr + wellCacheSize) % WELL_CACHE_SIZE, well);
-                    wellCacheSize++;
-                } else {
-                    setWellCache(wellCachePtr, well);
-                    wellCachePtr = (wellCachePtr + 1) % WELL_CACHE_SIZE;
-                }
-            }
-        }
-    }
-
-    public void debugWellCache() throws GameActionException {
-        for (int i = 0; i < wellCacheSize; i++) {
-            WellData wdata = wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE];
-            rc.setIndicatorDot(wdata.location, 0, 255, 255);
-        }
-    }
-
     public MapLocation selectWell() {
         MapLocation best = null;
         double bestScore = 0;
         MapLocation curr = rc.getLocation();
-        WellData wdata;
         double score = 0;
-        for (int i = 0; i < wellCacheSize; i++) {
-            wdata = wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE];
+        for (MapCache.WellData wdata : cache.wellCache) {
+            if (wdata == null) continue;
             switch (wdata.type) {
                 case MANA:
                     score = 2;
@@ -255,8 +198,7 @@ public strictfp class CarrierRobot extends Robot {
         }
         
         WellInfo[] nearbyWells = rc.senseNearbyWells(-1);
-        updateWells(nearbyWells);
-        debugWellCache();
+        cache.updateWellCache(nearbyWells);
         
         if (collectTargetWeight < KNOWN_LOC_WEIGHT) {
             MapLocation selectedWell = selectWell();
