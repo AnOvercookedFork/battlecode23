@@ -175,10 +175,27 @@ public strictfp class MapCache {
     }
 
     public MapCache(RobotController rc, int wells_size, int islands_size, int enemies_size) {
-        this(rc);
         WELL_CACHE_SIZE = wells_size;
         ISLAND_CACHE_SIZE = islands_size;
         ENEMY_CACHE_SIZE = enemies_size;
+
+        this.rc = rc;
+
+        wellCache = new WellData[WELL_CACHE_SIZE];
+        islandCache = new IslandData[ISLAND_CACHE_SIZE];
+        enemyCache = new EnemyData[ENEMY_CACHE_SIZE];
+
+        wellCachePtr = 0;
+        islandCachePtr = 0;
+        enemyCachePtr = 0;
+
+        wellCacheSize = 0;
+        islandCacheSize = 0;
+        enemyCacheSize = 0;
+
+        wellSamplePtr = 0;
+        islandSamplePtr = 0;
+        enemySamplePtr = 0;
     }
 
 
