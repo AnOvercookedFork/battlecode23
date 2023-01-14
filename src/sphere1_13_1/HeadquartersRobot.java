@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_13_1;
 
 import battlecode.common.*;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ public strictfp class HeadquartersRobot extends Robot {
     int turns = 0;
 
     public static final int MAX_ANCHORS = 1;
-    public static final int MIN_TURN_BUILD_ANCHOR = 300;
+    public static final int MIN_TURN_BUILD_ANCHOR = 100;
 
     MapLocation farthestLauncher;
     int enemiesNearby = 0;

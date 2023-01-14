@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_13_1;
 
 import battlecode.common.*;
 
@@ -20,6 +20,7 @@ public strictfp class CarrierRobot extends Robot {
     public static final double MIN_HEALTH_TAKE_ANCHOR = 10;
     public static final int PANIC_HEALTH = 12;
     public static final int FLEE_TURNS = 2;
+    public static final int WELL_CACHE_SIZE = 16;
 
     public static MapLocation[] hqs;
     
@@ -170,13 +171,13 @@ public strictfp class CarrierRobot extends Robot {
             if (wdata == null) continue;
             switch (wdata.type) {
                 case MANA:
-                    score = 10;
+                    score = 2;
                 case ADAMANTIUM:
                     score = 1;
                 case ELIXIR:
                     score = 1.5;
             }
-            score /= (Math.sqrt(curr.distanceSquaredTo(wdata.location)) + 1);
+            score /= (curr.distanceSquaredTo(wdata.location) + 1);
             if (score > bestScore) {
                 bestScore = score;
                 best = wdata.location;
