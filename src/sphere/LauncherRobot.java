@@ -23,11 +23,18 @@ public strictfp class LauncherRobot extends Robot {
         target = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
         targetWeight = INITIAL_LOC_WEIGHT;
         snav = new StinkyNavigation(rc);
-        cache = new MapCache(rc);
+        cache = new MapCache(rc, 4, 8, 16);
     }
 
     public void run() throws GameActionException {
         processNearbyRobots();
+
+        cache.updateWellCache(rc.senseNearbyWells());
+        Communications.readWells(rc, cache);
+        Communications.reportWell(rc, cache);
+        cache.updateIslandCache();
+        Communications.readIslands(rc, cache);
+        Communications.reportIsland(rc, cache);
 
         while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                 && tryAttack()) {}

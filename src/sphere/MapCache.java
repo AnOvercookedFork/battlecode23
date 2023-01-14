@@ -32,9 +32,6 @@ public strictfp class MapCache {
         int encode() {
             int code12_15 = 0;
             switch (type) {
-                case ADAMANTIUM:
-                    code12_15 = 0;
-                    break;
                 case MANA:
                     code12_15 = 1;
                     break;
@@ -53,11 +50,8 @@ public strictfp class MapCache {
             code = code >> 6;
             int y = code % 64;
             code = code >> 6;
-            ResourceType type = null;
+            ResourceType type = ResourceType.ADAMANTIUM;
             switch (code % 4) {
-                case 0:
-                    type = ResourceType.ADAMANTIUM;
-                    break;
                 case 1:
                     type = ResourceType.MANA;
                     break;
@@ -97,11 +91,35 @@ public strictfp class MapCache {
         }
 
         int encode() {
-            return 0;
+            int code14_15 = 2; // NEUTRAL, by default
+            switch (team) {
+                case A:
+                    code14_15 = 0;
+                    break;
+                case B:
+                    code14_15 = 1;
+                    break;
+            }
+            return (location.x >> 2) + ((location.y >> 2) << 4) + (idx << 8) + (code14_15 << 14);
         }
 
-        static IslandData decode(int code) {
-            return null;
+        static IslandData decode(int code, boolean fromComms) {
+            int x = 4 * (code % 16) + 1;
+            code = code >> 4;
+            int y = 4 * (code % 16) + 1;
+            code = code >> 4;
+            int idx = code % 64;
+            code = code >> 6;
+            Team team = Team.NEUTRAL;
+            switch (code) {
+                case 0:
+                    team = Team.A;
+                    break;
+                case 1:
+                    team = Team.B;
+                    break;
+            }
+            return new IslandData(new MapLocation(x, y), idx, team, fromComms);
         }
     }
 
@@ -150,8 +168,8 @@ public strictfp class MapCache {
     int islandSamplePtr;
     int enemySamplePtr;
 
-    public static int WELL_CACHE_SIZE = 16;
-    public static int ISLAND_CACHE_SIZE = 35;
+    public static int WELL_CACHE_SIZE = 8;
+    public static int ISLAND_CACHE_SIZE = 16;
     public static int ENEMY_CACHE_SIZE = 16;
 
     public MapCache(RobotController rc) {
@@ -253,8 +271,8 @@ public strictfp class MapCache {
         for (int i = 0; i < wellCacheSize; i++) {
             wdata = wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE];
             if (wdata.location.equals(newdata.location)) {
-                if (wdata.type != ResourceType.ELIXIR && newdata.type == ResourceType.ELIXIR
-                        || wdata.rate == GameConstants.WELL_STANDARD_RATE && newdata.rate == GameConstants.WELL_ACCELERATED_RATE) {
+                if ((wdata.type != ResourceType.ELIXIR && newdata.type == ResourceType.ELIXIR)
+                        || (wdata.rate == GameConstants.WELL_STANDARD_RATE && newdata.rate == GameConstants.WELL_ACCELERATED_RATE)) {
                     wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE] = newdata;
                 } else if (wdata.type == newdata.type && wdata.rate == newdata.rate) {
                     wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE].fromComms = true;
@@ -349,6 +367,31 @@ public strictfp class MapCache {
             }
         }
         return null;
+    }
+
+    public void updateIslandCacheFromComms(int code) {
+        IslandData newdata = IslandData.decode(code, true);
+        IslandData idata;
+        Team team = rc.getTeam();
+        for (int i = 0; i < islandCacheSize; i++) {
+            idata = islandCache[(islandCachePtr + i) % ISLAND_CACHE_SIZE];
+            if (idata.idx == newdata.idx) {
+                if (idata.team == team && newdata.team != team) {
+                    islandCache[(islandCachePtr + i) % ISLAND_CACHE_SIZE] = newdata;
+                } else if (idata.team == newdata.team) {
+                    islandCache[(islandCachePtr + i) % ISLAND_CACHE_SIZE].fromComms = true;
+                }
+                return;
+            }
+        }
+        
+        if (islandCacheSize < ISLAND_CACHE_SIZE) {
+            islandCache[(islandCachePtr + islandCacheSize) % ISLAND_CACHE_SIZE] = newdata;
+            islandCacheSize++;
+        } else {
+            islandCache[islandCachePtr] = newdata;
+            islandCachePtr = (islandCachePtr + 1) % ISLAND_CACHE_SIZE;
+        }
     }
 
     public void setEnemyCache(int i, MapLocation l, int priority, int roundSeen) {

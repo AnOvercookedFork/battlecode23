@@ -28,16 +28,20 @@ public strictfp class CarrierRobot extends Robot {
     public CarrierRobot(RobotController rc) {
         super(rc);
         hqs = new MapLocation[GameConstants.MAX_STARTING_HEADQUARTERS];
-        cache = new MapCache(rc);
+        cache = new MapCache(rc, 16, 8, 4);
         snav = new StinkyNavigation(rc);
     }
 
     public void run() throws GameActionException {
         processNearbyRobots();
         Communications.readArray(rc);
+
         Communications.readWells(rc, cache);
         Communications.reportWell(rc, cache);
+
         cache.updateIslandCache();
+        Communications.readIslands(rc, cache);
+        Communications.reportIsland(rc, cache);
 
         if (getWeight() == GameConstants.CARRIER_CAPACITY) {
             tryTransferHQ();

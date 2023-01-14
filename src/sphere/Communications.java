@@ -15,13 +15,13 @@ public strictfp class Communications {
                                                // */
     
     public static final int WELL_START = 0;
-    public static final int WELL_SIZE = 8;
-    public static final int WELL_REPORT_START = 8;
-    public static final int WELL_REPORT_SIZE = 8;
+    public static final int WELL_SIZE = 4;
+    public static final int WELL_REPORT_START = 4;
+    public static final int WELL_REPORT_SIZE = 12;
     public static final int ISLAND_START = 16;
-    public static final int ISLAND_SIZE = 8;
-    public static final int ISLAND_REPORT_START = 24;
-    public static final int ISLAND_REPORT_SIZE = 8;
+    public static final int ISLAND_SIZE = 4;
+    public static final int ISLAND_REPORT_START = 20;
+    public static final int ISLAND_REPORT_SIZE = 12;
     public static final int ENEMIES_START = 32;
     public static final int ENEMIES_SIZE = 16;
     public static final int HQ_INDEX = 48;
@@ -114,8 +114,22 @@ public strictfp class Communications {
         }
     }
 
-    public static void cycleWells(RobotController rc, MapCache cache) throws GameActionException {
+    public static void reportIsland(RobotController rc, MapCache cache) throws GameActionException {
+        if (!rc.canWriteSharedArray(0, 0)) return;
+        for (int i = ISLAND_REPORT_START; i < ISLAND_REPORT_START + ISLAND_REPORT_SIZE; i++) {
+            if (array[i] == 0) {
+                MapCache.IslandData sample = cache.sampleIslandCache(true);
+                if (sample != null) {
+                   array[i] = sample.encode() + 1;
+                   rc.writeSharedArray(i, array[i]);
+                   sample.fromComms = true;
+                }
+                return;
+            }
+        }
+    }
 
+    public static void cycleWells(RobotController rc, MapCache cache) throws GameActionException {
         for (int i = WELL_START; i < WELL_START + WELL_SIZE; i++) {
             MapCache.WellData sample = cache.sampleWellCache(false);
             if (sample == null) break;
@@ -127,19 +141,48 @@ public strictfp class Communications {
             array[i] = 0;
             rc.writeSharedArray(i, 0);
         }
+    }
 
+    public static void cycleIslands(RobotController rc, MapCache cache) throws GameActionException {
+        for (int i = ISLAND_START; i < ISLAND_START + ISLAND_SIZE; i++) {
+            MapCache.IslandData sample = cache.sampleIslandCache(false);
+            if (sample == null) break;
+            array[i] = sample.encode() + 1;
+            rc.writeSharedArray(i, array[i]);
+        }
+
+        for (int i = ISLAND_REPORT_START; i < ISLAND_REPORT_START + ISLAND_REPORT_SIZE; i++) {
+            array[i] = 0;
+            rc.writeSharedArray(i, 0);
+        }
     }
 
     public static void readWells(RobotController rc, MapCache cache) {
-        for (int i = WELL_START; i < WELL_START + WELL_SIZE + WELL_REPORT_SIZE; i++) {
+        for (int i = WELL_START; i < WELL_START + WELL_SIZE; i++) {
             if (array[i] != 0) {
                 cache.updateWellCacheFromComms(array[i] - 1);
             }
         }
     }
 
+    public static void readIslands(RobotController rc, MapCache cache) {
+        for (int i = ISLAND_START; i < ISLAND_START + ISLAND_SIZE; i++) {
+            if (array[i] != 0) {
+                cache.updateIslandCacheFromComms(array[i] - 1);
+            }
+        }
+    }
+
     public static void readReportingWells(RobotController rc, MapCache cache) {
         for (int i = WELL_REPORT_START; i < WELL_REPORT_START + WELL_REPORT_SIZE; i++) {
+            if (array[i] != 0) {
+                cache.updateWellCacheFromComms(array[i] - 1);
+            }
+        }
+    }
+
+    public static void readReportingIslands(RobotController rc, MapCache cache) {
+        for (int i = ISLAND_REPORT_START; i < ISLAND_REPORT_START + ISLAND_REPORT_SIZE; i++) {
             if (array[i] != 0) {
                 cache.updateWellCacheFromComms(array[i] - 1);
             }

@@ -31,10 +31,15 @@ public strictfp class HeadquartersRobot extends Robot {
 
     public void run() throws GameActionException {
         Communications.readArray(rc);
+
+        cache.updateWellCache(rc.senseNearbyWells());
+        cache.updateIslandCache();
         
         if (Communications.isFirstHQ(rc)) {
             Communications.readReportingWells(rc, cache);
             Communications.cycleWells(rc, cache);
+            Communications.readReportingIslands(rc, cache);
+            Communications.cycleIslands(rc, cache);
             cache.debugWellCache();
         } else {
             Communications.readWells(rc, cache);
@@ -77,7 +82,7 @@ public strictfp class HeadquartersRobot extends Robot {
 
     }
 
-    public void processNearbyRobots() {
+    public void processNearbyRobots() throws GameActionException {
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
         MapLocation curr = rc.getLocation();
         farthestLauncher = null;
@@ -108,6 +113,8 @@ public strictfp class HeadquartersRobot extends Robot {
                 }
             }
         }
+
+        cache.updateEnemyCache(nearbyRobots);
     }
 
     public void primaryComms() throws GameActionException {
