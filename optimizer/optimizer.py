@@ -5,7 +5,7 @@ maps = ['maptestsmall', 'SmallElements', 'AllElements', 'DefaultMap']
 constants_to_optimize = ['weight1', 'weight2']
 bot_to_optimize = 'sphere'
 optimized_name = 'optimized_sphere'
-
+additional_args = '-Pdebug=false -Penableprofiler=false -PoutputVerbose=false -PshowIndicators=false'
 
 bot_template = ('constant 1', 'constant 2') # bots are represented as tuples of constants in the same order as the constants that are provided to optimize
 resolution = (0.1, 0.1) # subjective opinion of smallest significant change
