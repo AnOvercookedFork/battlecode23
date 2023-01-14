@@ -30,7 +30,8 @@ public strictfp class Communications {
     public static int[] array = new int[64];
     private static int lastRead = -1;
     public static boolean canWrite = false;
-
+    public static boolean canAlwaysWrite = false;
+    
     // should be called at the start of each robots turn, ideally
     public static void readArray(RobotController rc) throws GameActionException {
         canWrite = false;
@@ -39,13 +40,13 @@ public strictfp class Communications {
             for (int i = 0; i < 64; i++) {
                 array[i] = rc.readSharedArray(i);
             }
-            canWrite = rc.canWriteSharedArray(0, 0);
+            canWrite = canAlwaysWrite || rc.canWriteSharedArray(0, 0);
         }
     }
 
 
     public static int locToInt(MapLocation loc) {
-        return loc.x + loc.y << 6;
+        return loc.x + (loc.y << 6);
     }
 
     public static MapLocation intToLoc(int i) {

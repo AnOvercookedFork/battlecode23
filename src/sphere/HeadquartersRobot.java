@@ -24,6 +24,7 @@ public strictfp class HeadquartersRobot extends Robot {
     
     public HeadquartersRobot(RobotController rc) throws GameActionException {
         super(rc);
+        Communications.canAlwaysWrite = true;
         cache = new MapCache(rc, 32, 35, 16);
         Communications.tryAddHQ(rc, rc.getLocation());
     }
@@ -31,7 +32,7 @@ public strictfp class HeadquartersRobot extends Robot {
     public void run() throws GameActionException {
         Communications.readArray(rc);
         Communications.readWells(rc, cache);
-
+        
         if (Communications.isFirstHQ(rc)) {
             System.out.println("Well cache size is: " + cache.wellCacheSize);
             Communications.cycleWells(rc, cache);
