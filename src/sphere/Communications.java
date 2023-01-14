@@ -25,7 +25,8 @@ public strictfp class Communications {
     public static final int ENEMIES_START = 32;
     public static final int ENEMIES_SIZE = 16;
     public static final int HQ_INDEX = 48;
-    public static final int AMP_INDEX = 52;
+    public static final int AMP_INDEX = 52; // size 2
+    public static final int ENEMY_SNIPE_START = 54; // fills remainder of array
 
     public static int[] array = new int[64];
     private static int lastRead = -1;

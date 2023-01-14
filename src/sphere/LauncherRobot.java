@@ -175,7 +175,13 @@ public strictfp class LauncherRobot extends Robot {
             rc.setIndicatorLine(curr, finalTarget, 255, 0, 0);
             return finalTarget;
         }
-
+        
+        for(MapLocation loc: rc.getAllLocationsWithinRadiusSquared(curr, 16)) {
+            if(rc.canAttack(loc)) {
+                return loc;
+            }
+        }
+        
     	return null;
     }
     

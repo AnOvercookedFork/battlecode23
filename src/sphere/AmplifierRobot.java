@@ -3,17 +3,45 @@ package sphere;
 import battlecode.common.*;
 
 public strictfp class AmplifierRobot extends Robot {
-
+    StinkyNavigation snav;
+    MapCache cache;
+    MapLocation leader;
+    
     public AmplifierRobot(RobotController rc) {
         super(rc);
+        snav = new StinkyNavigation(rc);
+        cache = new MapCache(rc);
     }
 
     public void run() throws GameActionException {
         Communications.readArray(rc);
         Communications.incrementAmpCount(rc);
         while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryMove()) {
-            
+            processNearbyRobots();
         }
+    }
+    
+    public void processNearbyRobots() throws GameActionException {
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
+        MapLocation curr = rc.getLocation();
+        Team team = rc.getTeam();
+        leader = null;
+        int lowestID = rc.getID();
+        for (RobotInfo robot : nearbyRobots) {
+            if (robot.team == team) {
+                switch (robot.type) {
+                    case LAUNCHER:
+                        if (robot.ID < lowestID) {
+                            lowestID = robot.ID;
+                            leader = robot.location;
+                        }
+                        break;
+                }
+            } else {
+
+            }
+        }
+        cache.updateEnemyCache(nearbyRobots);
     }
     
     public boolean tryMove() throws GameActionException {
@@ -49,6 +77,5 @@ public strictfp class AmplifierRobot extends Robot {
             success = tryFuzzy(d);
         }
         return success;
-
     }
 }
