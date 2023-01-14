@@ -35,6 +35,7 @@ public strictfp class CarrierRobot extends Robot {
 
     public void run() throws GameActionException {
         processNearbyRobots();
+        Communications.readArray(rc);
         Communications.readWells(rc, cache);
         Communications.reportWell(rc, cache);
         cache.updateIslandCache();

@@ -265,6 +265,7 @@ public strictfp class MapCache {
         
         if (wellCacheSize < WELL_CACHE_SIZE) {
             wellCache[(wellCachePtr + wellCacheSize) % WELL_CACHE_SIZE] = newdata;
+            wellCacheSize++;
         } else {
             wellCache[wellCachePtr] = newdata;
             wellCachePtr = (wellCachePtr + 1) % WELL_CACHE_SIZE;
