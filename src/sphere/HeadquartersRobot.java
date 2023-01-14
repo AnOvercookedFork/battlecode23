@@ -18,15 +18,25 @@ public strictfp class HeadquartersRobot extends Robot {
     ArrayList<Integer> resources;
     HashSet<Integer> resourcesSet;
     int carouselIndex = 0;
+
+    MapCache cache;
     
     
-    public HeadquartersRobot(RobotController rc) {
+    public HeadquartersRobot(RobotController rc) throws GameActionException {
         super(rc);
+        cache = new MapCache(rc, 32, 35, 16);
+        Communications.tryAddHQ(rc, rc.getLocation());
     }
 
     public void run() throws GameActionException {
         Communications.readArray(rc);
-        processArea();
+        Communications.readWells(rc, cache);
+
+        if (Communications.isFirstHQ(rc)) {
+            System.out.println("Well cache size is: " + cache.wellCacheSize);
+            Communications.cycleWells(rc, cache);
+            cache.debugWellCache();
+        }
         processNearbyRobots();
         
         MapLocation curr = rc.getLocation();
@@ -99,13 +109,16 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public void primaryComms() throws GameActionException {
+        /*
         if(resources == null) {
             resources = new ArrayList<Integer>();
             resourcesSet = new HashSet<Integer>();
             
         }
+        */
         Communications.updateAmpCount(rc);
         
+        /*
         // update well carousel
         for(int i = 0; i < 15; i++) {
             if(!resourcesSet.contains(Communications.array[Communications.AD_INDEX + i])) {
@@ -127,6 +140,7 @@ public strictfp class HeadquartersRobot extends Robot {
                 carouselIndex -= resourcesSet.size();
             }
         }
+        */
     }
     
     public boolean shouldBuildAnchor() {

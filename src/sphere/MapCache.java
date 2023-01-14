@@ -8,38 +8,129 @@ public strictfp class MapCache {
 
     RobotController rc;
 
-    class WellData {
+    static class WellData {
         MapLocation location;
         ResourceType type;
         int rate;
+        boolean fromComms;
 
         public WellData(MapLocation location, ResourceType type, int rate) {
             this.location = location;
             this.type = type;
             this.rate = rate;
+            this.fromComms = false;
+        }
+
+
+        public WellData(MapLocation location, ResourceType type, int rate, boolean fromComms) {
+            this.location = location;
+            this.type = type;
+            this.rate = rate;
+            this.fromComms = fromComms;
+        }
+
+        int encode() {
+            int code12_15 = 0;
+            switch (type) {
+                case ADAMANTIUM:
+                    code12_15 = 0;
+                    break;
+                case MANA:
+                    code12_15 = 1;
+                    break;
+                case ELIXIR:
+                    code12_15 = 2;
+                    break;
+            }
+            if (rate == GameConstants.WELL_ACCELERATED_RATE) {
+                code12_15 += 4;
+            }
+            return location.x + (location.y << 6) + (code12_15 << 12);
+        }
+
+        static WellData decode(int code, boolean fromComms) {
+            int x = code % 64;
+            code = code >> 6;
+            int y = code % 64;
+            code = code >> 6;
+            ResourceType type = null;
+            switch (code % 4) {
+                case 0:
+                    type = ResourceType.ADAMANTIUM;
+                    break;
+                case 1:
+                    type = ResourceType.MANA;
+                    break;
+                case 2:
+                    type = ResourceType.ELIXIR;
+                    break;
+            }
+            code = code >> 2;
+            int rate;
+            if (code == 1) {
+                rate = GameConstants.WELL_ACCELERATED_RATE;
+            } else {
+                rate = GameConstants.WELL_STANDARD_RATE;
+            }
+            return new MapCache.WellData(new MapLocation(x, y), type, rate, fromComms);
         }
     }
 
-    class IslandData {
+    static class IslandData {
         MapLocation location;
         int idx;
         Team team;
+        boolean fromComms;
+
         public IslandData(MapLocation location, int idx, Team team) {
             this.location = location;
             this.idx = idx;
             this.team = team;
+            this.fromComms = false;
+        }
+
+        public IslandData(MapLocation location, int idx, Team team, boolean fromComms) {
+            this.location = location;
+            this.idx = idx;
+            this.team = team;
+            this.fromComms = fromComms;
+        }
+
+        int encode() {
+            return 0;
+        }
+
+        static IslandData decode(int code) {
+            return null;
         }
     }
 
-    class EnemyData {
+    static class EnemyData {
         MapLocation location;
         int priority;
         int roundSeen;
+        boolean fromComms;
 
         public EnemyData(MapLocation location, int priority, int roundSeen) {
             this.location = location;
             this.priority = priority;
             this.roundSeen = roundSeen;
+            this.fromComms = false;
+        }
+        
+        public EnemyData(MapLocation location, int priority, int roundSeen, boolean fromComms) {
+            this.location = location;
+            this.priority = priority;
+            this.roundSeen = roundSeen;
+            this.fromComms = fromComms;
+        }
+
+        int encode() {
+            return 0;
+        }
+
+        static EnemyData decode(int code) {
+            return null;
         }
     }
 
@@ -55,9 +146,13 @@ public strictfp class MapCache {
     int islandCacheSize;
     int enemyCacheSize;
 
-    public static final int WELL_CACHE_SIZE = 16;
-    public static final int ISLAND_CACHE_SIZE = 35;
-    public static final int ENEMY_CACHE_SIZE = 16;
+    int wellSamplePtr;
+    int islandSamplePtr;
+    int enemySamplePtr;
+
+    public static int WELL_CACHE_SIZE = 16;
+    public static int ISLAND_CACHE_SIZE = 35;
+    public static int ENEMY_CACHE_SIZE = 16;
 
     public MapCache(RobotController rc) {
         this.rc = rc;
@@ -73,6 +168,17 @@ public strictfp class MapCache {
         wellCacheSize = 0;
         islandCacheSize = 0;
         enemyCacheSize = 0;
+
+        wellSamplePtr = 0;
+        islandSamplePtr = 0;
+        enemySamplePtr = 0;
+    }
+
+    public MapCache(RobotController rc, int wells_size, int islands_size, int enemies_size) {
+        this(rc);
+        WELL_CACHE_SIZE = wells_size;
+        ISLAND_CACHE_SIZE = islands_size;
+        ENEMY_CACHE_SIZE = enemies_size;
     }
 
 
@@ -109,6 +215,69 @@ public strictfp class MapCache {
                     wellCachePtr = (wellCachePtr + 1) % WELL_CACHE_SIZE;
                 }
             }
+        }
+    }
+
+    public WellData sampleWellCache(boolean excludeComms) {
+        WellData wdata;
+        for (int i = 0; i < WELL_CACHE_SIZE; i++) {
+            wdata = wellCache[(wellSamplePtr + i) % WELL_CACHE_SIZE];
+            if (wdata != null && (!excludeComms || !wdata.fromComms)) {
+                wellSamplePtr = (wellSamplePtr + i + 1) % WELL_CACHE_SIZE;
+                return wdata;
+            }
+        }
+        return null;
+    }
+
+    public void updateWellCacheFromComms(int code) {
+        WellData newdata = WellData.decode(code, true);
+        WellData wdata;
+        for (int i = 0; i < wellCacheSize; i++) {
+            wdata = wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE];
+            if (wdata.location.equals(newdata.location)) {
+                if (wdata.type != ResourceType.ELIXIR && newdata.type == ResourceType.ELIXIR
+                        || wdata.rate == GameConstants.WELL_STANDARD_RATE && newdata.rate == GameConstants.WELL_ACCELERATED_RATE) {
+                    wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE] = newdata;
+                } else if (wdata.type == newdata.type && wdata.rate == newdata.rate) {
+                    wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE].fromComms = true;
+                }
+                return;
+            }
+        }
+        
+        if (wellCacheSize < WELL_CACHE_SIZE) {
+            wellCache[(wellCachePtr + wellCacheSize) % WELL_CACHE_SIZE] = newdata;
+        } else {
+            wellCache[wellCachePtr] = newdata;
+            wellCachePtr = (wellCachePtr + 1) % WELL_CACHE_SIZE;
+        }
+    }
+
+    public void debugWellCache() {
+        WellData wdata;
+        for (int i = 0; i < wellCacheSize; i++) {
+            wdata = wellCache[(wellCachePtr + i) % WELL_CACHE_SIZE];
+            int red = 0;
+            int green = 0;
+            int blue = 0;
+            switch (wdata.type) {
+                case ADAMANTIUM:
+                    red = 125;
+                    break;
+                case MANA:
+                    blue = 125;
+                    break;
+                case ELIXIR:
+                    green = 125;
+                    break;
+            }
+            if (wdata.rate > GameConstants.WELL_STANDARD_RATE) {
+                red *= 2;
+                blue *= 2;
+                green *= 2;
+            }
+            rc.setIndicatorDot(wdata.location, red, green, blue);
         }
     }
 
@@ -150,6 +319,18 @@ public strictfp class MapCache {
                 }
             }
         }
+    }
+
+    public IslandData sampleIslandCache(boolean excludeComms) {
+        IslandData idata;
+        for (int i = 0; i < ISLAND_CACHE_SIZE; i++) {
+            idata = islandCache[(islandSamplePtr + i) % ISLAND_CACHE_SIZE];
+            if (idata != null && (!excludeComms || !idata.fromComms)) {
+                islandSamplePtr = (islandSamplePtr + i + 1) % ISLAND_CACHE_SIZE;
+                return idata;
+            }
+        }
+        return null;
     }
 
     public void setEnemyCache(int i, MapLocation l, int priority, int roundSeen) {
@@ -201,5 +382,17 @@ public strictfp class MapCache {
                 }
             }
         }
+    }
+
+    public EnemyData sampleEnemyCache(boolean excludeComms) {
+        EnemyData edata;
+        for (int i = 0; i < ENEMY_CACHE_SIZE; i++) {
+            edata = enemyCache[(enemySamplePtr + i) % ENEMY_CACHE_SIZE];
+            if (edata != null && (!excludeComms || !edata.fromComms)) {
+                enemySamplePtr = (enemySamplePtr + i + 1) % ENEMY_CACHE_SIZE;
+                return edata;
+            }
+        }
+        return null;
     }
 }

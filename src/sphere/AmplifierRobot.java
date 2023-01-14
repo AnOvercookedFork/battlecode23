@@ -12,7 +12,7 @@ public strictfp class AmplifierRobot extends Robot {
         Communications.readArray(rc);
         Communications.incrementAmpCount(rc);
         while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryMove()) {
-            processArea();
+            
         }
     }
     

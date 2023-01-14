@@ -42,7 +42,8 @@ public strictfp abstract class Robot {
         int y = rng.nextInt(height - 2 * MARGIN) + MARGIN;
         return new MapLocation(x, y);
     }
-
+    
+    /*
     public void processArea() throws GameActionException {
         WellInfo[] wells = rc.senseNearbyWells();
         for(WellInfo well: wells) {
@@ -62,7 +63,7 @@ public strictfp abstract class Robot {
                 Communications.tryAddHQ(rc, target.getLocation());
             }
         }
-    }
+    }*/
     
     public boolean tryFuzzy(MapLocation location) throws GameActionException {
         MapLocation curr = rc.getLocation();

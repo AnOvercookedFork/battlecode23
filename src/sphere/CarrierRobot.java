@@ -35,7 +35,8 @@ public strictfp class CarrierRobot extends Robot {
 
     public void run() throws GameActionException {
         processNearbyRobots();
-
+        Communications.readWells(rc, cache);
+        Communications.reportWell(rc, cache);
         cache.updateIslandCache();
 
         if (getWeight() == GameConstants.CARRIER_CAPACITY) {
@@ -212,7 +213,6 @@ public strictfp class CarrierRobot extends Robot {
 
         MapLocation curr = rc.getLocation();
 
-        rc.setIndicatorLine(curr, collectTarget, 255, 255, 0);
         return curr.distanceSquaredTo(collectTarget) > 2 && snav.tryNavigate(collectTarget);
     }
 
