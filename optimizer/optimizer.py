@@ -25,7 +25,7 @@ def run_match(a, b):
     for map in maps:
         result = os.popen('gradlew run -Pmaps={map} -PteamA=oneeleven -PteamB=oneeleven'.format(map = map)).read().splitlines()
         print(result[-1])
-
+# may not need to build between each evolution, check on this?
 def main():
     os.chdir('..')
     os.system('gradlew update')
