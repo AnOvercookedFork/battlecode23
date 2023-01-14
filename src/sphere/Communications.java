@@ -133,7 +133,16 @@ public strictfp class Communications {
     public static void readWells(RobotController rc, MapCache cache) {
         for (int i = WELL_START; i < WELL_START + WELL_SIZE + WELL_REPORT_SIZE; i++) {
             if (array[i] != 0) {
-                cache.updateWellCacheFromComms(array[i] - 1);;
+                cache.updateWellCacheFromComms(array[i] - 1);
+            }
+        }
+    }
+
+    public static void readReportingWells(RobotController rc, MapCache cache) {
+        for (int i = WELL_REPORT_START; i < WELL_REPORT_START + WELL_REPORT_SIZE; i++) {
+            if (array[i] != 0) {
+                System.out.println("array["+i+"]="+array[i]);
+                cache.updateWellCacheFromComms(array[i] - 1);
             }
         }
     }

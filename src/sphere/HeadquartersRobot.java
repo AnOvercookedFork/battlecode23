@@ -31,12 +31,14 @@ public strictfp class HeadquartersRobot extends Robot {
 
     public void run() throws GameActionException {
         Communications.readArray(rc);
-        Communications.readWells(rc, cache);
         
         if (Communications.isFirstHQ(rc)) {
             System.out.println("Well cache size is: " + cache.wellCacheSize);
+            Communications.readReportingWells(rc, cache);
             Communications.cycleWells(rc, cache);
             cache.debugWellCache();
+        } else {
+            Communications.readWells(rc, cache);
         }
         processNearbyRobots();
         
