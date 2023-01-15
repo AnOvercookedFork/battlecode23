@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_14_1;
 
 import battlecode.common.*;
 
@@ -18,48 +18,17 @@ public strictfp class LauncherRobot extends Robot {
     public static final double GIVE_UP_WEIGHT = 10;
     public static final int GIVE_UP_RADIUS_SQ = 2;
 
-    MapLocation[] reflectedHQs;
-    int hqTargetIndex = 0;
-
-    public LauncherRobot(RobotController rc) throws GameActionException {
+    public LauncherRobot(RobotController rc) {
         super(rc);
-        Communications.readArray(rc);
-
-        MapLocation[] hqs = new MapLocation[4];
-        
-        hqs[0] = Communications.getHQ(rc, 0);
-        hqs[1] = Communications.getHQ(rc, 1);
-        hqs[2] = Communications.getHQ(rc, 2);
-        hqs[3] = Communications.getHQ(rc, 3);
-        
-        int numHQs = 1;
-        if (hqs[3] != null) {
-            numHQs = 4;
-        } else if (hqs[2] != null) {
-            numHQs = 3;
-        } else if (hqs[1] != null) {
-            numHQs = 2;
-        }
-        
-        reflectedHQs = new MapLocation[numHQs];
-        //reflectedHQs[0] = rotate180(hq1);
-        //reflectedHQs[1] = reflectHorizontal(hq1);
-        //reflectedHQs[2] = reflectVertical(hq1);
-        for (int i = 0; i < numHQs; i++) {
-            reflectedHQs[i] = rotate180(hqs[i]);
-            System.out.println("reflectedHQs["+i+"]="+reflectedHQs[i].toString());
-        }
-
-        System.out.println(numHQs);
-
+        target = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
+        targetWeight = INITIAL_LOC_WEIGHT;
         snav = new StinkyNavigation(rc);
         cache = new MapCache(rc, 4, 8, 16);
     }
 
     public void run() throws GameActionException {
         processNearbyRobots();
-        
-        Communications.readArray(rc);
+
         cache.updateWellCache(rc.senseNearbyWells());
         Communications.readWells(rc, cache);
         Communications.reportWell(rc, cache);
@@ -74,8 +43,6 @@ public strictfp class LauncherRobot extends Robot {
             while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && tryAttack()) {}
         }
-
-        rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
 
     }
 
@@ -116,20 +83,12 @@ public strictfp class LauncherRobot extends Robot {
         if (target != null) {
             if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ)
                     || targetWeight < GIVE_UP_WEIGHT) {
-                if (target.equals(reflectedHQs[hqTargetIndex])) {
-                    hqTargetIndex = (hqTargetIndex + 1) % reflectedHQs.length;
-                }
                 target = null;
-
             }
         }
 
         if (target == null) {
-            //target = randomLocation();
-
-            //target = new MapLocation(rc.getMapWidth() - curr.x - 1, rc.getMapHeight() - curr.y - 1);
-            //targetWeight = RANDOM_LOC_WEIGHT;
-            target = reflectedHQs[hqTargetIndex];
+            target = randomLocation();
             targetWeight = RANDOM_LOC_WEIGHT;
         }
 

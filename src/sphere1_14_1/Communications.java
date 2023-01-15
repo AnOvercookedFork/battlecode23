@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_14_1;
 
 import battlecode.common.*;
 
@@ -189,46 +189,6 @@ public strictfp class Communications {
             }
         }
     }
-    
-    /*
-    public static void readEnemies(RobotController rc, MapCache cache) {
-        for (int i = ENEMIES_START; i < ENEMIES_START + ENEMIES_SIZE; i++) {
-            if (array[i] != 0) {
-                cache.updateEnemyCacheFromComms(array[i] - 1);
-            }
-        }
-    }
-    
-    static final int turnMask = 1 << 15;
-
-    public static void incrementEnemies(RobotController rc, MapCache cache) {
-        for (int i = ENEMIES_START; i < ENEMIES_START + ENEMIES_SIZE; i++) {
-            if (array[i] != 0) {
-                if (array[i] & turnMask) {
-                    array[i] = 0;
-                    rc.writeSharedArray(i, 0);
-                } else {
-                    array[i] |= turnMask;
-                    rc.writeSharedArray(i, array[i]);
-                }
-            }
-        }
-    }
-
-    public static void reportEnemies(RobotController rc, MapCache cache) {
-        if (!rc.canWriteSharedArray(0, 0)) return;
-        MapCache.EnemyData edata;
-        int round = rc.getRoundNum();
-        int idx = 0;
-        for (int i = 0; i < ENEMY_CACHE_SIZE; i++) {
-            edata = enemyCache[i];
-            if (edata != null && edata.roundSeen == round) {
-                while (array[idx] != 0) {
-                    
-                }
-            }
-        }
-    }*/
 
     public static void tryAddHQ(RobotController rc, MapLocation location) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
@@ -244,16 +204,6 @@ public strictfp class Communications {
             }
         }
         System.out.println("Failed to add HQ");
-    }
-
-    /**
-     * Gets the ith HQ's location by turn order.
-     */
-    public static MapLocation getHQ(RobotController rc, int i) throws GameActionException {
-        if (array[HQ_INDEX + i] > 0) {
-            return intToLoc(array[HQ_INDEX + i]);
-        }
-        return null;
     }
 
     public static boolean isFirstHQ(RobotController rc) throws GameActionException {
