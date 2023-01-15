@@ -42,6 +42,18 @@ public strictfp abstract class Robot {
         int y = rng.nextInt(height - 2 * MARGIN) + MARGIN;
         return new MapLocation(x, y);
     }
+
+    public MapLocation reflectHorizontal(MapLocation loc) {
+        return new MapLocation(rc.getMapWidth() - loc.x - 1, loc.y);
+    }
+
+    public MapLocation reflectVertical(MapLocation loc) {
+        return new MapLocation(loc.x, rc.getMapHeight() - loc.y - 1);
+    }
+
+    public MapLocation rotate180(MapLocation loc) {
+        return new MapLocation(rc.getMapWidth() - loc.x - 1, rc.getMapHeight() - loc.y - 1);
+    }
     
     /*
     public void processArea() throws GameActionException {

@@ -26,6 +26,7 @@ public strictfp class HeadquartersRobot extends Robot {
         super(rc);
         Communications.canAlwaysWrite = true;
         cache = new MapCache(rc, 32, 35, 16);
+        Communications.readArray(rc);
         Communications.tryAddHQ(rc, rc.getLocation());
     }
 

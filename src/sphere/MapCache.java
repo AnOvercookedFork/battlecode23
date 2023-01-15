@@ -144,11 +144,17 @@ public strictfp class MapCache {
         }
 
         int encode() {
-            return 0;
+            assert(priority < 8 && priority >= 0);
+            return location.x + (location.y << 6) + (priority << 12);
         }
 
-        static EnemyData decode(int code) {
-            return null;
+        static EnemyData decode(int code, int roundNum, boolean fromComms) {
+            int x = code % 64;
+            code = code >> 6;
+            int y = code % 64;
+            code = code >> 6;
+            int priority = code % 8;
+            return new EnemyData(new MapLocation(x, y), code % 8, roundNum - (code >> 3), fromComms);
         }
     }
 
@@ -456,4 +462,14 @@ public strictfp class MapCache {
         }
         return null;
     }
+    
+    /*
+    public void updateEnemyCacheFromComms(int code) {
+        EnemyData newdata = EnemyData.decode(code, true);
+        EnemyData edata;
+        for (int i = 0; i < enemyCacheSize; i++) {
+            edata = enemyCache;
+        }
+    }
+    */
 }
