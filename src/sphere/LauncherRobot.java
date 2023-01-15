@@ -47,10 +47,7 @@ public strictfp class LauncherRobot extends Robot {
         //reflectedHQs[2] = reflectVertical(hq1);
         for (int i = 0; i < numHQs; i++) {
             reflectedHQs[i] = rotate180(hqs[i]);
-            System.out.println("reflectedHQs["+i+"]="+reflectedHQs[i].toString());
         }
-
-        System.out.println(numHQs);
 
         snav = new StinkyNavigation(rc);
         cache = new MapCache(rc, 4, 8, 16);
