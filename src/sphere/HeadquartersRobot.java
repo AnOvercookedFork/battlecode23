@@ -9,7 +9,7 @@ public strictfp class HeadquartersRobot extends Robot {
     int turns = 0;
 
     public static final int MAX_ANCHORS = 1;
-    public static final int MIN_TURN_BUILD_ANCHOR = 300;
+    public static final int MIN_TURN_BUILD_ANCHOR = 750;
 
     MapLocation farthestLauncher;
     int enemiesNearby = 0;
@@ -36,20 +36,13 @@ public strictfp class HeadquartersRobot extends Robot {
         cache.updateIslandCache();
         
         if (Communications.isFirstHQ(rc)) {
-            Communications.readReportingWells(rc, cache);
-            Communications.cycleWells(rc, cache);
-            Communications.readReportingIslands(rc, cache);
-            Communications.cycleIslands(rc, cache);
-            cache.debugWellCache();
+            primaryComms();
         } else {
             Communications.readWells(rc, cache);
         }
         processNearbyRobots();
         
         MapLocation curr = rc.getLocation();
-        if(curr.equals(Communications.intToLoc(Communications.array[Communications.HQ_INDEX]))) {
-            primaryComms();
-        }
         MapLocation l;
 
         boolean buildAnchor = shouldBuildAnchor();
@@ -57,20 +50,7 @@ public strictfp class HeadquartersRobot extends Robot {
         if (rc.canBuildAnchor(Anchor.STANDARD) && buildAnchor) {
             rc.buildAnchor(Anchor.STANDARD);
         }
-        /*if (turns < 100 || rc.canBuildAnchor(Anchor.STANDARD)) {
-            for (Direction d : directions) {
-                l = curr.add(d);
-                if (rc.canBuildRobot(RobotType.CARRIER, l)) {
-                    rc.buildRobot(RobotType.CARRIER, l);
-                }
-            }
-            for (Direction d : directions) {
-                l = curr.add(d);
-                if (rc.canBuildRobot(RobotType.LAUNCHER, curr.add(d))) {
-                    rc.buildRobot(RobotType.LAUNCHER, l);
-                }
-            }
-        }*/
+
         if (!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost) {
             tryBuildCarrier();
         }
@@ -117,39 +97,14 @@ public strictfp class HeadquartersRobot extends Robot {
         cache.updateEnemyCache(nearbyRobots);
     }
 
+    // tasks for the first HQ to do for comms
     public void primaryComms() throws GameActionException {
-        /*
-        if(resources == null) {
-            resources = new ArrayList<Integer>();
-            resourcesSet = new HashSet<Integer>();
-            
-        }
-        */
+        Communications.readReportingWells(rc, cache);
+        Communications.cycleWells(rc, cache);
+        Communications.readReportingIslands(rc, cache);
+        Communications.cycleIslands(rc, cache);
         Communications.updateAmpCount(rc);
-        
-        /*
-        // update well carousel
-        for(int i = 0; i < 15; i++) {
-            if(!resourcesSet.contains(Communications.array[Communications.AD_INDEX + i])) {
-                resources.add(Communications.array[Communications.AD_INDEX + i]);
-                resourcesSet.add(Communications.array[Communications.AD_INDEX + i]);
-            }
-        }
-        
-        // move well carousel to comms
-        // not using turns mod resourcesSet.size() in case wells are repeatedly added
-        if(carouselIndex >= resourcesSet.size()) {
-            carouselIndex -= resourcesSet.size();
-        }
-        
-        for(int i = 0; i < Communications.CAROUSEL_SIZE; i++) {
-            rc.writeSharedArray(Communications.CAROUSEL_INDEX + i, resources.get(carouselIndex));
-            carouselIndex++;
-            if(carouselIndex >= resourcesSet.size()) {
-                carouselIndex -= resourcesSet.size();
-            }
-        }
-        */
+        cache.debugWellCache();
     }
     
     public boolean shouldBuildAnchor() {
