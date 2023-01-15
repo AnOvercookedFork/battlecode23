@@ -108,6 +108,7 @@ public strictfp class Communications {
                 if (sample != null) {
                    array[i] = sample.encode() + 1;
                    rc.writeSharedArray(i, array[i]);
+                   System.out.println("Reporting well at location: " + sample.location.x + ", " + sample.location.y);
                    sample.fromComms = true;
                 }
                 return;
@@ -177,6 +178,7 @@ public strictfp class Communications {
     public static void readReportingWells(RobotController rc, MapCache cache) {
         for (int i = WELL_REPORT_START; i < WELL_REPORT_START + WELL_REPORT_SIZE; i++) {
             if (array[i] != 0) {
+                System.out.println("Received well with code: " + (array[i] - 1));
                 cache.updateWellCacheFromComms(array[i] - 1);
             }
         }
@@ -185,7 +187,7 @@ public strictfp class Communications {
     public static void readReportingIslands(RobotController rc, MapCache cache) {
         for (int i = ISLAND_REPORT_START; i < ISLAND_REPORT_START + ISLAND_REPORT_SIZE; i++) {
             if (array[i] != 0) {
-                cache.updateWellCacheFromComms(array[i] - 1);
+                cache.updateIslandCacheFromComms(array[i] - 1);
             }
         }
     }

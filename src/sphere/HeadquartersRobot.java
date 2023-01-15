@@ -31,16 +31,21 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public void run() throws GameActionException {
-        Communications.readArray(rc);
 
+        Communications.readArray(rc);
+        
+        if (Communications.isFirstHQ(rc)) {
+        }
         cache.updateWellCache(rc.senseNearbyWells());
         cache.updateIslandCache();
         
         if (Communications.isFirstHQ(rc)) {
             primaryComms();
+
         } else {
             Communications.readWells(rc, cache);
         }
+
         processNearbyRobots();
         
         MapLocation curr = rc.getLocation();

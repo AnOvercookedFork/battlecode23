@@ -78,6 +78,8 @@ public strictfp class CarrierRobot extends Robot {
         if (getWeight() == GameConstants.CARRIER_CAPACITY) {
             tryTransferHQ();
         }
+
+        cache.debugWellCache();
     }
 
     public void updateHeadquarterList(MapLocation location) {
