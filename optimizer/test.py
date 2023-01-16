@@ -25,7 +25,7 @@ def run_matches(teamA, teamB, score):
             score[1] += 1
             map_score[map] = teamB
         else:
-            print('I don\'t know who won this, take a look: {}'.format(winner))
+            print('I don\'t know who won this, take a look: {}'.format(result))
     return score, map_score
 
 def main():
