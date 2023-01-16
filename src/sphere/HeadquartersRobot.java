@@ -77,6 +77,7 @@ public strictfp class HeadquartersRobot extends Robot {
         carriersNearby = 0;
         enemiesNearby = 0;
         launchersNearby = 0;
+        MapLocation enemyLoc = null;
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == rc.getTeam()) {
                 switch (robot.type) {
@@ -96,10 +97,14 @@ public strictfp class HeadquartersRobot extends Robot {
                 // process enemies here
                 if (robot.type != RobotType.HEADQUARTERS) {
                     enemiesNearby++;
+                    enemyLoc = robot.getLocation();
                 }
             }
         }
-
+        
+        if(enemyLoc != null) {
+            Communications.panicReportEnemy(rc, enemyLoc);
+        }
         cache.updateEnemyCache(nearbyRobots);
     }
 
@@ -110,6 +115,7 @@ public strictfp class HeadquartersRobot extends Robot {
         Communications.readReportingIslands(rc, cache);
         Communications.cycleIslands(rc, cache);
         Communications.updateAmpCount(rc);
+        Communications.clearReportEnemy(rc);
         cache.debugWellCache();
     }
     
