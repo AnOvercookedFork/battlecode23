@@ -95,8 +95,10 @@ public strictfp class CarrierRobot extends Robot {
         int potentialDamage = getWeight() / 5;
         int enemyHp = 0;
 
+        Team team = rc.getTeam();
+
         for (RobotInfo robot : nearbyRobots) {
-            if (robot.team == rc.getTeam()) {
+            if (robot.team == team) {
                 if(robot.type == RobotType.CARRIER) {
                     potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) / 5;
                 }
