@@ -83,7 +83,7 @@ public strictfp class CarrierRobot extends Robot {
             tryTransferHQ();
         }
 
-        cache.debugWellCache();
+        //cache.debugWellCache();
     }
 
     public void processNearbyRobots() throws GameActionException {
@@ -194,7 +194,6 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
         if (maxScore > 0 && finalTarget != null) {
-            rc.setIndicatorLine(curr, finalTarget, 255, 0, 0);
             return finalTarget;
         }
         
@@ -326,15 +325,8 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         MapLocation curr = rc.getLocation();
-
-        rc.setIndicatorLine(curr, collectTarget, 255, 255, 0);
-        if (prevResource == ResourceType.MANA) {
-            rc.setIndicatorDot(curr, 0, 255, 0);
-        } else if (prevResource == ResourceType.ADAMANTIUM) {
-            rc.setIndicatorDot(curr, 255, 0, 0);
-        } else {
-            rc.setIndicatorDot(curr, 0, 0, 0);
-        }
+        
+        //rc.setIndicatorLine(curr, collectTarget, 255, 255, 0);
 
         return curr.distanceSquaredTo(collectTarget) > 2 && snav.tryNavigate(collectTarget);
     }

@@ -110,7 +110,7 @@ public strictfp class HeadquartersRobot extends Robot {
         Communications.readReportingIslands(rc, cache);
         Communications.cycleIslands(rc, cache);
         Communications.updateAmpCount(rc);
-        cache.debugWellCache();
+        //cache.debugWellCache();
     }
     
     public boolean shouldBuildAnchor() {

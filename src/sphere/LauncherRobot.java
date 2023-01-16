@@ -79,7 +79,7 @@ public strictfp class LauncherRobot extends Robot {
                     && tryAttack()) {}
         }
 
-        rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
+        //rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
 
     }
 
@@ -220,7 +220,6 @@ public strictfp class LauncherRobot extends Robot {
             }
         }
         if (maxScore > 0 && finalTarget != null) {
-            rc.setIndicatorLine(curr, finalTarget, 255, 0, 0);
             return finalTarget;
         }
         
