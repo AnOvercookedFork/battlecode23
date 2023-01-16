@@ -123,7 +123,9 @@ public strictfp class StinkyNavigation {
     public boolean tryNavigate(MapLocation loc) throws GameActionException {
         Direction dir = navigate(loc);
         if (dir != Direction.CENTER) {
-            rc.move(dir);
+            if(rc.canMove(dir)) {
+                rc.move(dir);
+            }
             return true;
         }
         return false;

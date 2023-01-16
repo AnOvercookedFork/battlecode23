@@ -8,7 +8,7 @@ maps = ['AllElements', 'DefaultMap', 'SmallElements', 'maptestsmall']
 
 
 # set these
-teamA = 'sphere1_16_1'
+teamA = 'sphere'
 teamB = 'sphere1_14_3'
 
 def get_winner(data):

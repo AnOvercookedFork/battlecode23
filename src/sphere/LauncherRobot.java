@@ -236,10 +236,7 @@ public strictfp class LauncherRobot extends Robot {
                 score = 5;
                 break;
             case CARRIER:
-                if(info.getTotalAnchors() > 0) {
-                    score = 4;
-                }
-                else if(info.getResourceAmount(ResourceType.ADAMANTIUM) + info.getResourceAmount(ResourceType.ELIXIR) + info.getResourceAmount(ResourceType.MANA) > RESOURCE_THRESHOLD){
+                if(info.getResourceAmount(ResourceType.ADAMANTIUM) + info.getResourceAmount(ResourceType.ELIXIR) + info.getResourceAmount(ResourceType.MANA) > RESOURCE_THRESHOLD){
                     score = 3;
                 }
                 else {

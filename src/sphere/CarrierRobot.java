@@ -7,7 +7,9 @@ public strictfp class CarrierRobot extends Robot {
     public static final double KNOWN_LOC_WEIGHT = 100;
     public static final double MIN_HEALTH_TAKE_ANCHOR = 10;
     public static final int PANIC_HEALTH = 12;
-    public static final int FLEE_TURNS = 2;
+    public static final int FLEE_TURNS = 1;
+    public static final int EXECUTE_MODIFIER = 100;
+    public static final int DAMAGED_MODIFIER = 15;
     
     public static MapLocation[] hqs;
     int turnsSinceSeenEnemy = 0;
@@ -97,13 +99,19 @@ public strictfp class CarrierRobot extends Robot {
     public void processNearbyRobots() throws GameActionException {
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
         MapLocation curr = rc.getLocation();
+        RobotInfo nearestEnemy = null;
         MapLocation nearestDangerousEnemy = null;
         int nearestDangerousEnemyDist = Integer.MAX_VALUE;
+        int potentialDamage = 0;
+        int enemyHp = 0;
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == rc.getTeam()) {
                 if (robot.type == RobotType.HEADQUARTERS) {
                     // Update our list of headquarters, if not already on the list
                     updateHeadquarterList(robot.location);
+                }
+                if(robot.type == RobotType.CARRIER) {
+                    potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) / 5;
                 }
             } else {
                 // Process enemy robots here
@@ -111,16 +119,33 @@ public strictfp class CarrierRobot extends Robot {
                     int dist = robot.location.distanceSquaredTo(curr);
                     if (dist < nearestDangerousEnemyDist) {
                         nearestDangerousEnemyDist = dist;
+                        nearestEnemy = robot;
                         nearestDangerousEnemy = robot.location;
                     }
                 }
+                enemyHp += robot.getHealth();
             }
         }
 
         if (nearestDangerousEnemy != null) {
             enemyLastSeenLoc = nearestDangerousEnemy;
             turnsSinceSeenEnemy = 0;
-
+            
+            if(potentialDamage > enemyHp && getWeight() > 5) {
+                tryFuzzy(curr.directionTo(nearestDangerousEnemy));
+                if(rc.getActionCooldownTurns() == 0) {
+                    MapLocation target = getTarget(rc);
+                    if(target != null) {
+                        if(rc.canAttack(target)) {
+                            rc.attack(target);
+                        }
+                        else {
+                            System.out.println("wat");
+                        }
+                    }
+                }
+            }
+            
             if (rc.getHealth() <= PANIC_HEALTH && getWeight() >= 5 && rc.canAttack(nearestDangerousEnemy)) {
                 rc.attack(nearestDangerousEnemy);
             }
@@ -139,6 +164,81 @@ public strictfp class CarrierRobot extends Robot {
         }
     }
 
+    public MapLocation getTarget(RobotController rc) throws GameActionException {
+        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());  // costs about 100 bytecode
+        cache.updateEnemyCache(targets);
+        MapLocation finalTarget = null;
+        int maxScore = -1;
+        MapLocation curr = rc.getLocation();
+        for(RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
+            if (!target.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared)) continue;
+            int score = scoreTarget(target, rc);
+            if(score > maxScore) {
+                maxScore = score;
+                finalTarget = target.location;
+            }
+        }
+        if(maxScore > 0) {
+            return finalTarget;
+        }
+        int round = rc.getRoundNum();
+        for (MapCache.EnemyData enemy : cache.enemyCache) {
+            if (enemy == null || enemy.roundSeen < round
+                    || !enemy.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared)) continue;
+            if (enemy.priority > maxScore) {
+                maxScore = enemy.priority;
+                finalTarget = enemy.location;
+            }
+        }
+        if (maxScore > 0 && finalTarget != null) {
+            rc.setIndicatorLine(curr, finalTarget, 255, 0, 0);
+            return finalTarget;
+        }
+        
+        for(MapLocation loc: rc.getAllLocationsWithinRadiusSquared(curr, 16)) {
+            if(rc.canAttack(loc)) {
+                return loc;
+            }
+        }
+        
+        return null;
+    }
+    
+    public int scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
+        int score = 0;
+        
+        switch(info.getType()) {
+            case AMPLIFIER:
+                score = 1;
+                break;
+            case BOOSTER:
+                score = 5;
+                break;
+            case CARRIER:
+                score = 1;
+                break;
+            case DESTABILIZER:
+                score = 6;
+                break;
+            case HEADQUARTERS:
+                return 0; // can't attack HQ
+            case LAUNCHER:
+                score = 2;
+                break;
+        }
+        
+        
+        if(info.getHealth() < info.getType().getMaxHealth()) {
+            score += DAMAGED_MODIFIER;
+        }
+        
+        if(info.getHealth() <= getWeight() / 5) {
+            score += EXECUTE_MODIFIER;   // could add variable for this too
+        }
+        
+        return score;
+    }
+    
     public int getWeight() throws GameActionException {
         return rc.getResourceAmount(ResourceType.ADAMANTIUM)
             + rc.getResourceAmount(ResourceType.MANA)
@@ -173,12 +273,12 @@ public strictfp class CarrierRobot extends Robot {
                 case MANA:
                     score = 10;
                     if(prevResource == ResourceType.ADAMANTIUM) {
-                        score += 20;
+                        score += 20000000;
                     }
                 case ADAMANTIUM:
                     score = 1;
                     if(prevResource == ResourceType.MANA) {
-                        score += 20;
+                        score += 20000000;
                     }
                 case ELIXIR:
                     score = 1.5;
