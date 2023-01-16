@@ -18,6 +18,7 @@ public strictfp class CarrierRobot extends Robot {
     MapLocation enemyLastSeenLoc = null;
     StinkyNavigation snav;
     MapCache cache;
+    ResourceType prevResource = null;
 
     public CarrierRobot(RobotController rc) {
         super(rc);
@@ -171,8 +172,14 @@ public strictfp class CarrierRobot extends Robot {
             switch (wdata.type) {
                 case MANA:
                     score = 10;
+                    if(prevResource == ResourceType.ADAMANTIUM) {
+                        score += 20;
+                    }
                 case ADAMANTIUM:
                     score = 1;
+                    if(prevResource == ResourceType.MANA) {
+                        score += 20;
+                    }
                 case ELIXIR:
                     score = 1.5;
             }
@@ -231,7 +238,8 @@ public strictfp class CarrierRobot extends Robot {
         }
         return best;
     }
-
+    
+    // find an HQ and deposit resources there
     public boolean tryTransferHQ() throws GameActionException {
         MapLocation hq = selectHQ();
         MapLocation curr = rc.getLocation();

@@ -1,14 +1,15 @@
 # runs all maps for two bots
 
 import os
+import time
 
 # these constants are probably fine
 maps = ['AllElements', 'DefaultMap', 'SmallElements', 'maptestsmall']
 
 
 # set these
-teamA = 'sphere'
-teamB = 'sphere1_14_1'
+teamA = 'sphere1_16_1'
+teamB = 'sphere1_14_3'
 
 def get_winner(data):
     return data[-6].split(' ')[-4]
@@ -16,7 +17,9 @@ def get_winner(data):
 def run_matches(teamA, teamB, score):
     map_score = {}
     for map in maps:
+        current = time.time()
         result = os.popen('gradlew run -Pmaps={map} -PteamA={a} -PteamB={b} -Pdebug=false -Penableprofiler=false -PoutputVerbose=false -PshowIndicators=false'.format(map = map, a = teamA, b = teamB)).read().splitlines()
+        print('Last round took {} seconds'.format(time.time() - current))
         winner = get_winner(result)[1:2]
         if winner == 'A':
             score[0] += 1
