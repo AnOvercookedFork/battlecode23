@@ -26,7 +26,8 @@ public strictfp class Communications {
     public static final int ENEMIES_SIZE = 16;
     public static final int HQ_INDEX = 48;
     public static final int AMP_INDEX = 52; // size 2
-    public static final int ENEMY_SNIPE_START = 54; // fills remainder of array
+    public static final int ENEMY_LOCATION = 54; // just the one
+    public static final int ENEMY_SNIPE_START = 55; // fills remainder of array
 
     public static int[] array = new int[64];
     private static int lastRead = -1;
@@ -111,52 +112,21 @@ public strictfp class Communications {
     public static MapLocation intToLoc(int i) {
         return new MapLocation(i % 64, (i >> 6) % 64);
     }
-
-    /*
-
-    public static void tryAddIsland(RobotController rc, MapLocation location) throws GameActionException {
-        if (rc.canWriteSharedArray(0, 0)) {
-            for (int i = 0; i < 10; i++) {
-                if (array[ISLAND_INDEX + i] >> 12 == 0) { // 13th bit will be set to 1 so 0,0 is a valid location
-                    array[ISLAND_INDEX + i] = 1 << 12 + locToInt(location);
-                    rc.writeSharedArray(ISLAND_INDEX + i, array[ISLAND_INDEX + i]);
-                } else if (location.equals(intToLoc(array[ISLAND_INDEX + i]))) {
-                    System.out.println("This island has already been added");
-                    break;
-                }
-            }
-        }
+    
+    public static void panicReportEnemy(RobotController rc, MapLocation loc) throws GameActionException {
+        if (!rc.canWriteSharedArray(0, 0)) return;
+        array[ENEMY_LOCATION] = (1 << 12) + locToInt(loc);
+        rc.writeSharedArray(ENEMY_LOCATION, array[ENEMY_LOCATION]);
     }
-
-    public static void tryAddWell(RobotController rc, WellInfo well) throws GameActionException {
-        int index = AD_INDEX;
-        switch (well.getResourceType()) {
-        case ADAMANTIUM:
-            index = AD_INDEX;
-            break;
-        case MANA:
-            index = MN_INDEX;
-            break;
-        case ELIXIR:
-            index = EL_INDEX;
-            break;
-        default:
-            System.out.println("Unknown resource type?");
-        }
-
-        if (rc.canWriteSharedArray(0, 0)) {
-            for (int i = 0; i < 5; i++) {
-                if (array[index + i] >> 12 == 0) {
-                    array[index + i] = 1 << 12 + locToInt(well.getMapLocation());
-                    rc.writeSharedArray(index + i, array[index + i]);
-                } else if (well.getMapLocation().equals(intToLoc(array[index + i]))) {
-                    System.out.println("This well has already been added");
-                    break;
-                }
-            }
-        }
+    
+    public static MapLocation getReportedEnemy(RobotController rc) throws GameActionException {
+        return array[ENEMY_LOCATION] == 0 ? null : intToLoc(array[ENEMY_LOCATION]);
     }
-    */
+    
+    public static void clearReportEnemy(RobotController rc) throws GameActionException {
+        if (!rc.canWriteSharedArray(0, 0)) return;
+        rc.writeSharedArray(ENEMY_LOCATION, 0);
+    }
 
     public static void reportWell(RobotController rc, MapCache cache) throws GameActionException {
         if (!rc.canWriteSharedArray(0, 0)) return;

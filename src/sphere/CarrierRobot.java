@@ -10,7 +10,7 @@ public strictfp class CarrierRobot extends Robot {
     public static final int FLEE_TURNS = 1;
     public static final int EXECUTE_MODIFIER = 100;
     public static final int DAMAGED_MODIFIER = 15;
-    
+
     public static MapLocation[] hqs;
     int turnsSinceSeenEnemy = 0;
     double collectTargetWeight;
@@ -31,7 +31,7 @@ public strictfp class CarrierRobot extends Robot {
 
     public void run() throws GameActionException {
         Communications.readArray(rc);
-        
+
         if (hqs == null) {
             hqs = Communications.getHQs(rc);
         }
@@ -55,30 +55,28 @@ public strictfp class CarrierRobot extends Robot {
 
         if (rc.getAnchor() != null) {
             tryPlaceAnchor();
-            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
-                    && tryFindIsland()) {
+            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryFindIsland()) {
                 processNearbyRobots();
-                if (tryPlaceAnchor()) break;
+                if (tryPlaceAnchor())
+                    break;
             }
         }
         if (rc.getAnchor() == null) {
             boolean finishedDeposit = tryFinishDeposit();
             while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
-                    && getWeight() < GameConstants.CARRIER_CAPACITY
-                    && tryCollect()) {}
-            while (finishedDeposit
-                    && rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
-                    && getWeight() < GameConstants.CARRIER_CAPACITY
-                    && tryFindResources()) {
+                    && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
+            }
+            while (finishedDeposit && rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
+                    && getWeight() < GameConstants.CARRIER_CAPACITY && tryFindResources()) {
                 if (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
                     processNearbyRobots();
                 }
                 while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
-                        && getWeight() < GameConstants.CARRIER_CAPACITY
-                        && tryCollect()) {}
+                        && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
+                }
             }
         }
-        
+
         if (getWeight() == GameConstants.CARRIER_CAPACITY) {
             tryTransferHQ();
         }
@@ -118,7 +116,7 @@ public strictfp class CarrierRobot extends Robot {
 
         MapLocation nearestHQ = hqs[0];
         int nearestHQdist = nearestHQ.distanceSquaredTo(curr);
-        
+
         int dist;
         for (int i = 1; i < hqs.length; i++) {
             dist = hqs[i].distanceSquaredTo(curr);
@@ -131,24 +129,24 @@ public strictfp class CarrierRobot extends Robot {
         if (nearestDangerousEnemy != null) {
             enemyLastSeenLoc = nearestDangerousEnemy;
             turnsSinceSeenEnemy = 0;
-            
-            if(potentialDamage > enemyHp && getWeight() > 5 && nearestHQdist > 8) {
+
+            if (potentialDamage > enemyHp && getWeight() > 5 && nearestHQdist > 8) {
+                System.out.println("defending aggressively");
                 if (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
                     snav.tryNavigate(nearestDangerousEnemy);
                 }
-                if(rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
+                if (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
                     MapLocation target = getTarget(rc);
-                    if(target != null) {
-                        if(rc.canAttack(target)) {
+                    if (target != null) {
+                        if (rc.canAttack(target)) {
                             rc.attack(target);
-                        }
-                        else {
+                        } else {
                             System.out.println("wat");
                         }
                     }
                 }
             }
-            
+
             if (rc.getHealth() <= PANIC_HEALTH && getWeight() >= 5 && rc.canAttack(nearestDangerousEnemy)) {
                 rc.attack(nearestDangerousEnemy);
             }
@@ -162,32 +160,34 @@ public strictfp class CarrierRobot extends Robot {
 
         if (enemyLastSeenLoc != null && turnsSinceSeenEnemy <= FLEE_TURNS) {
             Direction fleeDir = enemyLastSeenLoc.directionTo(curr);
-            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
-                    && tryFuzzy(fleeDir)) {}
+            while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryFuzzy(fleeDir)) {
+            }
         }
     }
 
     public MapLocation getTarget(RobotController rc) throws GameActionException {
-        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());  // costs about 100 bytecode
+        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
         cache.updateEnemyCache(targets);
         MapLocation finalTarget = null;
         int maxScore = -1;
         MapLocation curr = rc.getLocation();
-        for(RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
-            if (!target.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared)) continue;
+        for (RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
+            if (!target.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared))
+                continue;
             int score = scoreTarget(target, rc);
-            if(score > maxScore) {
+            if (score > maxScore) {
                 maxScore = score;
                 finalTarget = target.location;
             }
         }
-        if(maxScore > 0) {
+        if (maxScore > 0) {
             return finalTarget;
         }
         int round = rc.getRoundNum();
         for (MapCache.EnemyData enemy : cache.enemyCache) {
             if (enemy == null || enemy.roundSeen < round
-                    || !enemy.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared)) continue;
+                    || !enemy.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared))
+                continue;
             if (enemy.priority > maxScore) {
                 maxScore = enemy.priority;
                 finalTarget = enemy.location;
@@ -196,55 +196,53 @@ public strictfp class CarrierRobot extends Robot {
         if (maxScore > 0 && finalTarget != null) {
             return finalTarget;
         }
-        
-        for(MapLocation loc: rc.getAllLocationsWithinRadiusSquared(curr, 16)) {
-            if(rc.canAttack(loc)) {
+
+        for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(curr, 16)) {
+            if (rc.canAttack(loc)) {
                 return loc;
             }
         }
-        
+
         return null;
     }
-    
+
     public int scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
         int score = 0;
-        
-        switch(info.getType()) {
-            case AMPLIFIER:
-                score = 1;
-                break;
-            case BOOSTER:
-                score = 5;
-                break;
-            case CARRIER:
-                score = 1;
-                break;
-            case DESTABILIZER:
-                score = 6;
-                break;
-            case HEADQUARTERS:
-                return 0; // can't attack HQ
-            case LAUNCHER:
-                score = 2;
-                break;
+
+        switch (info.getType()) {
+        case AMPLIFIER:
+            score = 1;
+            break;
+        case BOOSTER:
+            score = 5;
+            break;
+        case CARRIER:
+            score = 1;
+            break;
+        case DESTABILIZER:
+            score = 6;
+            break;
+        case HEADQUARTERS:
+            return 0; // can't attack HQ
+        case LAUNCHER:
+            score = 2;
+            break;
         }
-        
-        
-        if(info.getHealth() < info.getType().getMaxHealth()) {
+
+        if (info.getHealth() < info.getType().getMaxHealth()) {
             score += DAMAGED_MODIFIER;
         }
-        
-        if(info.getHealth() <= getWeight() / 5) {
-            score += EXECUTE_MODIFIER;   // could add variable for this too
+
+        if (info.getHealth() <= getWeight() / 5) {
+            score += EXECUTE_MODIFIER; // could add variable for this too
         }
-        
+
         return score;
     }
-    
+
     public int getWeight() throws GameActionException {
-        return rc.getResourceAmount(ResourceType.ADAMANTIUM)
-            + rc.getResourceAmount(ResourceType.MANA)
-            + rc.getResourceAmount(ResourceType.ELIXIR);
+        return rc.getResourceAmount(ResourceType.ADAMANTIUM) + rc.getResourceAmount(ResourceType.MANA)
+                + rc.getResourceAmount(ResourceType.ELIXIR);
     }
 
     public boolean tryCollect() throws GameActionException {
@@ -270,25 +268,26 @@ public strictfp class CarrierRobot extends Robot {
         MapLocation curr = rc.getLocation();
         double score = 0;
         for (MapCache.WellData wdata : cache.wellCache) {
-            if (wdata == null) continue;
+            if (wdata == null)
+                continue;
             switch (wdata.type) {
-                case MANA:
-                    if(prevResource != ResourceType.MANA) {
-                        score = 1.5;
-                    } else {
-                        score = 1;
-                    }
-                    break;
-                case ADAMANTIUM:
-                    if(prevResource != ResourceType.ADAMANTIUM) {
-                        score = 1.5;
-                    } else {
-                        score = 1;
-                    }
-                    break;
-                case ELIXIR:
+            case MANA:
+                if (prevResource != ResourceType.MANA) {
                     score = 1.5;
-                    break;
+                } else {
+                    score = 1;
+                }
+                break;
+            case ADAMANTIUM:
+                if (prevResource != ResourceType.ADAMANTIUM) {
+                    score = 1.5;
+                } else {
+                    score = 1;
+                }
+                break;
+            case ELIXIR:
+                score = 1.5;
+                break;
             }
             score /= (Math.sqrt(curr.distanceSquaredTo(wdata.location)) + 1);
             if (score > bestScore) {
@@ -296,7 +295,7 @@ public strictfp class CarrierRobot extends Robot {
                 best = wdata.location;
             }
         }
-        
+
         return best;
     }
 
@@ -314,10 +313,10 @@ public strictfp class CarrierRobot extends Robot {
             collectTarget = randomLocation();
             collectTargetWeight = RANDOM_LOC_WEIGHT;
         }
-        
+
         WellInfo[] nearbyWells = rc.senseNearbyWells(-1);
         cache.updateWellCache(nearbyWells);
-        
+
         MapLocation selectedWell = selectWell();
         if (selectedWell != null) {
             collectTarget = selectedWell;
@@ -344,7 +343,7 @@ public strictfp class CarrierRobot extends Robot {
         }
         return best;
     }
-    
+
     // find an HQ and deposit resources there
     public boolean tryTransferHQ() throws GameActionException {
         MapLocation hq = selectHQ();
@@ -357,9 +356,11 @@ public strictfp class CarrierRobot extends Robot {
 
         for (ResourceType type : resourceTypes) {
             int amount = rc.getResourceAmount(type);
-            if (amount == 0) continue;
+            if (amount == 0)
+                continue;
             for (MapLocation hqLoc : hqs) {
-                if (hqLoc == null) continue;
+                if (hqLoc == null)
+                    continue;
                 if (rc.canTransferResource(hqLoc, type, amount)) {
                     rc.transferResource(hqLoc, type, amount);
                     prevResource = type;
@@ -372,18 +373,20 @@ public strictfp class CarrierRobot extends Robot {
 
         return success;
     }
-    
+
     // check for resources to deposit other than the one that was just deposited
     public boolean tryFinishDeposit() throws GameActionException {
 
         boolean hqNearby = false;
         MapLocation curr = rc.getLocation();
-        
+
         for (ResourceType type : resourceTypes) {
             int amount = rc.getResourceAmount(type);
-            if (amount == 0) continue;
+            if (amount == 0)
+                continue;
             for (MapLocation hqLoc : hqs) {
-                if (hqLoc == null) continue;
+                if (hqLoc == null)
+                    continue;
                 if (hqLoc.distanceSquaredTo(curr) <= 2) {
                     hqNearby = true;
                     if (rc.canTransferResource(hqLoc, type, amount)) {
