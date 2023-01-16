@@ -57,11 +57,11 @@ public strictfp class HeadquartersRobot extends Robot {
             rc.buildAnchor(Anchor.STANDARD);
         }
 
-        if (!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost) {
-            tryBuildCarrier();
-        }
         if (!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) {
             tryBuildLauncher();
+        }
+        if (!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost) {
+            tryBuildCarrier();
         }
 
         turns++;
