@@ -22,6 +22,8 @@ public strictfp class LauncherRobot extends Robot {
     MapLocation[] reflectedHQs;
     int hqTargetIndex = 0;
     
+    HQLocations hqLocs;
+    MapLocation hqTarget;
 
     public LauncherRobot(RobotController rc) throws GameActionException {
         super(rc);
@@ -53,6 +55,8 @@ public strictfp class LauncherRobot extends Robot {
 
         snav = new StinkyNavigation(rc);
         cache = new MapCache(rc, 4, 8, 16);
+        hqLocs = new HQLocations(rc);
+        hqTarget = null;
     }
 
     public void run() throws GameActionException {
@@ -65,6 +69,7 @@ public strictfp class LauncherRobot extends Robot {
         cache.updateIslandCache();
         Communications.readIslands(rc, cache);
         Communications.reportIsland(rc, cache);
+        hqLocs.updateHQSymms(rc);
 
         while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                 && tryAttack()) {}
@@ -115,8 +120,8 @@ public strictfp class LauncherRobot extends Robot {
         if (target != null) {
             if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ)
                     || targetWeight < GIVE_UP_WEIGHT) {
-                if (target.equals(reflectedHQs[hqTargetIndex])) {
-                    hqTargetIndex = (hqTargetIndex + 1) % reflectedHQs.length;
+                if (target.equals(hqTarget)) {
+                    hqTarget = null;
                 }
                 target = null;
 
@@ -128,7 +133,10 @@ public strictfp class LauncherRobot extends Robot {
 
             //target = new MapLocation(rc.getMapWidth() - curr.x - 1, rc.getMapHeight() - curr.y - 1);
             //targetWeight = RANDOM_LOC_WEIGHT;
-            target = reflectedHQs[hqTargetIndex];
+            if (hqTarget == null) {
+                hqTarget = hqLocs.getHQRushLocation(rc);
+            }
+            target = hqTarget;
             targetWeight = RANDOM_LOC_WEIGHT;
         }
 
