@@ -3,23 +3,25 @@ package sphere;
 import battlecode.common.*;
 
 public strictfp class LauncherRobot extends Robot {
+    public static final double RANDOM_LOC_WEIGHT = 100;
+    public static final double INITIAL_LOC_WEIGHT = 100;
+    public static final double FOUND_BASE_WEIGHT = 100;
+    public static final double GIVE_UP_WEIGHT = 10;
+    public static final int GIVE_UP_RADIUS_SQ = 2;
     private static final int EXECUTE_THRESHOLD = 6; // increased priority against robots with this hp or under
     private static final int RESOURCE_THRESHOLD = 30; // increased priority on resource holding carriers
+    public static final int EXECUTE_MODIFIER = 100;
+    public static final int DAMAGED_MODIFIER = 15;
+    public static final int ISLAND_MODIFIER = 0;
     
     MapLocation target;
     double targetWeight;
     MapLocation leader;
     MapCache cache;
     StinkyNavigation snav;
-
-    public static final double RANDOM_LOC_WEIGHT = 100;
-    public static final double INITIAL_LOC_WEIGHT = 100;
-    public static final double FOUND_BASE_WEIGHT = 100;
-    public static final double GIVE_UP_WEIGHT = 10;
-    public static final int GIVE_UP_RADIUS_SQ = 2;
-
     MapLocation[] reflectedHQs;
     int hqTargetIndex = 0;
+    
 
     public LauncherRobot(RobotController rc) throws GameActionException {
         super(rc);
@@ -256,15 +258,15 @@ public strictfp class LauncherRobot extends Robot {
     	
         
         if(rc.senseIsland(info.location) != -1) {
-        	score += 10;
+        	score += ISLAND_MODIFIER;
         }
         
         if(info.getHealth() < info.getType().getMaxHealth()) {
-        	score += 15;
+        	score += DAMAGED_MODIFIER;
         }
         
         if(info.getHealth() <= EXECUTE_THRESHOLD) {
-            score += 100;   // could add variable for this too
+            score += EXECUTE_MODIFIER;   // could add variable for this too
     	}
     	
     	return score;

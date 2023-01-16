@@ -3,26 +3,20 @@ package sphere;
 import battlecode.common.*;
 
 public strictfp class CarrierRobot extends Robot {
-
-    MapLocation collectTarget;
-    double collectTargetWeight;
-
-    MapLocation islandTarget;
-    double islandTargetWeight;
-    
-    MapLocation enemyLastSeenLoc = null;
-    int turnsSinceSeenEnemy = 0;
-
-    StinkyNavigation snav;
-
     public static final double RANDOM_LOC_WEIGHT = 0;
     public static final double KNOWN_LOC_WEIGHT = 100;
     public static final double MIN_HEALTH_TAKE_ANCHOR = 10;
     public static final int PANIC_HEALTH = 12;
     public static final int FLEE_TURNS = 2;
-
-    public static MapLocation[] hqs;
     
+    public static MapLocation[] hqs;
+    int turnsSinceSeenEnemy = 0;
+    double collectTargetWeight;
+    double islandTargetWeight;
+    MapLocation collectTarget;
+    MapLocation islandTarget;
+    MapLocation enemyLastSeenLoc = null;
+    StinkyNavigation snav;
     MapCache cache;
 
     public CarrierRobot(RobotController rc) {
@@ -261,7 +255,8 @@ public strictfp class CarrierRobot extends Robot {
 
         return success;
     }
-
+    
+    // check for resources to deposit other than the one that was just deposited
     public boolean tryFinishDeposit() throws GameActionException {
 
         boolean hqNearby = false;
