@@ -105,7 +105,7 @@ public strictfp class HeadquartersRobot extends Robot {
         if(enemyLoc != null) {
             Communications.panicReportEnemy(rc, enemyLoc);
         }
-        cache.updateEnemyCache(nearbyRobots);
+        //cache.updateEnemyCache(nearbyRobots);
     }
 
     // tasks for the first HQ to do for comms

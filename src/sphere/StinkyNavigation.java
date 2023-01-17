@@ -28,6 +28,9 @@ public strictfp class StinkyNavigation {
         return 0;
     }
 
+    public void reset() {
+        resetRound = rc.getRoundNum();
+    }
 
     public Direction navigate(MapLocation loc) throws GameActionException {
         Direction bestDir = Direction.CENTER;

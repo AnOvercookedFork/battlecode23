@@ -30,7 +30,9 @@ public strictfp class RobotPlayer {
         }
 
         while (true) {
+            int round = 0;
             try {
+                round = rc.getRoundNum();
                 robot.run();
             } catch (GameActionException e) {
                 System.out.println(rc.getType() + " Exception");
@@ -39,6 +41,9 @@ public strictfp class RobotPlayer {
                 System.out.println(rc.getType() + " Exception");
                 e.printStackTrace();
             } finally {
+                if (round != rc.getRoundNum()) {
+                    System.out.println("Oh no! I've run out of bytecodes :O");
+                }
                 Clock.yield();
             }
             turnCount += 1;

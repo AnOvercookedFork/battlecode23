@@ -24,43 +24,22 @@ public strictfp class LauncherRobot extends Robot {
 
     HQLocations hqLocs;
     MapLocation hqTarget;
+    Micro micro;
+
+    RobotInfo[] prevTargets;
 
     public LauncherRobot(RobotController rc) throws GameActionException {
         super(rc);
-        Communications.readArray(rc);
-
-        MapLocation[] hqs = new MapLocation[4];
-
-        hqs[0] = Communications.getHQ(rc, 0);
-        hqs[1] = Communications.getHQ(rc, 1);
-        hqs[2] = Communications.getHQ(rc, 2);
-        hqs[3] = Communications.getHQ(rc, 3);
-
-        int numHQs = 1;
-        if (hqs[3] != null) {
-            numHQs = 4;
-        } else if (hqs[2] != null) {
-            numHQs = 3;
-        } else if (hqs[1] != null) {
-            numHQs = 2;
-        }
-
-        reflectedHQs = new MapLocation[numHQs];
-        // reflectedHQs[0] = rotate180(hq1);
-        // reflectedHQs[1] = reflectHorizontal(hq1);
-        // reflectedHQs[2] = reflectVertical(hq1);
-        for (int i = 0; i < numHQs; i++) {
-            reflectedHQs[i] = rotate180(hqs[i]);
-        }
-
         snav = new StinkyNavigation(rc);
-        cache = new MapCache(rc, 4, 8, 16);
+        cache = new MapCache(rc, 2, 4, 16);
         hqLocs = new HQLocations(rc);
         hqTarget = null;
+        micro = new Micro(rc);
     }
 
     public void run() throws GameActionException {
         processNearbyRobots();
+        prevTargets = null;
 
         Communications.readArray(rc);
         cache.updateWellCache(rc.senseNearbyWells());
@@ -71,10 +50,10 @@ public strictfp class LauncherRobot extends Robot {
         Communications.reportIsland(rc, cache);
         hqLocs.updateHQSymms(rc);
 
-        while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryAttack()) {
+        while (rc.isActionReady() && tryAttack()) {
         }
-        while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryMove()) {
-            while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryAttack()) {
+        while (rc.isMovementReady() && tryMove()) {
+            while (rc.isActionReady() && tryAttack()) {
             }
         }
 
@@ -88,12 +67,12 @@ public strictfp class LauncherRobot extends Robot {
         Team team = rc.getTeam();
         leader = null;
         int lowestID = rc.getID();
+
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
                 switch (robot.type) {
                 case LAUNCHER:
                     if (robot.ID < lowestID) {
-                        lowestID = robot.ID;
                         leader = robot.location;
                     }
                     break;
@@ -102,7 +81,7 @@ public strictfp class LauncherRobot extends Robot {
 
             }
         }
-        cache.updateEnemyCache(nearbyRobots);
+        //cache.updateEnemyCache(nearbyRobots);
     }
 
     public boolean tryAttack() throws GameActionException {
@@ -111,6 +90,47 @@ public strictfp class LauncherRobot extends Robot {
             rc.attack(target);
             return true;
         }
+        MapLocation curr = rc.getLocation();
+        int x = curr.x;
+        int y = curr.y;
+        do {
+        if (rc.canAttack(new MapLocation(x + 4, y + 0))) {rc.attack(new MapLocation(x + 4, y + 0));break;}
+        if (rc.canAttack(new MapLocation(x + 0, y + 4))) {rc.attack(new MapLocation(x + 0, y + 4));break;}
+        if (rc.canAttack(new MapLocation(x + 0, y + -4))) {rc.attack(new MapLocation(x + 0, y + -4));break;}
+        if (rc.canAttack(new MapLocation(x + -4, y + 0))) {rc.attack(new MapLocation(x + -4, y + 0));break;}
+        if (rc.canAttack(new MapLocation(x + 3, y + 2))) {rc.attack(new MapLocation(x + 3, y + 2));break;}
+        if (rc.canAttack(new MapLocation(x + 3, y + -2))) {rc.attack(new MapLocation(x + 3, y + -2));break;}
+        if (rc.canAttack(new MapLocation(x + 2, y + 3))) {rc.attack(new MapLocation(x + 2, y + 3));break;}
+        if (rc.canAttack(new MapLocation(x + 2, y + -3))) {rc.attack(new MapLocation(x + 2, y + -3));break;}
+        if (rc.canAttack(new MapLocation(x + -2, y + 3))) {rc.attack(new MapLocation(x + -2, y + 3));break;}
+        if (rc.canAttack(new MapLocation(x + -2, y + -3))) {rc.attack(new MapLocation(x + -2, y + -3));break;}
+        if (rc.canAttack(new MapLocation(x + -3, y + 2))) {rc.attack(new MapLocation(x + -3, y + 2));break;}
+        if (rc.canAttack(new MapLocation(x + -3, y + -2))) {rc.attack(new MapLocation(x + -3, y + -2));break;}
+        if (rc.canAttack(new MapLocation(x + 3, y + 1))) {rc.attack(new MapLocation(x + 3, y + 1));break;}
+        if (rc.canAttack(new MapLocation(x + 3, y + -1))) {rc.attack(new MapLocation(x + 3, y + -1));break;}
+        if (rc.canAttack(new MapLocation(x + 1, y + 3))) {rc.attack(new MapLocation(x + 1, y + 3));break;}
+        if (rc.canAttack(new MapLocation(x + 1, y + -3))) {rc.attack(new MapLocation(x + 1, y + -3));break;}
+        if (rc.canAttack(new MapLocation(x + -1, y + 3))) {rc.attack(new MapLocation(x + -1, y + 3));break;}
+        if (rc.canAttack(new MapLocation(x + -1, y + -3))) {rc.attack(new MapLocation(x + -1, y + -3));break;}
+        if (rc.canAttack(new MapLocation(x + -3, y + 1))) {rc.attack(new MapLocation(x + -3, y + 1));break;}
+        if (rc.canAttack(new MapLocation(x + -3, y + -1))) {rc.attack(new MapLocation(x + -3, y + -1));break;}
+        if (rc.canAttack(new MapLocation(x + 3, y + 0))) {rc.attack(new MapLocation(x + 3, y + 0));break;}
+        if (rc.canAttack(new MapLocation(x + 0, y + 3))) {rc.attack(new MapLocation(x + 0, y + 3));break;}
+        if (rc.canAttack(new MapLocation(x + 0, y + -3))) {rc.attack(new MapLocation(x + 0, y + -3));break;}
+        if (rc.canAttack(new MapLocation(x + -3, y + 0))) {rc.attack(new MapLocation(x + -3, y + 0));break;}
+        if (rc.canAttack(new MapLocation(x + 2, y + 2))) {rc.attack(new MapLocation(x + 2, y + 2));break;}
+        if (rc.canAttack(new MapLocation(x + 2, y + -2))) {rc.attack(new MapLocation(x + 2, y + -2));break;}
+        if (rc.canAttack(new MapLocation(x + -2, y + 2))) {rc.attack(new MapLocation(x + -2, y + 2));break;}
+        if (rc.canAttack(new MapLocation(x + -2, y + -2))) {rc.attack(new MapLocation(x + -2, y + -2));break;}
+        if (rc.canAttack(new MapLocation(x + 2, y + 1))) {rc.attack(new MapLocation(x + 2, y + 1));break;}
+        if (rc.canAttack(new MapLocation(x + 2, y + -1))) {rc.attack(new MapLocation(x + 2, y + -1));break;}
+        if (rc.canAttack(new MapLocation(x + 1, y + 2))) {rc.attack(new MapLocation(x + 1, y + 2));break;}
+        if (rc.canAttack(new MapLocation(x + 1, y + -2))) {rc.attack(new MapLocation(x + 1, y + -2));break;}
+        if (rc.canAttack(new MapLocation(x + -1, y + 2))) {rc.attack(new MapLocation(x + -1, y + 2));break;}
+        if (rc.canAttack(new MapLocation(x + -1, y + -2))) {rc.attack(new MapLocation(x + -1, y + -2));break;}
+        if (rc.canAttack(new MapLocation(x + -2, y + 1))) {rc.attack(new MapLocation(x + -2, y + 1));break;}
+        if (rc.canAttack(new MapLocation(x + -2, y + -1))) {rc.attack(new MapLocation(x + -2, y + -1));break;}
+        } while (false);
         return false;
     }
 
@@ -140,7 +160,7 @@ public strictfp class LauncherRobot extends Robot {
         }
 
         RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-        RobotInfo nearest = null;
+        /*RobotInfo nearest = null;
         int nearestDist = Integer.MAX_VALUE;
         int dist;
         RobotInfo nearestDangerous = null;
@@ -166,19 +186,30 @@ public strictfp class LauncherRobot extends Robot {
         if (nearest != null) {
             target = nearest.getLocation();
             targetWeight = FOUND_BASE_WEIGHT;
+        }*/
+
+        boolean areAttackableEnemies = false;
+        for (RobotInfo enemy : targets) {
+            if (enemy.type != RobotType.HEADQUARTERS) {
+                areAttackableEnemies = true;
+                target = enemy.location;
+                targetWeight = FOUND_BASE_WEIGHT;
+                break;
+            }
         }
 
         boolean success = false;
 
         targetWeight *= 0.8;
 
-        if (nearestDangerous != null) {
-            Direction away = nearestDangerous.location.directionTo(curr);
-            tryFuzzy(away);
-            success = true;
+        if (areAttackableEnemies) {
+            success = micro.doMicro();
+            if (success) {
+                snav.reset();
+            }
         } else {
             if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                    && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0) && snav.tryNavigate(leader)) {
+                    && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(leader)) {
                 success = true;
             } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
                     && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
@@ -192,7 +223,7 @@ public strictfp class LauncherRobot extends Robot {
 
     public MapLocation getTarget(RobotController rc) throws GameActionException {
         RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
-        cache.updateEnemyCache(targets);
+        //cache.updateEnemyCache(targets);
         MapLocation finalTarget = null;
         int maxScore = -1;
         MapLocation curr = rc.getLocation();
@@ -205,10 +236,7 @@ public strictfp class LauncherRobot extends Robot {
                 finalTarget = target.location;
             }
         }
-        if (maxScore > 0) {
-            return finalTarget;
-        }
-        int round = rc.getRoundNum();
+        /*int round = rc.getRoundNum();
         for (MapCache.EnemyData enemy : cache.enemyCache) {
             if (enemy == null || enemy.roundSeen < round
                     || !enemy.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
@@ -217,15 +245,27 @@ public strictfp class LauncherRobot extends Robot {
                 maxScore = enemy.priority;
                 finalTarget = enemy.location;
             }
-        }
-        if (maxScore > 0 && finalTarget != null) {
-            return finalTarget;
+        }*/
+        if (prevTargets != null) {
+            for (RobotInfo target : prevTargets) {
+                if (target.type == RobotType.HEADQUARTERS) {
+
+                }
+                if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
+                    continue;
+                
+                int score = scoreTarget(target, rc);
+                if (score > maxScore) {
+                    maxScore = score;
+                    finalTarget = target.location;
+                }
+            }
         }
 
-        for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(curr, 16)) {
-            if (rc.canAttack(loc)) {
-                return loc;
-            }
+        prevTargets = targets;
+
+        if (maxScore > 0 && finalTarget != null) {
+            return finalTarget;
         }
 
         return null;
@@ -259,7 +299,7 @@ public strictfp class LauncherRobot extends Robot {
             break;
         }
 
-        if (rc.senseIsland(info.location) != -1) {
+        if (rc.canSenseLocation(info.location) && rc.senseIsland(info.location) != -1) {
             score += ISLAND_MODIFIER;
         }
 
