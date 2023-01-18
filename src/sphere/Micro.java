@@ -92,10 +92,10 @@ public strictfp class Micro {
             if (robot.location.isWithinDistanceSquared(curr, 5)) allyDPS += robotDPS;
 
             //allyDPS += robotDPS / robot.location.distanceSquaredTo(l);
-            /*if (robot.ID < leaderid) {
+            if (robot.ID < leaderid) {
                 leaderDist = robot.location.distanceSquaredTo(l);
                 leaderid = robot.ID;
-            }*/
+            }
         }
 
         int safety() {
@@ -118,10 +118,10 @@ public strictfp class Micro {
             if (inRange && canAttack && !otherInRange) return true;
             if (!inRange && canAttack && otherInRange) return false;
             if (!hurt) {
-                if (allyDPS > other.allyDPS) return true;
-                if (allyDPS < other.allyDPS) return false;
-                //if (leaderDist < other.leaderDist) return true;
-                //if (other.leaderDist < leaderDist) return false;
+                //if (allyDPS > other.allyDPS) return true;
+                //if (allyDPS < other.allyDPS) return false;
+                if (leaderDist < other.leaderDist) return true;
+                if (other.leaderDist < leaderDist) return false;
             }
             if (inRange || !canAttack) return minDistToEnemy >= other.minDistToEnemy;
             return minDistToEnemy <= other.minDistToEnemy;

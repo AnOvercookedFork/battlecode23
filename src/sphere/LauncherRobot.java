@@ -178,7 +178,7 @@ public strictfp class LauncherRobot extends Robot {
             success = micro.doMicro();
         } else {
             if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                    && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(leader)) {
+                    && (rc.getRoundNum() % 2 == 0 || attackableEnemies == 0) && snav.tryNavigate(leader)) {
                 success = true;
             } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
                     && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
