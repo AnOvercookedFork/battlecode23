@@ -42,9 +42,7 @@ public strictfp class LauncherRobot extends Robot {
         prevTargets = null;
 
         Communications.readArray(rc);
-        cache.updateWellCache(rc.senseNearbyWells());
-        Communications.readWells(rc, cache);
-        Communications.reportWell(rc, cache);
+
         cache.updateIslandCache();
         Communications.readIslands(rc, cache);
         Communications.reportIsland(rc, cache);
@@ -58,6 +56,14 @@ public strictfp class LauncherRobot extends Robot {
         }
 
         //rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
+        //
+        if (Clock.getBytecodesLeft() > 1000) {
+            cache.updateWellCache(rc.senseNearbyWells());
+            Communications.readWells(rc, cache);
+            Communications.reportWell(rc, cache);
+        } else {
+            System.out.println("Skipping wells");
+        }
 
     }
 
@@ -182,31 +188,35 @@ public strictfp class LauncherRobot extends Robot {
                 }
             }
         }
+        */
 
-        if (nearest != null) {
-            target = nearest.getLocation();
-            targetWeight = FOUND_BASE_WEIGHT;
-        }*/
-
-        boolean areAttackableEnemies = false;
+        
+        int attackableEnemies = 0;
+        MapLocation nearest = null;
+        int nearestDist = 1000000;
+        int dist;
         for (RobotInfo enemy : targets) {
             if (enemy.type != RobotType.HEADQUARTERS) {
-                areAttackableEnemies = true;
-                target = enemy.location;
-                targetWeight = FOUND_BASE_WEIGHT;
-                break;
+                attackableEnemies++;
+                dist = enemy.location.distanceSquaredTo(curr);
+                if (dist < nearestDist) {
+                    nearest = enemy.location;
+                    nearestDist = dist;
+                }
             }
+        }
+
+        if (nearest != null) {
+            target = nearest;
+            targetWeight = FOUND_BASE_WEIGHT;
         }
 
         boolean success = false;
 
         targetWeight *= 0.8;
 
-        if (areAttackableEnemies) {
+        if (attackableEnemies > 0) {
             success = micro.doMicro();
-            if (success) {
-                snav.reset();
-            }
         } else {
             if (leader != null && curr.distanceSquaredTo(leader) >= 2
                     && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(leader)) {
@@ -225,12 +235,12 @@ public strictfp class LauncherRobot extends Robot {
         RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
         //cache.updateEnemyCache(targets);
         MapLocation finalTarget = null;
-        int maxScore = -1;
+        double maxScore = -1;
         MapLocation curr = rc.getLocation();
         for (RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
             if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
                 continue;
-            int score = scoreTarget(target, rc);
+            double score = scoreTarget(target, rc);
             if (score > maxScore) {
                 maxScore = score;
                 finalTarget = target.location;
@@ -254,7 +264,7 @@ public strictfp class LauncherRobot extends Robot {
                 if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
                     continue;
                 
-                int score = scoreTarget(target, rc);
+                double score = scoreTarget(target, rc);
                 if (score > maxScore) {
                     maxScore = score;
                     finalTarget = target.location;
@@ -271,31 +281,31 @@ public strictfp class LauncherRobot extends Robot {
         return null;
     }
 
-    public int scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
-        int score = 0;
+    public double scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
+        double score = 1 / info.ID;
 
         switch (info.getType()) {
         case AMPLIFIER:
-            score = 1;
+            score += 1;
             break;
         case BOOSTER:
-            score = 5;
+            score += 5;
             break;
         case CARRIER:
             if (info.getResourceAmount(ResourceType.ADAMANTIUM) + info.getResourceAmount(ResourceType.ELIXIR)
                     + info.getResourceAmount(ResourceType.MANA) > RESOURCE_THRESHOLD) {
-                score = 3;
+                score += 3;
             } else {
-                score = 1; // could rewrite this to set to 1 then add if conditions are met
+                score += 1; // could rewrite this to set to 1 then add if conditions are met
             }
             break;
         case DESTABILIZER:
-            score = 6;
+            score += 6;
             break;
         case HEADQUARTERS:
             return 0; // can't attack HQ
         case LAUNCHER:
-            score = 2;
+            score += 2;
             break;
         }
 

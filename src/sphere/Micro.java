@@ -22,7 +22,7 @@ public strictfp class Micro {
 
     static double[] baseDPS = {0, 0, 0, 0, 0, 0};
     static int[] actionRadiusExtended = {0, 0, 0, 0, 0, 0};
-    static int[] hurtHealth = {6, 6, 6, 6, 6, 6};
+    static int[] hurtHealth = {12, 12, 12, 12, 12, 12};
 
 
     static Direction[] dirs = {
@@ -65,6 +65,8 @@ public strictfp class Micro {
         double receivedDPS = 0;
         double targetingDPS = 0;
         double allyDPS = 0;
+        int leaderid = Integer.MAX_VALUE;
+        int leaderDist = 0;
 
         public MicroInfo(Direction d) throws GameActionException {
             this.d = d;
@@ -87,7 +89,13 @@ public strictfp class Micro {
 
         void updateAlly(RobotInfo robot) {
             if (!canMove) return;
-            allyDPS += robotDPS / robot.location.distanceSquaredTo(l);
+            if (robot.location.isWithinDistanceSquared(curr, 5)) allyDPS += robotDPS;
+
+            //allyDPS += robotDPS / robot.location.distanceSquaredTo(l);
+            /*if (robot.ID < leaderid) {
+                leaderDist = robot.location.distanceSquaredTo(l);
+                leaderid = robot.ID;
+            }*/
         }
 
         int safety() {
@@ -101,13 +109,15 @@ public strictfp class Micro {
             if (safety() > other.safety()) return true;
             boolean inRange = hurt || minDistToEnemy < myActionRange;
             boolean otherInRange = hurt || other.minDistToEnemy < myActionRange;
-            if (inRange && !otherInRange) return true;
-            if (!inRange && otherInRange) return false;
+            if (inRange && canAttack && !otherInRange) return true;
+            if (!inRange && canAttack && otherInRange) return false;
             if (!hurt) {
                 if (allyDPS > other.allyDPS) return true;
                 if (allyDPS < other.allyDPS) return false;
+                //if (leaderDist < other.leaderDist) return true;
+                //if (other.leaderDist < leaderDist) return false;
             }
-            if (inRange) return minDistToEnemy >= other.minDistToEnemy;
+            if (inRange || !canAttack) return minDistToEnemy >= other.minDistToEnemy;
             return minDistToEnemy <= other.minDistToEnemy;
         }
     }
@@ -115,7 +125,7 @@ public strictfp class Micro {
 
     boolean doMicro() throws GameActionException {
         curr = rc.getLocation();
-        hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
+        hurt = true || rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
         mi[0] = new MicroInfo(Direction.NORTH);
         mi[1] = new MicroInfo(Direction.NORTHEAST);
@@ -130,7 +140,8 @@ public strictfp class Micro {
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots(-1);
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == myTeam) {
-                robotDPS = baseDPS[robot.type.ordinal()] / rc.senseMapInfo(robot.location).getCooldownMultiplier(myTeam);
+                //robotDPS = baseDPS[robot.type.ordinal()] / rc.senseMapInfo(robot.location).getCooldownMultiplier(myTeam);
+                robotDPS = baseDPS[robot.type.ordinal()];
                 mi[0].updateAlly(robot);
                 mi[1].updateAlly(robot);
                 mi[2].updateAlly(robot);
@@ -141,7 +152,8 @@ public strictfp class Micro {
                 mi[7].updateAlly(robot);
                 mi[8].updateAlly(robot);
             } else {
-                robotDPS = baseDPS[robot.type.ordinal()] / rc.senseMapInfo(robot.location).getCooldownMultiplier(enemyTeam);
+                //robotDPS = baseDPS[robot.type.ordinal()] / rc.senseMapInfo(robot.location).getCooldownMultiplier(enemyTeam);
+                robotDPS = baseDPS[robot.type.ordinal()];
                 robotActionRadius = robot.type.actionRadiusSquared;
                 robotActionRadiusExtended = actionRadiusExtended[robot.type.ordinal()];
                 mi[0].updateEnemy(robot);
