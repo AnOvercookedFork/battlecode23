@@ -72,7 +72,7 @@ public strictfp class Micro {
             this.d = d;
             l = curr.add(d);
             canMove = d == Direction.CENTER || rc.canMove(d);
-            if (canMove && !hurt) {
+            if (canMove && canAttack && !hurt) {
                 allyDPS = myBaseDPS / rc.senseMapInfo(l).getCooldownMultiplier(myTeam);
             }
         }
@@ -105,10 +105,16 @@ public strictfp class Micro {
         }
 
         boolean betterThan(MicroInfo other) {
+            if (!canMove) return false;
             if (!other.canMove) return true;
-            if (safety() > other.safety()) return true;
-            boolean inRange = hurt || minDistToEnemy < myActionRange;
-            boolean otherInRange = hurt || other.minDistToEnemy < myActionRange;
+            int safety = (receivedDPS > 0? 0 :
+                    (targetingDPS < allyDPS? 1 : 2));
+            int otherSafety = (other.receivedDPS > 0? 0 :
+                    (other.targetingDPS < other.allyDPS? 1 : 2));
+            if (safety > otherSafety) return true;
+            if (safety < otherSafety) return false;
+            boolean inRange = hurt || minDistToEnemy <= myActionRange;
+            boolean otherInRange = hurt || other.minDistToEnemy <= myActionRange;
             if (inRange && canAttack && !otherInRange) return true;
             if (!inRange && canAttack && otherInRange) return false;
             if (!hurt) {
@@ -168,6 +174,16 @@ public strictfp class Micro {
             }
         }
 
+        if (mi[0].canMove) rc.setIndicatorDot(mi[0].l, 0, 85 * mi[0].safety(), 0);
+        if (mi[1].canMove) rc.setIndicatorDot(mi[1].l, 0, 85 * mi[1].safety(), 0);
+        if (mi[2].canMove) rc.setIndicatorDot(mi[2].l, 0, 85 * mi[2].safety(), 0);
+        if (mi[3].canMove) rc.setIndicatorDot(mi[3].l, 0, 85 * mi[3].safety(), 0);
+        if (mi[4].canMove) rc.setIndicatorDot(mi[4].l, 0, 85 * mi[4].safety(), 0);
+        if (mi[5].canMove) rc.setIndicatorDot(mi[5].l, 0, 85 * mi[5].safety(), 0);
+        if (mi[6].canMove) rc.setIndicatorDot(mi[6].l, 0, 85 * mi[6].safety(), 0);
+        if (mi[7].canMove) rc.setIndicatorDot(mi[7].l, 0, 85 * mi[7].safety(), 0);
+        if (mi[8].canMove) rc.setIndicatorDot(mi[8].l, 0, 85 * mi[8].safety(), 0);
+
         MicroInfo best = mi[8];
         if (mi[7].betterThan(best)) best = mi[7];
         if (mi[6].betterThan(best)) best = mi[6];
@@ -177,13 +193,12 @@ public strictfp class Micro {
         if (mi[2].betterThan(best)) best = mi[2];
         if (mi[1].betterThan(best)) best = mi[1];
         if (mi[0].betterThan(best)) best = mi[0];
+        rc.setIndicatorString("Best Dir: " + best.d);
 
         if (best.d == Direction.CENTER) return false;
-        if (best.safety() > mi[8].safety() || rc.getRoundNum() % 2 == 0) {
-            if (rc.canMove(best.d)) {
-                rc.move(best.d);
-                return true;
-            }
+        if (rc.canMove(best.d)) {
+            rc.move(best.d);
+            return true;
         }
         return false;
     }

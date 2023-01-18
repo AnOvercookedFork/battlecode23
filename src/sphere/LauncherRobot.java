@@ -96,47 +96,6 @@ public strictfp class LauncherRobot extends Robot {
             rc.attack(target);
             return true;
         }
-        MapLocation curr = rc.getLocation();
-        int x = curr.x;
-        int y = curr.y;
-        do {
-        if (rc.canAttack(new MapLocation(x + 4, y + 0))) {rc.attack(new MapLocation(x + 4, y + 0));break;}
-        if (rc.canAttack(new MapLocation(x + 0, y + 4))) {rc.attack(new MapLocation(x + 0, y + 4));break;}
-        if (rc.canAttack(new MapLocation(x + 0, y + -4))) {rc.attack(new MapLocation(x + 0, y + -4));break;}
-        if (rc.canAttack(new MapLocation(x + -4, y + 0))) {rc.attack(new MapLocation(x + -4, y + 0));break;}
-        if (rc.canAttack(new MapLocation(x + 3, y + 2))) {rc.attack(new MapLocation(x + 3, y + 2));break;}
-        if (rc.canAttack(new MapLocation(x + 3, y + -2))) {rc.attack(new MapLocation(x + 3, y + -2));break;}
-        if (rc.canAttack(new MapLocation(x + 2, y + 3))) {rc.attack(new MapLocation(x + 2, y + 3));break;}
-        if (rc.canAttack(new MapLocation(x + 2, y + -3))) {rc.attack(new MapLocation(x + 2, y + -3));break;}
-        if (rc.canAttack(new MapLocation(x + -2, y + 3))) {rc.attack(new MapLocation(x + -2, y + 3));break;}
-        if (rc.canAttack(new MapLocation(x + -2, y + -3))) {rc.attack(new MapLocation(x + -2, y + -3));break;}
-        if (rc.canAttack(new MapLocation(x + -3, y + 2))) {rc.attack(new MapLocation(x + -3, y + 2));break;}
-        if (rc.canAttack(new MapLocation(x + -3, y + -2))) {rc.attack(new MapLocation(x + -3, y + -2));break;}
-        if (rc.canAttack(new MapLocation(x + 3, y + 1))) {rc.attack(new MapLocation(x + 3, y + 1));break;}
-        if (rc.canAttack(new MapLocation(x + 3, y + -1))) {rc.attack(new MapLocation(x + 3, y + -1));break;}
-        if (rc.canAttack(new MapLocation(x + 1, y + 3))) {rc.attack(new MapLocation(x + 1, y + 3));break;}
-        if (rc.canAttack(new MapLocation(x + 1, y + -3))) {rc.attack(new MapLocation(x + 1, y + -3));break;}
-        if (rc.canAttack(new MapLocation(x + -1, y + 3))) {rc.attack(new MapLocation(x + -1, y + 3));break;}
-        if (rc.canAttack(new MapLocation(x + -1, y + -3))) {rc.attack(new MapLocation(x + -1, y + -3));break;}
-        if (rc.canAttack(new MapLocation(x + -3, y + 1))) {rc.attack(new MapLocation(x + -3, y + 1));break;}
-        if (rc.canAttack(new MapLocation(x + -3, y + -1))) {rc.attack(new MapLocation(x + -3, y + -1));break;}
-        if (rc.canAttack(new MapLocation(x + 3, y + 0))) {rc.attack(new MapLocation(x + 3, y + 0));break;}
-        if (rc.canAttack(new MapLocation(x + 0, y + 3))) {rc.attack(new MapLocation(x + 0, y + 3));break;}
-        if (rc.canAttack(new MapLocation(x + 0, y + -3))) {rc.attack(new MapLocation(x + 0, y + -3));break;}
-        if (rc.canAttack(new MapLocation(x + -3, y + 0))) {rc.attack(new MapLocation(x + -3, y + 0));break;}
-        if (rc.canAttack(new MapLocation(x + 2, y + 2))) {rc.attack(new MapLocation(x + 2, y + 2));break;}
-        if (rc.canAttack(new MapLocation(x + 2, y + -2))) {rc.attack(new MapLocation(x + 2, y + -2));break;}
-        if (rc.canAttack(new MapLocation(x + -2, y + 2))) {rc.attack(new MapLocation(x + -2, y + 2));break;}
-        if (rc.canAttack(new MapLocation(x + -2, y + -2))) {rc.attack(new MapLocation(x + -2, y + -2));break;}
-        if (rc.canAttack(new MapLocation(x + 2, y + 1))) {rc.attack(new MapLocation(x + 2, y + 1));break;}
-        if (rc.canAttack(new MapLocation(x + 2, y + -1))) {rc.attack(new MapLocation(x + 2, y + -1));break;}
-        if (rc.canAttack(new MapLocation(x + 1, y + 2))) {rc.attack(new MapLocation(x + 1, y + 2));break;}
-        if (rc.canAttack(new MapLocation(x + 1, y + -2))) {rc.attack(new MapLocation(x + 1, y + -2));break;}
-        if (rc.canAttack(new MapLocation(x + -1, y + 2))) {rc.attack(new MapLocation(x + -1, y + 2));break;}
-        if (rc.canAttack(new MapLocation(x + -1, y + -2))) {rc.attack(new MapLocation(x + -1, y + -2));break;}
-        if (rc.canAttack(new MapLocation(x + -2, y + 1))) {rc.attack(new MapLocation(x + -2, y + 1));break;}
-        if (rc.canAttack(new MapLocation(x + -2, y + -1))) {rc.attack(new MapLocation(x + -2, y + -1));break;}
-        } while (false);
         return false;
     }
 
