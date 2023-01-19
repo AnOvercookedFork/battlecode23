@@ -242,58 +242,71 @@ public strictfp class LauncherRobot extends Robot {
     }
 
     public MapLocation getTarget(RobotController rc) throws GameActionException {
-        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
-        // cache.updateEnemyCache(targets);
-        MapLocation finalTarget = null;
-        double maxScore = -1;
-        MapLocation curr = rc.getLocation();
-        for (RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
-            if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
-                continue;
-            double score = scoreTarget(target, rc);
-            if (score > maxScore) {
-                maxScore = score;
-                finalTarget = target.location;
-            }
-        }
         if (!USE_NEW_MICRO) {
-            int round = rc.getRoundNum();
-            for (MapCache.EnemyData enemy : cache.enemyCache) {
-                if (enemy == null || enemy.roundSeen < round
-                        || !enemy.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
-                    continue;
-                if (enemy.priority > maxScore) {
-                    maxScore = enemy.priority;
-                    finalTarget = enemy.location;
-                }
-            }
-        }
-        if (prevTargets != null) {
-            for (RobotInfo target : prevTargets) {
-                if (target.type == RobotType.HEADQUARTERS) {
-
-                }
+            RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
+            cache.updateEnemyCache(targets);
+            MapLocation finalTarget = null;
+            double maxScore = -1;
+            MapLocation curr = rc.getLocation();
+            for (RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
                 if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
                     continue;
-
-                double score = scoreTarget(target, rc);
+                double score = scoreTarget(target);
                 if (score > maxScore) {
                     maxScore = score;
                     finalTarget = target.location;
                 }
             }
+            if (maxScore > 0) {
+                return finalTarget;
+            }
+            if (maxScore > 0 && finalTarget != null) {
+                return finalTarget;
+            }
+
+            return null;
+        } else {
+            RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
+            // cache.updateEnemyCache(targets);
+            MapLocation finalTarget = null;
+            double maxScore = -1;
+            MapLocation curr = rc.getLocation();
+            for (RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
+                if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
+                    continue;
+                double score = scoreTarget(target);
+                if (score > maxScore) {
+                    maxScore = score;
+                    finalTarget = target.location;
+                }
+            }
+            if (prevTargets != null) {
+                for (RobotInfo target : prevTargets) {
+                    if (target.type == RobotType.HEADQUARTERS) {
+
+                    }
+                    if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
+                        continue;
+
+                    double score = scoreTarget(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = target.location;
+                    }
+                }
+            }
+
+            prevTargets = targets;
+
+            if (maxScore > 0 && finalTarget != null) {
+                return finalTarget;
+            }
+
+            return null;
         }
-
-        prevTargets = targets;
-
-        if (maxScore > 0 && finalTarget != null) {
-            return finalTarget;
-        }
-
-        return null;
     }
 
-    public double scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
+    public double scoreTarget(RobotInfo info) throws GameActionException {
         double score = 1 / info.ID;
 
         switch (info.getType()) {
