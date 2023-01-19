@@ -71,6 +71,8 @@ public strictfp class Micro {
         public MicroInfo(Direction d) throws GameActionException {
             this.d = d;
             l = curr.add(d);
+            //MapInfo mi = rc.senseMapInfo(l);
+            //l.add(
             canMove = d == Direction.CENTER || rc.canMove(d);
             if (canMove && canAttack && !hurt) {
                 allyDPS = myBaseDPS / rc.senseMapInfo(l).getCooldownMultiplier(myTeam);
@@ -115,15 +117,15 @@ public strictfp class Micro {
             if (safety < otherSafety) return false;
             boolean inRange = hurt || minDistToEnemy <= myActionRange;
             boolean otherInRange = hurt || other.minDistToEnemy <= myActionRange;
-            if (inRange && canAttack && !otherInRange) return true;
-            if (!inRange && canAttack && otherInRange) return false;
+            if (inRange && !otherInRange) return true;
+            if (!inRange && otherInRange) return false;
             if (!hurt) {
                 //if (allyDPS > other.allyDPS) return true;
                 //if (allyDPS < other.allyDPS) return false;
                 if (leaderDist < other.leaderDist) return true;
                 if (other.leaderDist < leaderDist) return false;
             }
-            if (inRange || !canAttack) return minDistToEnemy >= other.minDistToEnemy;
+            if (inRange) return minDistToEnemy >= other.minDistToEnemy;
             return minDistToEnemy <= other.minDistToEnemy;
         }
     }

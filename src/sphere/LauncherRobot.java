@@ -80,6 +80,7 @@ public strictfp class LauncherRobot extends Robot {
                 case LAUNCHER:
                     if (robot.ID < lowestID) {
                         leader = robot.location;
+                        lowestID = robot.ID;
                     }
                     break;
                 }
@@ -124,31 +125,9 @@ public strictfp class LauncherRobot extends Robot {
             targetWeight = RANDOM_LOC_WEIGHT;
         }
 
-        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-        /*RobotInfo nearest = null;
-        int nearestDist = Integer.MAX_VALUE;
-        int dist;
-        RobotInfo nearestDangerous = null;
-        int numAttackingOpponents = 0;
-        int nearestDangerousDist = Integer.MAX_VALUE;
-        for (RobotInfo target : targets) {
-            if (target.type != RobotType.HEADQUARTERS) {
-                dist = target.getLocation().distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = target;
-                    nearestDist = dist;
-                }
-                if (target.type.damage > 0) {
-                    numAttackingOpponents++;
-                    if (dist < nearestDangerousDist && target.type.actionRadiusSquared >= dist) {
-                        nearestDangerous = target;
-                        nearestDangerousDist = dist;
-                    }
-                }
-            }
-        }
-        */
+        /*
 
+        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
         
         int attackableEnemies = 0;
         MapLocation nearest = null;
@@ -186,6 +165,58 @@ public strictfp class LauncherRobot extends Robot {
             }
         }
 
+        return success;*/
+
+
+        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+        RobotInfo nearest = null;
+        int nearestDist = Integer.MAX_VALUE;
+        int dist;
+        RobotInfo nearestDangerous = null;
+        int numAttackingOpponents = 0;
+        int nearestDangerousDist = Integer.MAX_VALUE;
+        for (RobotInfo target : targets) {
+            if (target.type != RobotType.HEADQUARTERS) {
+                dist = target.getLocation().distanceSquaredTo(curr);
+                if (dist < nearestDist) {
+                    nearest = target;
+                    nearestDist = dist;
+                }
+                if (target.type.damage > 0) {
+                    numAttackingOpponents++;
+                    if (dist < nearestDangerousDist
+                            && target.type.actionRadiusSquared >= dist) {
+                        nearestDangerous = target;
+                        nearestDangerousDist = dist;
+                    }
+                }
+            }
+        }
+        
+        if (nearest != null) {
+            target = nearest.getLocation();
+            targetWeight = FOUND_BASE_WEIGHT;
+        }
+
+        boolean success = false;
+
+        targetWeight *= 0.8;
+
+        if (nearestDangerous != null) {
+            Direction away = nearestDangerous.location.directionTo(curr);
+            tryFuzzy(away);
+            success = true;
+        } else {
+            if (leader != null && curr.distanceSquaredTo(leader) >= 2
+                    && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0)
+                    && snav.tryNavigate(leader)) {
+                success = true;
+            } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
+                    && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
+                success = true;
+            }
+        }
+        
         return success;
 
     }
