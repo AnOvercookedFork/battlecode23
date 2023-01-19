@@ -13,7 +13,7 @@ public strictfp class LauncherRobot extends Robot {
     public static final int EXECUTE_MODIFIER = 100;
     public static final int DAMAGED_MODIFIER = 15;
     public static final int ISLAND_MODIFIER = 0;
-    public static final boolean USE_NEW_MICRO = false;
+    public static final boolean USE_NEW_MICRO = true;
 
     MapLocation target;
     double targetWeight;

@@ -22,7 +22,7 @@ public strictfp class Micro {
 
     static double[] baseDPS = {0, 0, 0, 0, 0, 0};
     static int[] actionRadiusExtended = {0, 0, 0, 0, 0, 0};
-    static int[] hurtHealth = {12, 12, 12, 12, 12, 12};
+    static int[] hurtHealth = {40, 40, 40, 40, 40, 40};
 
 
     static Direction[] dirs = {
@@ -117,8 +117,8 @@ public strictfp class Micro {
             if (safety < otherSafety) return false;
             boolean inRange = hurt || minDistToEnemy <= myActionRange;
             boolean otherInRange = hurt || other.minDistToEnemy <= myActionRange;
-            if (inRange && !otherInRange) return true;
-            if (!inRange && otherInRange) return false;
+            if (inRange && canAttack && !otherInRange) return true;
+            if (!inRange && canAttack && otherInRange) return false;
             if (!hurt) {
                 //if (allyDPS > other.allyDPS) return true;
                 //if (allyDPS < other.allyDPS) return false;
@@ -133,7 +133,7 @@ public strictfp class Micro {
 
     boolean doMicro() throws GameActionException {
         curr = rc.getLocation();
-        hurt = true || rc.getHealth() <= hurtHealth[myType.ordinal()];
+        hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
         mi[0] = new MicroInfo(Direction.NORTH);
         mi[1] = new MicroInfo(Direction.NORTHEAST);
