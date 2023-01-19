@@ -12,6 +12,7 @@ public strictfp class CarrierRobot extends Robot {
     public static final int DAMAGED_MODIFIER = 15;
 
     public static MapLocation[] hqs;
+    MapLocation[] nearbyEnemyHQs;
     int turnsSinceSeenEnemy = 0;
     double collectTargetWeight;
     double islandTargetWeight;
@@ -31,7 +32,6 @@ public strictfp class CarrierRobot extends Robot {
 
     public void run() throws GameActionException {
         Communications.readArray(rc);
-
         if (hqs == null) {
             hqs = Communications.getHQs(rc);
         }
@@ -98,11 +98,11 @@ public strictfp class CarrierRobot extends Robot {
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
                 if(robot.type == RobotType.CARRIER) {
-                    potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) / 5;
+                    potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) * 2;
                 }
             } else {
                 // Process enemy robots here
-                if (robot.type.damage > 0) {
+                if (robot.type.damage > 0 && robot.type != RobotType.HEADQUARTERS) {
                     int dist = robot.location.distanceSquaredTo(curr);
                     if (dist < nearestDangerousEnemyDist) {
                         nearestDangerousEnemyDist = dist;
