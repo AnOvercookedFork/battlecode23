@@ -83,7 +83,8 @@ public strictfp class Micro {
             if (!canMove) return;
             int dist = robot.location.distanceSquaredTo(l);
             if (dist < minDistToEnemy) minDistToEnemy = dist;
-            if (dist <= robotActionRadiusExtended) {
+            if (robot.location.add(robot.location.directionTo(curr)).distanceSquaredTo(curr)
+                    <= robotActionRadius) {
                 targetingDPS += robotDPS;
                 if (dist <= robotActionRadius) receivedDPS += robotDPS;
             }
