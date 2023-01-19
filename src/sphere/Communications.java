@@ -321,4 +321,15 @@ public strictfp class Communications {
         array[AMP_INDEX] += 1;
         rc.writeSharedArray(AMP_INDEX, array[AMP_INDEX]);
     }
+    
+    public static void tryAddEnemySnipe(RobotController rc, MapLocation location) throws GameActionException {
+        if (rc.canWriteSharedArray(0, 0)) { // should always be able to write
+            for(int i = ENEMY_SNIPE_START; i < 64; i++) {
+                if(array[i] == 0) {
+                    array[i] = (1 << 12) + locToInt(location);
+                    rc.writeSharedArray(i, array[i]);
+                }
+            }
+        }
+    }
 }

@@ -38,7 +38,9 @@ public strictfp class AmplifierRobot extends Robot {
                         break;
                 }
             } else {
-
+                if(robot.getType().canAttack()) {
+                    Communications.tryAddEnemySnipe(rc, robot.getLocation());
+                }
             }
         }
         cache.updateEnemyCache(nearbyRobots);
