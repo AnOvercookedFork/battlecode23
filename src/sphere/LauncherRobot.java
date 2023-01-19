@@ -13,6 +13,7 @@ public strictfp class LauncherRobot extends Robot {
     public static final int EXECUTE_MODIFIER = 100;
     public static final int DAMAGED_MODIFIER = 15;
     public static final int ISLAND_MODIFIER = 0;
+    public static final boolean USE_NEW_MICRO = false;
 
     MapLocation target;
     double targetWeight;
@@ -55,7 +56,7 @@ public strictfp class LauncherRobot extends Robot {
             }
         }
 
-        //rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
+        // rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
         //
         if (Clock.getBytecodesLeft() > 1000) {
             cache.updateWellCache(rc.senseNearbyWells());
@@ -88,7 +89,7 @@ public strictfp class LauncherRobot extends Robot {
 
             }
         }
-        //cache.updateEnemyCache(nearbyRobots);
+        // cache.updateEnemyCache(nearbyRobots);
     }
 
     public boolean tryAttack() throws GameActionException {
@@ -101,129 +102,148 @@ public strictfp class LauncherRobot extends Robot {
     }
 
     public boolean tryMove() throws GameActionException {
-        MapLocation curr = rc.getLocation();
-        if (target != null) {
-            if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
-                if (target.equals(hqTarget)) {
-                    hqTarget = null;
-                }
-                target = null;
+        if (USE_NEW_MICRO) {
+            MapLocation curr = rc.getLocation();
+            if (target != null) {
+                if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
+                    if (target.equals(hqTarget)) {
+                        hqTarget = null;
+                    }
+                    target = null;
 
-            }
-        }
-
-        if (target == null) {
-            // target = randomLocation();
-
-            // target = new MapLocation(rc.getMapWidth() - curr.x - 1, rc.getMapHeight() -
-            // curr.y - 1);
-            // targetWeight = RANDOM_LOC_WEIGHT;
-            if (hqTarget == null) {
-                hqTarget = hqLocs.getHQRushLocation(rc);
-            }
-            target = hqTarget;
-            targetWeight = RANDOM_LOC_WEIGHT;
-        }
-
-        /*
-
-        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-        
-        int attackableEnemies = 0;
-        MapLocation nearest = null;
-        int nearestDist = 1000000;
-        int dist;
-        for (RobotInfo enemy : targets) {
-            if (enemy.type != RobotType.HEADQUARTERS) {
-                attackableEnemies++;
-                dist = enemy.location.distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = enemy.location;
-                    nearestDist = dist;
                 }
             }
-        }
 
-        if (nearest != null) {
-            target = nearest;
-            targetWeight = FOUND_BASE_WEIGHT;
-        }
-
-        boolean success = false;
-
-        targetWeight *= 0.8;
-
-        if (attackableEnemies > 0) {
-            success = micro.doMicro();
-        } else {
-            if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                    && (rc.getRoundNum() % 2 == 0 || attackableEnemies == 0) && snav.tryNavigate(leader)) {
-                success = true;
-            } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
-                    && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
-                success = true;
-            }
-        }
-
-        return success;*/
-
-
-        RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-        RobotInfo nearest = null;
-        int nearestDist = Integer.MAX_VALUE;
-        int dist;
-        RobotInfo nearestDangerous = null;
-        int numAttackingOpponents = 0;
-        int nearestDangerousDist = Integer.MAX_VALUE;
-        for (RobotInfo target : targets) {
-            if (target.type != RobotType.HEADQUARTERS) {
-                dist = target.getLocation().distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = target;
-                    nearestDist = dist;
+            if (target == null) {
+                // target = randomLocation();
+                // target = new MapLocation(rc.getMapWidth() - curr.x - 1, rc.getMapHeight() -
+                // curr.y - 1);
+                // targetWeight = RANDOM_LOC_WEIGHT;
+                if (hqTarget == null) {
+                    hqTarget = hqLocs.getHQRushLocation(rc);
                 }
-                if (target.type.damage > 0) {
-                    numAttackingOpponents++;
-                    if (dist < nearestDangerousDist
-                            && target.type.actionRadiusSquared >= dist) {
-                        nearestDangerous = target;
-                        nearestDangerousDist = dist;
+                target = hqTarget;
+                targetWeight = RANDOM_LOC_WEIGHT;
+            }
+
+            RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+
+            int attackableEnemies = 0;
+            MapLocation nearest = null;
+            int nearestDist = 1000000;
+            int dist;
+            for (RobotInfo enemy : targets) {
+                if (enemy.type != RobotType.HEADQUARTERS) {
+                    attackableEnemies++;
+                    dist = enemy.location.distanceSquaredTo(curr);
+                    if (dist < nearestDist) {
+                        nearest = enemy.location;
+                        nearestDist = dist;
                     }
                 }
             }
-        }
-        
-        if (nearest != null) {
-            target = nearest.getLocation();
-            targetWeight = FOUND_BASE_WEIGHT;
-        }
 
-        boolean success = false;
-
-        targetWeight *= 0.8;
-
-        if (nearestDangerous != null) {
-            Direction away = nearestDangerous.location.directionTo(curr);
-            tryFuzzy(away);
-            success = true;
-        } else {
-            if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                    && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0)
-                    && snav.tryNavigate(leader)) {
-                success = true;
-            } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
-                    && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
-                success = true;
+            if (nearest != null) {
+                target = nearest;
+                targetWeight = FOUND_BASE_WEIGHT;
             }
+
+            boolean success = false;
+
+            targetWeight *= 0.8;
+
+            if (attackableEnemies > 0) {
+                success = micro.doMicro();
+            } else {
+                if (leader != null && curr.distanceSquaredTo(leader) >= 2
+                        && (rc.getRoundNum() % 2 == 0 || attackableEnemies == 0) && snav.tryNavigate(leader)) {
+                    success = true;
+                } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
+                        && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
+                    success = true;
+                }
+            }
+
+            return success;
+        } else {
+            MapLocation curr = rc.getLocation();
+            if (target != null) {
+                if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
+                    if (target.equals(hqTarget)) {
+                        hqTarget = null;
+                    }
+                    target = null;
+                }
+            }
+
+            if (target == null) {
+                // target = randomLocation();
+
+                // target = new MapLocation(rc.getMapWidth() - curr.x - 1, rc.getMapHeight() -
+                // curr.y - 1);
+                // targetWeight = RANDOM_LOC_WEIGHT;
+                if (hqTarget == null) {
+                    hqTarget = hqLocs.getHQRushLocation(rc);
+                }
+                target = hqTarget;
+                targetWeight = RANDOM_LOC_WEIGHT;
+            }
+
+            RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+            RobotInfo nearest = null;
+            int nearestDist = Integer.MAX_VALUE;
+            int dist;
+            RobotInfo nearestDangerous = null;
+            int numAttackingOpponents = 0;
+            int nearestDangerousDist = Integer.MAX_VALUE;
+            for (RobotInfo target : targets) {
+                if (target.type != RobotType.HEADQUARTERS) {
+                    dist = target.getLocation().distanceSquaredTo(curr);
+                    if (dist < nearestDist) {
+                        nearest = target;
+                        nearestDist = dist;
+                    }
+                    if (target.type.damage > 0) {
+                        numAttackingOpponents++;
+                        if (dist < nearestDangerousDist && target.type.actionRadiusSquared >= dist) {
+                            nearestDangerous = target;
+                            nearestDangerousDist = dist;
+                        }
+                    }
+                }
+            }
+
+            if (nearest != null) {
+                target = nearest.getLocation();
+                targetWeight = FOUND_BASE_WEIGHT;
+            }
+
+            boolean success = false;
+
+            targetWeight *= 0.8;
+
+            if (nearestDangerous != null) {
+                Direction away = nearestDangerous.location.directionTo(curr);
+                tryFuzzy(away);
+                success = true;
+            } else {
+                if (leader != null && curr.distanceSquaredTo(leader) >= 2
+                        && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0) && snav.tryNavigate(leader)) {
+                    success = true;
+                } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
+                        && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
+                    success = true;
+                }
+            }
+
+            return success;
         }
-        
-        return success;
 
     }
 
     public MapLocation getTarget(RobotController rc) throws GameActionException {
         RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
-        //cache.updateEnemyCache(targets);
+        // cache.updateEnemyCache(targets);
         MapLocation finalTarget = null;
         double maxScore = -1;
         MapLocation curr = rc.getLocation();
@@ -236,16 +256,18 @@ public strictfp class LauncherRobot extends Robot {
                 finalTarget = target.location;
             }
         }
-        /*int round = rc.getRoundNum();
-        for (MapCache.EnemyData enemy : cache.enemyCache) {
-            if (enemy == null || enemy.roundSeen < round
-                    || !enemy.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
-                continue;
-            if (enemy.priority > maxScore) {
-                maxScore = enemy.priority;
-                finalTarget = enemy.location;
+        if (!USE_NEW_MICRO) {
+            int round = rc.getRoundNum();
+            for (MapCache.EnemyData enemy : cache.enemyCache) {
+                if (enemy == null || enemy.roundSeen < round
+                        || !enemy.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
+                    continue;
+                if (enemy.priority > maxScore) {
+                    maxScore = enemy.priority;
+                    finalTarget = enemy.location;
+                }
             }
-        }*/
+        }
         if (prevTargets != null) {
             for (RobotInfo target : prevTargets) {
                 if (target.type == RobotType.HEADQUARTERS) {
@@ -253,7 +275,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
                     continue;
-                
+
                 double score = scoreTarget(target, rc);
                 if (score > maxScore) {
                     maxScore = score;
