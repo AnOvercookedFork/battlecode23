@@ -9,6 +9,8 @@ public strictfp class HeadquartersRobot extends Robot {
     int turns = 0;
 
     public static final int MAX_ANCHORS = 1;
+    public static final int MIN_TURN_BUILD_HEAL_ANCHOR = 300;
+    public static final int ANCHOR_BUILD_COOLDOWN = 50;
     public static final int MIN_TURN_BUILD_ANCHOR = 750;
 
     MapLocation farthestLauncher;
@@ -18,6 +20,7 @@ public strictfp class HeadquartersRobot extends Robot {
     ArrayList<Integer> resources;
     HashSet<Integer> resourcesSet;
     int carouselIndex = 0;
+    int anchorBuildCooldown = 0;
 
     MapCache cache;
     
@@ -25,7 +28,7 @@ public strictfp class HeadquartersRobot extends Robot {
     public HeadquartersRobot(RobotController rc) throws GameActionException {
         super(rc);
         Communications.canAlwaysWrite = true;
-        cache = new MapCache(rc, 32, 35, 16);
+        cache = new MapCache(rc, 32);
         Communications.readArray(rc);
         Communications.tryAddHQ(rc, rc.getLocation());
     }
@@ -55,6 +58,7 @@ public strictfp class HeadquartersRobot extends Robot {
 
         if (rc.canBuildAnchor(Anchor.STANDARD) && buildAnchor) {
             rc.buildAnchor(Anchor.STANDARD);
+            anchorBuildCooldown = ANCHOR_BUILD_COOLDOWN;
         }
 
         if (!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) {
@@ -65,6 +69,10 @@ public strictfp class HeadquartersRobot extends Robot {
         }
 
         turns++;
+
+        if (anchorBuildCooldown > 0) anchorBuildCooldown--;
+
+        cache.debugIslandCache();
 
     }
 
@@ -120,7 +128,22 @@ public strictfp class HeadquartersRobot extends Robot {
     }
     
     public boolean shouldBuildAnchor() {
-        return rc.getNumAnchors(Anchor.STANDARD) + rc.getNumAnchors(Anchor.ACCELERATING) < MAX_ANCHORS && turns > MIN_TURN_BUILD_ANCHOR && carriersNearby >= 1 && launchersNearby >= 1 && enemiesNearby == 0;
+        boolean hasHealAnchor = false;
+        Team team = rc.getTeam();
+
+        for (MapCache.IslandData idata : cache.islandCache) {
+            if (idata != null && idata.team == team) {
+                hasHealAnchor = true;
+                break;
+            }
+        }
+        return rc.getNumAnchors(Anchor.STANDARD) + rc.getNumAnchors(Anchor.ACCELERATING) < MAX_ANCHORS 
+            && (turns > MIN_TURN_BUILD_ANCHOR
+                || (turns > MIN_TURN_BUILD_HEAL_ANCHOR && !hasHealAnchor))
+            && anchorBuildCooldown == 0
+            && carriersNearby >= 1
+            && launchersNearby >= 1
+            && enemiesNearby == 0;
     }
 
     public MapLocation closestBuildLocation(RobotType type, MapLocation target) throws GameActionException {

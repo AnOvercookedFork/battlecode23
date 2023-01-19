@@ -149,9 +149,9 @@ public strictfp class Communications {
             if (array[i] == 0) {
                 MapCache.IslandData sample = cache.sampleIslandCache(true);
                 if (sample != null) {
-                   array[i] = sample.encode() + 1;
-                   rc.writeSharedArray(i, array[i]);
-                   sample.fromComms = true;
+                    array[i] = sample.encode() + 1;
+                    rc.writeSharedArray(i, array[i]);
+                    sample.fromComms = true;
                 }
                 return;
             }

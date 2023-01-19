@@ -48,7 +48,7 @@ public strictfp class Micro {
                 break;
         }
 
-        baseDPS[RobotType.LAUNCHER.ordinal()] = 6;
+        baseDPS[RobotType.LAUNCHER.ordinal()] = 20;
         actionRadiusExtended[RobotType.LAUNCHER.ordinal()] = 26;
         //baseDPS[RobotType.CARRIER.ordinal()] = 1;
         //actionRadiusExtended[RobotType.CARRIER.ordinal()] = 18;
@@ -74,9 +74,9 @@ public strictfp class Micro {
             //MapInfo mi = rc.senseMapInfo(l);
             //l.add(
             canMove = d == Direction.CENTER || rc.canMove(d);
-            if (canMove && canAttack && !hurt) {
+            /*if (canMove && canAttack && !hurt) {
                 allyDPS = myBaseDPS / rc.senseMapInfo(l).getCooldownMultiplier(myTeam);
-            }
+            }*/
         }
 
         void updateEnemy(RobotInfo robot) {
@@ -92,8 +92,8 @@ public strictfp class Micro {
 
         void updateAlly(RobotInfo robot) {
             if (!canMove) return;
-            if (robot.location.isWithinDistanceSquared(curr, 5)) allyDPS += robotDPS;
-
+            //if (robot.location.isWithinDistanceSquared(curr, 5)) allyDPS += robotDPS;
+            allyDPS += robotDPS;
             //allyDPS += robotDPS / robot.location.distanceSquaredTo(l);
             if (robot.ID < leaderid) {
                 leaderDist = robot.location.distanceSquaredTo(l);
@@ -107,22 +107,33 @@ public strictfp class Micro {
             return 2;
         }
 
+        double score() {
+            if (!canMove) return -1000000;
+            return allyDPS - receivedDPS - targetingDPS / 2 + (minDistToEnemy <= myActionRange && canAttack? myBaseDPS : 0) + ((minDistToEnemy <= myActionRange && !canAttack) || hurt? minDistToEnemy / 100 : -minDistToEnemy / 100);
+        }
+
         boolean betterThan(MicroInfo other) {
             if (!canMove) return false;
             if (!other.canMove) return true;
             int safety = (receivedDPS > 0? 0 :
-                    (targetingDPS < allyDPS? 1 : 2));
+                    (targetingDPS > 0? 1 : 2));
             int otherSafety = (other.receivedDPS > 0? 0 :
-                    (other.targetingDPS < other.allyDPS? 1 : 2));
+                    (targetingDPS > 0? 1 : 2));
             if (safety > otherSafety) return true;
             if (safety < otherSafety) return false;
-            boolean inRange = hurt || minDistToEnemy <= myActionRange;
+            /*boolean inRange = hurt || minDistToEnemy <= myActionRange;
             boolean otherInRange = hurt || other.minDistToEnemy <= myActionRange;
             if (inRange && canAttack && !otherInRange) return true;
-            if (!inRange && canAttack && otherInRange) return false;
+            if (!inRange && canAttack && otherInRange) return false;*/
+            boolean inRange = minDistToEnemy <= myActionRange;
             if (!hurt) {
                 //if (allyDPS > other.allyDPS) return true;
                 //if (allyDPS < other.allyDPS) return false;
+                boolean otherInRange = other.minDistToEnemy <= myActionRange;
+                if (canAttack) {
+                    if (inRange && !otherInRange) return true;
+                    if (!inRange && otherInRange) return true;
+                }
                 if (leaderDist < other.leaderDist) return true;
                 if (other.leaderDist < leaderDist) return false;
             }
@@ -188,6 +199,7 @@ public strictfp class Micro {
         if (mi[8].canMove) rc.setIndicatorDot(mi[8].l, 0, 85 * mi[8].safety(), 0);
 
         MicroInfo best = mi[8];
+        /*
         if (mi[7].betterThan(best)) best = mi[7];
         if (mi[6].betterThan(best)) best = mi[6];
         if (mi[5].betterThan(best)) best = mi[5];
@@ -196,6 +208,48 @@ public strictfp class Micro {
         if (mi[2].betterThan(best)) best = mi[2];
         if (mi[1].betterThan(best)) best = mi[1];
         if (mi[0].betterThan(best)) best = mi[0];
+        */
+        double bestScore = best.score();
+        double score = mi[7].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[7];
+        }
+        score = mi[6].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[6];
+        }
+        score = mi[5].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[5];
+        }
+        score = mi[4].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[4];
+        }
+        score = mi[3].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[3];
+        }
+        score = mi[2].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[2];
+        }
+        score = mi[1].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[1];
+        }
+        score = mi[0].score();
+        if (score > bestScore) {
+            bestScore = score;
+            best = mi[0];
+        }
         rc.setIndicatorString("Best Dir: " + best.d);
 
         if (best.d == Direction.CENTER) return false;

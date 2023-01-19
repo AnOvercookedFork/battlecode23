@@ -14,9 +14,7 @@ public strictfp class CarrierRobot extends Robot {
     public static MapLocation[] hqs;
     int turnsSinceSeenEnemy = 0;
     double collectTargetWeight;
-    double islandTargetWeight;
     MapLocation collectTarget;
-    MapLocation islandTarget;
     MapLocation enemyLastSeenLoc = null;
     StinkyNavigation snav;
     MapCache cache;
@@ -25,7 +23,7 @@ public strictfp class CarrierRobot extends Robot {
     public CarrierRobot(RobotController rc) {
         super(rc);
         hqs = null;
-        cache = new MapCache(rc, 16, 8, 4);
+        cache = new MapCache(rc, 16);
         snav = new StinkyNavigation(rc);
     }
 
@@ -39,8 +37,8 @@ public strictfp class CarrierRobot extends Robot {
         Communications.readWells(rc, cache);
         Communications.reportWell(rc, cache);
 
-        cache.updateIslandCache();
         Communications.readIslands(rc, cache);
+        cache.updateIslandCache();
         Communications.reportIsland(rc, cache);
 
         processNearbyRobots();
@@ -82,6 +80,7 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         //cache.debugWellCache();
+        cache.debugIslandCache();
     }
 
     public void processNearbyRobots() throws GameActionException {
@@ -167,7 +166,6 @@ public strictfp class CarrierRobot extends Robot {
 
     public MapLocation getTarget(RobotController rc) throws GameActionException {
         RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
-        cache.updateEnemyCache(targets);
         MapLocation finalTarget = null;
         int maxScore = -1;
         MapLocation curr = rc.getLocation();
@@ -184,7 +182,7 @@ public strictfp class CarrierRobot extends Robot {
             return finalTarget;
         }
         int round = rc.getRoundNum();
-        for (MapCache.EnemyData enemy : cache.enemyCache) {
+        /*for (MapCache.EnemyData enemy : cache.enemyCache) {
             if (enemy == null || enemy.roundSeen < round
                     || !enemy.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared))
                 continue;
@@ -192,7 +190,7 @@ public strictfp class CarrierRobot extends Robot {
                 maxScore = enemy.priority;
                 finalTarget = enemy.location;
             }
-        }
+        }*/
         if (maxScore > 0 && finalTarget != null) {
             return finalTarget;
         }
@@ -428,57 +426,8 @@ public strictfp class CarrierRobot extends Robot {
     }
 
     public boolean tryFindIsland() throws GameActionException {
-        if (islandTarget != null) {
-            if (rc.canSenseLocation(islandTarget)) {
-                int island = rc.senseIsland(islandTarget);
-                if (island == -1 || rc.senseAnchor(island) != null) {
-                    islandTarget = null;
-                }
-            }
-        }
+        MapLocation islandTarget = getIslandTarget(Team.NEUTRAL, cache, false);
 
-        if (islandTarget == null) {
-            islandTarget = randomLocation();
-            islandTargetWeight = RANDOM_LOC_WEIGHT;
-        }
-
-        int[] nearbyIslands = rc.senseNearbyIslands();
-        MapLocation nearestLoc = null;
-        int nearestLocDist = Integer.MAX_VALUE;
-        MapLocation curr = rc.getLocation();
-        int dist;
-        for (int nearbyIsland : nearbyIslands) {
-            if (rc.senseAnchor(nearbyIsland) == null) {
-                MapLocation[] locs = rc.senseNearbyIslandLocations(nearbyIsland);
-                for (MapLocation loc : locs) {
-                    dist = curr.distanceSquaredTo(loc);
-                    if (dist < nearestLocDist) {
-                        nearestLoc = loc;
-                        nearestLocDist = dist;
-                    }
-                }
-            }
-        }
-
-        if (nearestLoc != null) {
-            islandTarget = nearestLoc;
-            islandTargetWeight = KNOWN_LOC_WEIGHT;
-        } else if (islandTargetWeight < KNOWN_LOC_WEIGHT) {
-            for (MapCache.IslandData island : cache.islandCache) {
-                if (island != null && island.team == Team.NEUTRAL) {
-                    dist = curr.distanceSquaredTo(island.location);
-                    if (dist < nearestLocDist) {
-                        nearestLoc = island.location;
-                        nearestLocDist = dist;
-                    }
-                }
-            }
-            if (nearestLoc != null) {
-                islandTarget = nearestLoc;
-                islandTargetWeight = KNOWN_LOC_WEIGHT;
-            }
-        }
-
-        return curr.distanceSquaredTo(islandTarget) > 0 && snav.tryNavigate(islandTarget);
+        return rc.getLocation().distanceSquaredTo(islandTarget) > 0 && snav.tryNavigate(islandTarget);
     }
 }

@@ -12,6 +12,9 @@ public strictfp abstract class Robot {
 
     static final int MARGIN = 3;
 
+    MapLocation islandTarget;
+    boolean isIslandTargetRandom = true;
+
     static final Direction[] directions = {
         Direction.NORTH,
         Direction.NORTHEAST,
@@ -127,6 +130,61 @@ public strictfp abstract class Robot {
         }
 
         return false;
+    }
+
+    public MapLocation getIslandTarget(Team team, MapCache cache, boolean onlyKnown) throws GameActionException {
+        MapLocation curr = rc.getLocation();
+        if (islandTarget != null && curr.distanceSquaredTo(islandTarget) <= 2) {
+            if (rc.canSenseLocation(islandTarget)) {
+                int island = rc.senseIsland(islandTarget);
+                if (island == -1 || rc.senseTeamOccupyingIsland(island) != team) {
+                    islandTarget = null;
+                }
+            }
+        }
+
+        if (islandTarget == null) {
+            islandTarget = randomLocation();
+            isIslandTargetRandom = true;
+        }
+
+        int[] nearbyIslands = rc.senseNearbyIslands();
+        MapLocation nearestLoc = null;
+        int nearestLocDist = Integer.MAX_VALUE;
+        int dist;
+        for (int nearbyIsland : nearbyIslands) {
+            if (rc.senseTeamOccupyingIsland(nearbyIsland) == team) {
+                MapLocation[] locs = rc.senseNearbyIslandLocations(nearbyIsland);
+                for (MapLocation loc : locs) {
+                    dist = curr.distanceSquaredTo(loc);
+                    if (dist < nearestLocDist) {
+                        nearestLoc = loc;
+                        nearestLocDist = dist;
+                    }
+                }
+            }
+        }
+
+        if (nearestLoc != null) {
+            islandTarget = nearestLoc;
+            isIslandTargetRandom = false;
+        } else if (isIslandTargetRandom) {
+            for (MapCache.IslandData island : cache.islandCache) {
+                if (island != null && island.team == team) {
+                    dist = curr.distanceSquaredTo(island.location);
+                    if (dist < nearestLocDist) {
+                        nearestLoc = island.location;
+                        nearestLocDist = dist;
+                    }
+                }
+            }
+            if (nearestLoc != null) {
+                islandTarget = nearestLoc;
+                isIslandTargetRandom = false;
+            }
+        }
+        if (isIslandTargetRandom && onlyKnown) return null;
+        return islandTarget;
     }
 
 }

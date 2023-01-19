@@ -43,7 +43,7 @@ public strictfp class AmplifierRobot extends Robot {
                 }
             }
         }
-        cache.updateEnemyCache(nearbyRobots);
+        //cache.updateEnemyCache(nearbyRobots);
     }
     
     public boolean tryMove() throws GameActionException {

@@ -13,7 +13,9 @@ public strictfp class LauncherRobot extends Robot {
     public static final int EXECUTE_MODIFIER = 100;
     public static final int DAMAGED_MODIFIER = 15;
     public static final int ISLAND_MODIFIER = 0;
-    public static final boolean USE_NEW_MICRO = true;
+    public static final boolean USE_NEW_MICRO = false;
+    public static final int STAY_IN_COMBAT_TURNS = 6;
+    public static final int HEAL_HEALTH = 133;
 
     MapLocation target;
     double targetWeight;
@@ -22,6 +24,7 @@ public strictfp class LauncherRobot extends Robot {
     StinkyNavigation snav;
     MapLocation[] reflectedHQs;
     int hqTargetIndex = 0;
+    int turnsSinceInCombat = 0;
 
     HQLocations hqLocs;
     MapLocation hqTarget;
@@ -32,7 +35,7 @@ public strictfp class LauncherRobot extends Robot {
     public LauncherRobot(RobotController rc) throws GameActionException {
         super(rc);
         snav = new StinkyNavigation(rc);
-        cache = new MapCache(rc, 2, 4, 16);
+        cache = new MapCache(rc, 4);
         hqLocs = new HQLocations(rc);
         hqTarget = null;
         micro = new Micro(rc);
@@ -56,6 +59,8 @@ public strictfp class LauncherRobot extends Robot {
             }
         }
 
+        turnsSinceInCombat++;
+
         // rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
         //
         if (Clock.getBytecodesLeft() > 1000) {
@@ -65,7 +70,7 @@ public strictfp class LauncherRobot extends Robot {
         } else {
             System.out.println("Skipping wells");
         }
-
+        
     }
 
     public void processNearbyRobots() throws GameActionException {
@@ -73,15 +78,18 @@ public strictfp class LauncherRobot extends Robot {
         MapLocation curr = rc.getLocation();
         Team team = rc.getTeam();
         leader = null;
-        int lowestID = rc.getID();
+        double highestHealth = rc.getHealth() + 1.0 / rc.getID();
+        double health;
 
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
                 switch (robot.type) {
                 case LAUNCHER:
-                    if (robot.ID < lowestID) {
+                    health = robot.health + 1.0 / robot.ID;
+                    if (health > highestHealth) {
                         leader = robot.location;
-                        lowestID = robot.ID;
+                        highestHealth = health;
+
                     }
                     break;
                 }
@@ -90,20 +98,35 @@ public strictfp class LauncherRobot extends Robot {
             }
         }
         // cache.updateEnemyCache(nearbyRobots);
+        cache.debugIslandCache();
     }
 
     public boolean tryAttack() throws GameActionException {
         MapLocation target = getTarget(rc);
         if (target != null && rc.canAttack(target)) {
             rc.attack(target);
+            turnsSinceInCombat = 0;
             return true;
         }
         return false;
     }
 
     public boolean tryMove() throws GameActionException {
+        MapLocation curr = rc.getLocation();
+        if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS) {
+            MapLocation islandTarget = getIslandTarget(rc.getTeam(), cache, true);
+            if (islandTarget != null) {
+                int health = rc.getHealth();
+                if (rc.getHealth() <= HEAL_HEALTH ||
+                        (health < RobotType.LAUNCHER.health
+                         && islandTarget.distanceSquaredTo(curr) <= 8)) {
+                    return rc.getLocation().distanceSquaredTo(islandTarget) > 0
+                        && snav.tryNavigate(islandTarget);
+                }
+            }
+        }
+
         if (USE_NEW_MICRO) {
-            MapLocation curr = rc.getLocation();
             if (target != null) {
                 if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
                     if (target.equals(hqTarget)) {
@@ -156,7 +179,7 @@ public strictfp class LauncherRobot extends Robot {
                 success = micro.doMicro();
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                        && (rc.getRoundNum() % 2 == 0 || attackableEnemies == 0) && snav.tryNavigate(leader)) {
+                        && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady())) && snav.tryNavigate(leader)) {
                     success = true;
                 } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
                         && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
@@ -166,7 +189,6 @@ public strictfp class LauncherRobot extends Robot {
 
             return success;
         } else {
-            MapLocation curr = rc.getLocation();
             if (target != null) {
                 if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
                     if (target.equals(hqTarget)) {
@@ -242,9 +264,9 @@ public strictfp class LauncherRobot extends Robot {
     }
 
     public MapLocation getTarget(RobotController rc) throws GameActionException {
-        if (!USE_NEW_MICRO) {
+        if (false && !USE_NEW_MICRO) {
             RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
-            cache.updateEnemyCache(targets);
+            //cache.updateEnemyCache(targets);
             MapLocation finalTarget = null;
             double maxScore = -1;
             MapLocation curr = rc.getLocation();
@@ -307,7 +329,7 @@ public strictfp class LauncherRobot extends Robot {
     }
 
     public double scoreTarget(RobotInfo info) throws GameActionException {
-        double score = 1 / info.ID;
+        double score = 1.0 / info.ID;
 
         switch (info.getType()) {
         case AMPLIFIER:

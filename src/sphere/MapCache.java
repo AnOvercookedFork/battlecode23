@@ -13,6 +13,7 @@ public strictfp class MapCache {
         ResourceType type;
         int rate;
         boolean fromComms;
+        int roundSeen; // TODO: only report locations that have been seen recently
 
         public WellData(MapLocation location, ResourceType type, int rate) {
             this.location = location;
@@ -75,6 +76,7 @@ public strictfp class MapCache {
         int idx;
         Team team;
         boolean fromComms;
+        int roundSeen; // TODO: only report islands that have been seen recently
 
         public IslandData(MapLocation location, int idx, Team team) {
             this.location = location;
@@ -163,63 +165,45 @@ public strictfp class MapCache {
     EnemyData[] enemyCache;
 
     int wellCachePtr;
-    int islandCachePtr;
-    int enemyCachePtr;
+    //int enemyCachePtr;
 
     int wellCacheSize;
-    int islandCacheSize;
-    int enemyCacheSize;
+    //int enemyCacheSize;
 
     int wellSamplePtr;
     int islandSamplePtr;
-    int enemySamplePtr;
+    //int enemySamplePtr;
 
-    public static int WELL_CACHE_SIZE = 8;
-    public static int ISLAND_CACHE_SIZE = 16;
-    public static int ENEMY_CACHE_SIZE = 16;
+    public static int WELL_CACHE_SIZE;
+    public static int ISLAND_CACHE_SIZE = 35;
+    //public static int ENEMY_CACHE_SIZE = 2;
+
+    public static final int DEFAULT_WELL_CACHE_SIZE = 8;
 
     public MapCache(RobotController rc) {
-        this.rc = rc;
-
-        wellCache = new WellData[WELL_CACHE_SIZE];
-        islandCache = new IslandData[ISLAND_CACHE_SIZE];
-        enemyCache = new EnemyData[ENEMY_CACHE_SIZE];
-
-        wellCachePtr = 0;
-        islandCachePtr = 0;
-        enemyCachePtr = 0;
-
-        wellCacheSize = 0;
-        islandCacheSize = 0;
-        enemyCacheSize = 0;
-
-        wellSamplePtr = 0;
-        islandSamplePtr = 0;
-        enemySamplePtr = 0;
+        this(rc, DEFAULT_WELL_CACHE_SIZE);
     }
 
-    public MapCache(RobotController rc, int wells_size, int islands_size, int enemies_size) {
+    public MapCache(RobotController rc, int wells_size) {
         WELL_CACHE_SIZE = wells_size;
-        ISLAND_CACHE_SIZE = islands_size;
-        ENEMY_CACHE_SIZE = enemies_size;
 
         this.rc = rc;
 
         wellCache = new WellData[WELL_CACHE_SIZE];
         islandCache = new IslandData[ISLAND_CACHE_SIZE];
-        enemyCache = new EnemyData[ENEMY_CACHE_SIZE];
+        //enemyCache = new EnemyData[ENEMY_CACHE_SIZE];
 
         wellCachePtr = 0;
-        islandCachePtr = 0;
-        enemyCachePtr = 0;
+        //islandCachePtr = 0;
+        //enemyCachePtr = 0;
 
         wellCacheSize = 0;
-        islandCacheSize = 0;
-        enemyCacheSize = 0;
+        //islandCacheSize = 0;
+        //enemyCacheSize = 0;
 
         wellSamplePtr = 0;
         islandSamplePtr = 0;
-        enemySamplePtr = 0;
+        //enemySamplePtr = 0;
     }
 
 
@@ -323,7 +307,7 @@ public strictfp class MapCache {
         }
     }
 
-    public void setIslandCache(int i, MapLocation l, int islandIdx, Team team) {
+    /*public void setIslandCache(int i, MapLocation l, int islandIdx, Team team) {
         int idx = (islandCachePtr + i) % ISLAND_CACHE_SIZE;
         if (islandCache[idx] == null) {
             islandCache[idx] = new IslandData(l, islandIdx, team);
@@ -361,6 +345,20 @@ public strictfp class MapCache {
                 }
             }
         }
+    }*/
+
+    public void updateIslandCache() throws GameActionException {
+        int[] nearbyIslands = rc.senseNearbyIslands();
+        IslandData idata;
+        for (int islandIdx : nearbyIslands) {
+            Team controllingTeam = rc.senseTeamOccupyingIsland(islandIdx);
+            if (islandCache[islandIdx] == null
+                    || controllingTeam != islandCache[islandIdx].team) {
+
+                MapLocation islandLoc = rc.senseNearbyIslandLocations(islandIdx)[0];
+                islandCache[islandIdx] = new IslandData(islandLoc, islandIdx, controllingTeam);
+            }
+        }
     }
 
     public IslandData sampleIslandCache(boolean excludeComms) {
@@ -377,30 +375,28 @@ public strictfp class MapCache {
 
     public void updateIslandCacheFromComms(int code) {
         IslandData newdata = IslandData.decode(code, true);
-        IslandData idata;
-        Team team = rc.getTeam();
-        for (int i = 0; i < islandCacheSize; i++) {
-            idata = islandCache[(islandCachePtr + i) % ISLAND_CACHE_SIZE];
-            if (idata.idx == newdata.idx) {
-                if (idata.team == team && newdata.team != team) {
-                    islandCache[(islandCachePtr + i) % ISLAND_CACHE_SIZE] = newdata;
-                } else if (idata.team == newdata.team) {
-                    islandCache[(islandCachePtr + i) % ISLAND_CACHE_SIZE].fromComms = true;
+        islandCache[newdata.idx] = newdata;
+    }
+
+    public void debugIslandCache() {
+        for (IslandData idata : islandCache) {
+            if (idata != null) {
+                switch (idata.team) {
+                    case NEUTRAL:
+                        rc.setIndicatorDot(idata.location, 200, 200, 200);
+                        break;
+                    case A:
+                        rc.setIndicatorDot(idata.location, 255, 0, 0);
+                        break;
+                    case B:
+                        rc.setIndicatorDot(idata.location, 0, 0, 255);
+                        break;
                 }
-                return;
             }
-        }
-        
-        if (islandCacheSize < ISLAND_CACHE_SIZE) {
-            islandCache[(islandCachePtr + islandCacheSize) % ISLAND_CACHE_SIZE] = newdata;
-            islandCacheSize++;
-        } else {
-            islandCache[islandCachePtr] = newdata;
-            islandCachePtr = (islandCachePtr + 1) % ISLAND_CACHE_SIZE;
         }
     }
 
-    public void setEnemyCache(int i, MapLocation l, int priority, int roundSeen) {
+    /*public void setEnemyCache(int i, MapLocation l, int priority, int roundSeen) {
         int idx = (enemyCachePtr + i) % ENEMY_CACHE_SIZE;
         if (enemyCache[idx] == null) {
             enemyCache[idx] = new EnemyData(l, priority, roundSeen);
@@ -461,7 +457,7 @@ public strictfp class MapCache {
             }
         }
         return null;
-    }
+    }*/
     
     /*
     public void updateEnemyCacheFromComms(int code) {
