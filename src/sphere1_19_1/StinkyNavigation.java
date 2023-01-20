@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_19_1;
 
 import battlecode.common.*;
 
@@ -28,26 +28,27 @@ public strictfp class StinkyNavigation {
         return 0;
     }
 
-    public MapLocation getDestination(MapLocation loc) throws GameActionException {
-        if (!rc.canSenseLocation(loc)) {
+    public MapLocation getDestination(RobotController rc, MapLocation loc) throws GameActionException {
+        if(!rc.canSenseLocation(loc)) {
             return loc;
         }
         MapInfo info = rc.senseMapInfo(loc);
-        if (info.getCurrentDirection() == Direction.CENTER) {
+        if(info.getCurrentDirection() == Direction.CENTER) {
             return loc;
-        } else {
+        }
+        else {
             MapLocation next = loc.add(info.getCurrentDirection());
-            if (rc.canSenseRobotAtLocation(next)) {
-                if (rc.senseRobotAtLocation(next) == null) {
+            if(rc.canSenseRobotAtLocation(next)) {
+                if(rc.senseRobotAtLocation(next) == null) {
                     return loc;
                 }
-
-                return getDestination(next);
+                
+                return getDestination(rc, next);
             }
             return loc;
         }
     }
-
+    
     public void reset() {
         resetRound = rc.getRoundNum();
     }
@@ -65,6 +66,7 @@ public strictfp class StinkyNavigation {
         }
         lastTarget = loc;
 
+
         double bestScore = Math.sqrt(curr.distanceSquaredTo(loc)) + stinkyFactor(curr, round);
 
         MapLocation next;
@@ -76,7 +78,7 @@ public strictfp class StinkyNavigation {
                 bestDir = Direction.NORTH;
             }
         }
-
+        
         if (rc.canMove(Direction.NORTHEAST)) {
             next = curr.add(Direction.NORTHEAST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
@@ -130,7 +132,7 @@ public strictfp class StinkyNavigation {
                 bestDir = Direction.WEST;
             }
         }
-
+        
         if (rc.canMove(Direction.NORTHWEST)) {
             next = curr.add(Direction.NORTHWEST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
@@ -139,27 +141,27 @@ public strictfp class StinkyNavigation {
                 bestDir = Direction.NORTHWEST;
             }
         }
-
+        
         return bestDir;
     }
-
+    
     //
     public int isInHQRange(MapLocation loc, MapLocation[] avoidHQs) {
-        if (avoidHQs == null || avoidHQs.length == 0) {
+        if(avoidHQs == null || avoidHQs.length == 0) {
             return 0;
         }
-
-        for (int i = 0; i < avoidHQs.length; i++) {
-            if (loc.distanceSquaredTo(avoidHQs[i]) <= 9) {
+        
+        for(int i = 0; i <= avoidHQs.length; i++) {
+            if(loc.distanceSquaredTo(avoidHQs[i]) <= 9) {
                 System.out.println("debug hq pathfinding score: " + (9 - loc.distanceSquaredTo(avoidHQs[i])));
-                return (9 - loc.distanceSquaredTo(avoidHQs[i])) * 1000;
+                return (9 - loc.distanceSquaredTo(avoidHQs[i])) * 10;
             }
         }
-
+        
         return 0;
     }
-
-    public Direction navigate(MapLocation loc, MapLocation[] avoidHQs) throws GameActionException {
+    
+    public Direction navigate(MapLocation loc, MapLocation[] avoidHQs) {
         Direction bestDir = Direction.CENTER;
         double score;
         MapLocation curr = rc.getLocation();
@@ -171,20 +173,21 @@ public strictfp class StinkyNavigation {
         }
         lastTarget = loc;
 
+
         double bestScore = Math.sqrt(curr.distanceSquaredTo(loc)) + stinkyFactor(curr, round);
 
         MapLocation next;
         if (rc.canMove(Direction.NORTH)) {
-            next = getDestination(curr.add(Direction.NORTH));
+            next = curr.add(Direction.NORTH);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
                 bestDir = Direction.NORTH;
             }
         }
-
+        
         if (rc.canMove(Direction.NORTHEAST)) {
-            next = getDestination(curr.add(Direction.NORTHEAST));
+            next = curr.add(Direction.NORTHEAST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
@@ -193,7 +196,7 @@ public strictfp class StinkyNavigation {
         }
 
         if (rc.canMove(Direction.EAST)) {
-            next = getDestination(curr.add(Direction.EAST));
+            next = curr.add(Direction.EAST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
@@ -202,7 +205,7 @@ public strictfp class StinkyNavigation {
         }
 
         if (rc.canMove(Direction.SOUTHEAST)) {
-            next = getDestination(curr.add(Direction.SOUTHEAST));
+            next = curr.add(Direction.SOUTHEAST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
@@ -211,7 +214,7 @@ public strictfp class StinkyNavigation {
         }
 
         if (rc.canMove(Direction.SOUTH)) {
-            next = getDestination(curr.add(Direction.SOUTH));
+            next = curr.add(Direction.SOUTH);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
@@ -220,7 +223,7 @@ public strictfp class StinkyNavigation {
         }
 
         if (rc.canMove(Direction.SOUTHWEST)) {
-            next = getDestination(curr.add(Direction.SOUTHWEST));
+            next = curr.add(Direction.SOUTHWEST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
@@ -229,40 +232,36 @@ public strictfp class StinkyNavigation {
         }
 
         if (rc.canMove(Direction.WEST)) {
-            next = getDestination(curr.add(Direction.WEST));
+            next = curr.add(Direction.WEST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
                 bestDir = Direction.WEST;
             }
         }
-
+        
         if (rc.canMove(Direction.NORTHWEST)) {
-            next = getDestination(curr.add(Direction.NORTHWEST));
+            next = curr.add(Direction.NORTHWEST);
             score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round) + isInHQRange(next, avoidHQs);
             if (score < bestScore) {
                 bestScore = score;
                 bestDir = Direction.NORTHWEST;
             }
         }
-
+        
         return bestDir;
     }
 
     public boolean tryNavigate(MapLocation loc) throws GameActionException {
-        MapLocation[] blah = {};
-        Direction dir = navigate(loc, blah);
+        Direction dir = navigate(loc);
         if (dir != Direction.CENTER) {
             rc.move(dir);
             return true;
         }
         return false;
     }
-
+    
     public boolean tryNavigate(MapLocation loc, MapLocation[] avoidHQs) throws GameActionException {
-        if (avoidHQs.length > 0) {
-            System.out.println(avoidHQs[0].toString());
-        }
         Direction dir = navigate(loc, avoidHQs);
         if (dir != Direction.CENTER) {
             rc.move(dir);
