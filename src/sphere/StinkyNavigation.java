@@ -39,7 +39,7 @@ public strictfp class StinkyNavigation {
         else {
             MapLocation next = loc.add(info.getCurrentDirection());
             if(rc.canSenseRobotAtLocation(next)) {
-                if(rc.senseRobotAtLocation(next) == null)) {
+                if(rc.senseRobotAtLocation(next) == null) {
                     return loc;
                 }
                 
