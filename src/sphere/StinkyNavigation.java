@@ -45,6 +45,7 @@ public strictfp class StinkyNavigation {
                 
                 return getDestination(rc, next);
             }
+            return loc;
         }
     }
     
