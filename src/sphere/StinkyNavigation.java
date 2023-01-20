@@ -47,7 +47,6 @@ public strictfp class StinkyNavigation {
             }
             return loc;
         }
-        return null;
     }
     
     public void reset() {
