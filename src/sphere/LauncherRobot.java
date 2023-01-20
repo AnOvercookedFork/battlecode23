@@ -72,7 +72,10 @@ public strictfp class LauncherRobot extends Robot {
         }
         
     }
-
+    
+    /**
+     * Chooses a leader based on health and id.
+     */
     public void processNearbyRobots() throws GameActionException {
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
         MapLocation curr = rc.getLocation();
@@ -100,7 +103,7 @@ public strictfp class LauncherRobot extends Robot {
         // cache.updateEnemyCache(nearbyRobots);
         cache.debugIslandCache();
     }
-
+    
     public boolean tryAttack() throws GameActionException {
         MapLocation target = getTarget(rc);
         if (target != null && rc.canAttack(target)) {

@@ -82,7 +82,10 @@ public strictfp class CarrierRobot extends Robot {
         //cache.debugWellCache();
         cache.debugIslandCache();
     }
-
+    
+    /**
+     * Checks for nearby enemies and either flees or throws resources at them.
+     */
     public void processNearbyRobots() throws GameActionException {
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
         MapLocation curr = rc.getLocation();
@@ -163,7 +166,10 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
     }
-
+    
+    /**
+     * Chooses a target from nearby robots and returns its location.
+     */
     public MapLocation getTarget(RobotController rc) throws GameActionException {
         RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
         MapLocation finalTarget = null;
@@ -203,7 +209,7 @@ public strictfp class CarrierRobot extends Robot {
 
         return null;
     }
-
+    
     public int scoreTarget(RobotInfo info, RobotController rc) throws GameActionException {
         int score = 0;
 
@@ -237,12 +243,19 @@ public strictfp class CarrierRobot extends Robot {
 
         return score;
     }
-
+    
+    /**
+     * Returns total weight this robot is carrying.
+     */
     public int getWeight() throws GameActionException {
         return rc.getResourceAmount(ResourceType.ADAMANTIUM) + rc.getResourceAmount(ResourceType.MANA)
-                + rc.getResourceAmount(ResourceType.ELIXIR);
+                + rc.getResourceAmount(ResourceType.ELIXIR) + (rc.getAnchor() != null? GameConstants.ANCHOR_WEIGHT : 0);
     }
-
+    
+    /**
+     * Tries collecting resources from all adjacent locations.
+     * @return true if something was collected
+     */
     public boolean tryCollect() throws GameActionException {
         MapLocation curr = rc.getLocation();
         boolean success = false;
@@ -259,7 +272,10 @@ public strictfp class CarrierRobot extends Robot {
         }
         return success;
     }
-
+    
+    /**
+     * Chooses a well from known well locations.
+     */
     public MapLocation selectWell() {
         MapLocation best = null;
         double bestScore = 0;
@@ -296,7 +312,11 @@ public strictfp class CarrierRobot extends Robot {
 
         return best;
     }
-
+    
+    /**
+     * Tries to move towards resources, if not already adjacent to one.
+     * @return true if moved, false otherwise
+     */
     public boolean tryFindResources() throws GameActionException {
         if (collectTarget != null && collectTargetWeight < KNOWN_LOC_WEIGHT) {
             if (rc.canSenseLocation(collectTarget)) {
@@ -327,7 +347,10 @@ public strictfp class CarrierRobot extends Robot {
 
         return curr.distanceSquaredTo(collectTarget) > 2 && snav.tryNavigate(collectTarget);
     }
-
+    
+    /**
+     * Returns the closest HQ to the current location.
+     */
     public MapLocation selectHQ() throws GameActionException {
         MapLocation best = null;
         int bestScore = Integer.MAX_VALUE;
@@ -341,8 +364,11 @@ public strictfp class CarrierRobot extends Robot {
         }
         return best;
     }
-
-    // find an HQ and deposit resources there
+    
+    /**
+     * Tries to navigate towards an HQ and deposit resources there.
+     * @return true if resources were transferred
+     */
     public boolean tryTransferHQ() throws GameActionException {
         MapLocation hq = selectHQ();
         MapLocation curr = rc.getLocation();
@@ -372,7 +398,10 @@ public strictfp class CarrierRobot extends Robot {
         return success;
     }
 
-    // check for resources to deposit other than the one that was just deposited
+    /**
+     * If we're currently next to an HQ and have resources, drop it before moving away!
+     * @return true if we're not next to an HQ, or if we have nothing to transfer
+     */
     public boolean tryFinishDeposit() throws GameActionException {
 
         boolean hqNearby = false;
@@ -396,15 +425,22 @@ public strictfp class CarrierRobot extends Robot {
 
         return !hqNearby || getWeight() == 0;
     }
-
+    
+    /**
+     * Decides whether or not we should take an anchor from HQ.
+     */
     public boolean shouldTakeAnchor() throws GameActionException {
         return rc.getHealth() > MIN_HEALTH_TAKE_ANCHOR && getWeight() == 0;
     }
-
+    
+    /**
+     * Tries to take an anchor from an HQ.
+     * @return true if we got an anchor
+     */
     public boolean tryTakeAnchor() throws GameActionException {
         for (int i = 0; i < hqs.length; i++) {
             if (rc.canTakeAnchor(hqs[i], Anchor.ACCELERATING)) {
-                rc.takeAnchor(hqs[i], Anchor.STANDARD);
+                rc.takeAnchor(hqs[i], Anchor.ACCELERATING);
                 return true;
             }
             if (rc.canTakeAnchor(hqs[i], Anchor.STANDARD)) {
@@ -414,7 +450,10 @@ public strictfp class CarrierRobot extends Robot {
         }
         return false;
     }
-
+    
+    /**
+     * Places an anchor, if we are currently sitting on an unoccupied island.
+     */
     public boolean tryPlaceAnchor() throws GameActionException {
         MapLocation curr = rc.getLocation();
         int island = rc.senseIsland(curr);
@@ -424,7 +463,11 @@ public strictfp class CarrierRobot extends Robot {
         }
         return false;
     }
-
+    
+    /**
+     * Tries to move towards a neutral island, if not currently sitting on one.
+     * @return true if we moved
+     */
     public boolean tryFindIsland() throws GameActionException {
         MapLocation islandTarget = getIslandTarget(Team.NEUTRAL, cache, false);
 

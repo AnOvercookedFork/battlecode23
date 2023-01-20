@@ -29,7 +29,10 @@ public strictfp class MapCache {
             this.rate = rate;
             this.fromComms = fromComms;
         }
-
+        
+        /**
+         * empty bit : 1 | is accelerate rate l: 1 | y position : 6 | x position : 6
+         */
         int encode() {
             int code12_15 = 0;
             switch (type) {
@@ -91,7 +94,10 @@ public strictfp class MapCache {
             this.team = team;
             this.fromComms = fromComms;
         }
-
+        
+        /**
+         * team : 2 | index : 8 | y position : 4 | x position : 4
+         */
         int encode() {
             int code14_15 = 2; // NEUTRAL, by default
             switch (team) {
@@ -206,7 +212,9 @@ public strictfp class MapCache {
         //enemySamplePtr = 0;
     }
 
-
+    /**
+     * Sets index i of the well cache to winfo, creates a new WellData object if it is null and otherwise just overwrites the data.
+     */
     public void setWellCache(int i, WellInfo winfo) {
         int idx = (wellCachePtr + i) % WELL_CACHE_SIZE;
         if (wellCache[idx] == null) {
@@ -217,7 +225,10 @@ public strictfp class MapCache {
             wellCache[idx].rate = winfo.getRate();
         }
     }
-
+    
+    /**
+     * Adds the given wells to the well cache, avoids duplicates (has same location).
+     */
     public void updateWellCache(WellInfo[] nearbyWells) {
         WellData wdata;
         for (WellInfo well : nearbyWells) {
@@ -243,6 +254,9 @@ public strictfp class MapCache {
         }
     }
 
+    /**
+     * Pick the next well from the well cache, if excludeComms, do not pick a well obtained from communications.
+     */
     public WellData sampleWellCache(boolean excludeComms) {
         WellData wdata;
         for (int i = 0; i < WELL_CACHE_SIZE; i++) {
@@ -254,7 +268,10 @@ public strictfp class MapCache {
         }
         return null;
     }
-
+    
+    /**
+     * Given a code obtained from communications, add the well to the cache; overwrites if the well was upgraded to elixir or the rate was increased.
+     */
     public void updateWellCacheFromComms(int code) {
         WellData newdata = WellData.decode(code, true);
         WellData wdata;
@@ -280,6 +297,9 @@ public strictfp class MapCache {
         }
     }
 
+    /**
+     * Draws the well locations on the map with pretty dots :D
+     */
     public void debugWellCache() {
         WellData wdata;
         for (int i = 0; i < wellCacheSize; i++) {
@@ -346,21 +366,23 @@ public strictfp class MapCache {
             }
         }
     }*/
-
+    
+    /**
+     * Senses nearby islands and the locations and teams associated with them, and adds them to the cache.
+     */
     public void updateIslandCache() throws GameActionException {
         int[] nearbyIslands = rc.senseNearbyIslands();
         IslandData idata;
         for (int islandIdx : nearbyIslands) {
             Team controllingTeam = rc.senseTeamOccupyingIsland(islandIdx);
-            if (islandCache[islandIdx] == null
-                    || controllingTeam != islandCache[islandIdx].team) {
-
-                MapLocation islandLoc = rc.senseNearbyIslandLocations(islandIdx)[0];
-                islandCache[islandIdx] = new IslandData(islandLoc, islandIdx, controllingTeam);
-            }
+            MapLocation islandLoc = rc.senseNearbyIslandLocations(islandIdx)[0];
+            islandCache[islandIdx] = new IslandData(islandLoc, islandIdx, controllingTeam);
         }
     }
-
+    
+    /**
+     * Picks the next island from the island cache, if excludeComms, do not pick an island from communications.
+     */
     public IslandData sampleIslandCache(boolean excludeComms) {
         IslandData idata;
         for (int i = 0; i < ISLAND_CACHE_SIZE; i++) {
@@ -372,12 +394,15 @@ public strictfp class MapCache {
         }
         return null;
     }
-
+    
     public void updateIslandCacheFromComms(int code) {
         IslandData newdata = IslandData.decode(code, true);
         islandCache[newdata.idx] = newdata;
     }
-
+    
+    /**
+     * Puts pretty dots on the map where islands are :D
+     */
     public void debugIslandCache() {
         for (IslandData idata : islandCache) {
             if (idata != null) {
