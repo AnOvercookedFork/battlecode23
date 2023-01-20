@@ -44,14 +44,6 @@ public strictfp class CarrierRobot extends Robot {
 
         processNearbyRobots();
 
-        if (getWeight() == GameConstants.CARRIER_CAPACITY) {
-            tryTransferHQ();
-        }
-
-        if (shouldTakeAnchor() && rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
-            tryTakeAnchor();
-        }
-
         if (rc.getAnchor() != null) {
             tryPlaceAnchor();
             while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryFindIsland()) {
@@ -61,6 +53,13 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
         if (rc.getAnchor() == null) {
+            if (getWeight() == GameConstants.CARRIER_CAPACITY) {
+                tryTransferHQ();
+            }
+
+            if (shouldTakeAnchor() && rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
+                tryTakeAnchor();
+            }
             boolean finishedDeposit = tryFinishDeposit();
             while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
@@ -74,11 +73,12 @@ public strictfp class CarrierRobot extends Robot {
                         && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
                 }
             }
+
+            if (getWeight() == GameConstants.CARRIER_CAPACITY) {
+                tryTransferHQ();
+            }
         }
 
-        if (getWeight() == GameConstants.CARRIER_CAPACITY) {
-            tryTransferHQ();
-        }
 
         //cache.debugWellCache();
         cache.debugIslandCache();
@@ -482,6 +482,8 @@ public strictfp class CarrierRobot extends Robot {
      */
     public boolean tryFindIsland() throws GameActionException {
         MapLocation islandTarget = getIslandTarget(Team.NEUTRAL, cache, false);
+
+        rc.setIndicatorLine(rc.getLocation(), islandTarget, 255, 255, 0);
 
         return rc.getLocation().distanceSquaredTo(islandTarget) > 0 && snav.tryNavigate(islandTarget, nearbyEnemyHQs);
     }
