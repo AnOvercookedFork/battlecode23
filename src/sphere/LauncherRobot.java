@@ -292,7 +292,6 @@ public strictfp class LauncherRobot extends Robot {
             return null;
         } else {
             RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
-            // cache.updateEnemyCache(targets);
             MapLocation finalTarget = null;
             double maxScore = -1;
             MapLocation curr = rc.getLocation();
@@ -307,9 +306,6 @@ public strictfp class LauncherRobot extends Robot {
             }
             if (prevTargets != null) {
                 for (RobotInfo target : prevTargets) {
-                    if (target.type == RobotType.HEADQUARTERS) {
-
-                    }
                     if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
                         continue;
 
