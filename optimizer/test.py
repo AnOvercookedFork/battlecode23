@@ -9,7 +9,7 @@ maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Cl
 
 # set these
 teamA = 'sphere'
-teamB = 'sprint1'
+teamB = 'sphere1_20_1'
 
 def get_winner(data):
     return data[-6].split(' ')[-4]
