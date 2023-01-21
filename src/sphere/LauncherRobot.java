@@ -21,7 +21,7 @@ public strictfp class LauncherRobot extends Robot {
     double targetWeight;
     MapLocation leader;
     MapCache cache;
-    StinkyNavigation snav;
+    BugNavigation snav;
     MapLocation[] reflectedHQs;
     int hqTargetIndex = 0;
     int turnsSinceInCombat = 0;
@@ -34,7 +34,7 @@ public strictfp class LauncherRobot extends Robot {
 
     public LauncherRobot(RobotController rc) throws GameActionException {
         super(rc);
-        snav = new StinkyNavigation(rc);
+        snav = new BugNavigation(rc);
         cache = new MapCache(rc, 4);
         hqLocs = new HQLocations(rc);
         hqTarget = null;

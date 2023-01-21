@@ -24,7 +24,7 @@ public strictfp class CarrierRobot extends Robot {
     double collectTargetWeight;
     MapLocation collectTarget;
     MapLocation enemyLastSeenLoc = null;
-    StinkyNavigation snav;
+    BugNavigation snav;
     MapCache cache;
     ResourceType prevResource = ResourceType.ADAMANTIUM;
 
@@ -37,7 +37,7 @@ public strictfp class CarrierRobot extends Robot {
         super(rc);
         hqs = null;
         cache = new MapCache(rc, 16);
-        snav = new StinkyNavigation(rc);
+        snav = new BugNavigation(rc);
     }
 
     public void run() throws GameActionException {
