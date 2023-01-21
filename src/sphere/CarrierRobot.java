@@ -137,10 +137,10 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
         
-        nearbyEnemyHQs = new MapLocation[hqCt];
-        for(int i = 0; i < hqCt; i++) {
-            nearbyEnemyHQs[i] = tempEnemyHQs[i];
-        }
+//        nearbyEnemyHQs = new MapLocation[hqCt];
+//        for(int i = 0; i < hqCt; i++) {
+//            nearbyEnemyHQs[i] = tempEnemyHQs[i];
+//        }
 
         nearestHQ = hqs[0];
         int nearestHQdist = nearestHQ.distanceSquaredTo(curr);

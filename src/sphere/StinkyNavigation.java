@@ -38,7 +38,7 @@ public strictfp class StinkyNavigation {
         } else {
             MapLocation next = loc.add(info.getCurrentDirection());
             if (rc.canSenseRobotAtLocation(next)) {
-                if (rc.senseRobotAtLocation(next) == null) {
+                if (rc.senseRobotAtLocation(next) != null) {
                     return loc;
                 }
 
@@ -250,8 +250,8 @@ public strictfp class StinkyNavigation {
     }
 
     public boolean tryNavigate(MapLocation loc) throws GameActionException {
-        MapLocation[] blah = {};
-        Direction dir = navigate(loc, blah);
+        MapLocation[] blank = {};
+        Direction dir = navigate(loc, blank);
         if (dir != Direction.CENTER) {
             rc.move(dir);
             return true;
@@ -260,10 +260,8 @@ public strictfp class StinkyNavigation {
     }
 
     public boolean tryNavigate(MapLocation loc, MapLocation[] avoidHQs) throws GameActionException {
-        if (avoidHQs.length > 0) {
-            System.out.println(avoidHQs[0].toString());
-        }
-        Direction dir = navigate(loc, avoidHQs);
+        MapLocation[] blank = {};
+        Direction dir = navigate(loc, blank);
         if (dir != Direction.CENTER) {
             rc.move(dir);
             return true;
