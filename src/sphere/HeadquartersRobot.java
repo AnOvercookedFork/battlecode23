@@ -62,14 +62,11 @@ public strictfp class HeadquartersRobot extends Robot {
             anchorBuildCooldown = ANCHOR_BUILD_COOLDOWN;
         }
 
-        if (!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) {
-            tryBuildLauncher();
-        }
-        if (!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost) {
-            if (carriersNearby < CARRIER_SATURATION) {
-                tryBuildCarrier();
-            }
-        }
+        while ((!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) && tryBuildLauncher()) {}
+
+        while ((!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost)
+                && carriersNearby < CARRIER_SATURATION
+                && tryBuildCarrier()) {}
 
         turns++;
 
@@ -301,9 +298,24 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public boolean tryBuildLauncher() throws GameActionException {
+
+        MapLocation leader = null;
+        double highestHealth = 0;
+        double health;
+        RobotInfo[] allies = rc.senseNearbyRobots(-1, rc.getTeam());
+        for (RobotInfo ally : allies) {
+            if (ally.type == RobotType.LAUNCHER) {
+                health = ally.health + 1.0 / ally.ID;
+                if (health > highestHealth) {
+                    highestHealth = health;
+                    leader = ally.location;
+                }
+            }
+        }
+
         MapLocation target;
-        if (farthestLauncher != null) {
-            target = farthestLauncher;
+        if (leader != null) {
+            target = leader;
         } else {
             target = randomLocation();
         }

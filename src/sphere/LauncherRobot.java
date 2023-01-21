@@ -131,9 +131,9 @@ public strictfp class LauncherRobot extends Robot {
 
         if (USE_NEW_MICRO) {
             if (target != null) {
-                if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
+                if ((curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) && rc.canSenseLocation(target)) || targetWeight < GIVE_UP_WEIGHT) {
                     if (target.equals(hqTarget)) {
-                        hqTarget = null;
+                        hqTarget = hqLocs.getHQRushLocation(rc);
                     }
                     target = null;
 
@@ -255,11 +255,14 @@ public strictfp class LauncherRobot extends Robot {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
                         && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0) && snav.tryNavigate(leader)) {
                     success = true;
-                } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
+                } else if ((curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
+                            || targets.length == 0)
                         && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
                     success = true;
                 }
             }
+
+            rc.setIndicatorLine(curr, target, 255, 0, 0);
 
             return success;
         }

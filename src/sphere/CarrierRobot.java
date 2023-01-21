@@ -310,7 +310,7 @@ public strictfp class CarrierRobot extends Robot {
         int round = rc.getRoundNum();
         for (MapCache.WellData wdata : cache.wellCache) {
             if (wdata == null ||
-                    (round - blacklistRound < BLACKLIST_ROUNDS && wdata.location.distanceSquaredTo(blacklist) <= BLACKLIST_RADIUS))
+                    BlacklistMap.is_blacklisted(wdata.location.x, wdata.location.y, round))
                 continue;
             switch (wdata.type) {
             case MANA:
@@ -375,8 +375,7 @@ public strictfp class CarrierRobot extends Robot {
                 if (ally.type == RobotType.CARRIER) carriers++;
             }
             if (carriers > WELL_SATURATED_THRESHOLD) {
-                blacklist = collectTarget;
-                blacklistRound = rc.getRoundNum();
+                BlacklistMap.blacklist(collectTarget.x, collectTarget.y, rc.getRoundNum() + BLACKLIST_ROUNDS);
             }
         }
             
