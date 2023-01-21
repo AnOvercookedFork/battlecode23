@@ -12,6 +12,7 @@ public strictfp class HeadquartersRobot extends Robot {
     public static final int MIN_TURN_BUILD_HEAL_ANCHOR = 300;
     public static final int ANCHOR_BUILD_COOLDOWN = 50;
     public static final int MIN_TURN_BUILD_ANCHOR = 750;
+    public static final int CARRIER_SATURATION = 50;
 
     MapLocation farthestLauncher;
     int enemiesNearby = 0;
@@ -65,7 +66,9 @@ public strictfp class HeadquartersRobot extends Robot {
             tryBuildLauncher();
         }
         if (!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost) {
-            tryBuildCarrier();
+            if (carriersNearby < CARRIER_SATURATION) {
+                tryBuildCarrier();
+            }
         }
 
         turns++;

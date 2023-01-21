@@ -3,7 +3,7 @@ package sphere;
 import battlecode.common.*;
 
 public strictfp class CarrierRobot extends Robot {
-    public static final double RANDOM_LOC_WEIGHT = 0;
+    public static final double RANDOM_LOC_WEIGHT = 20;
     public static final double KNOWN_LOC_WEIGHT = 100;
     public static final double MIN_HEALTH_TAKE_ANCHOR = 10;
     public static final int PANIC_HEALTH = 12;
@@ -11,6 +11,12 @@ public strictfp class CarrierRobot extends Robot {
     public static final int EXECUTE_MODIFIER = 100;
     public static final int DAMAGED_MODIFIER = 15;
     public static final MapLocation EMPTY = new MapLocation(-50, -50);
+    public static final int WELL_SATURATED_THRESHOLD = 9; // how many carriers per well?
+    public static final int BLACKLIST_RADIUS = 4;
+    public static final int WELL_RADIUS = 4;
+    public static final int BLACKLIST_ROUNDS = 50;
+    public static final int PREFER_HQ_KG = 30;
+    public static final int DO_THE_SHUFFLE_THRESHOLD = 6;
 
     public static MapLocation[] hqs;
     MapLocation[] nearbyEnemyHQs;
@@ -21,6 +27,11 @@ public strictfp class CarrierRobot extends Robot {
     StinkyNavigation snav;
     MapCache cache;
     ResourceType prevResource = ResourceType.ADAMANTIUM;
+
+    MapLocation blacklist = EMPTY;
+    int blacklistRound = 0;
+    int nearbyCarriers;
+    MapLocation nearestHQ;
 
     public CarrierRobot(RobotController rc) {
         super(rc);
@@ -99,12 +110,15 @@ public strictfp class CarrierRobot extends Robot {
         int enemyHp = 0;
 
         Team team = rc.getTeam();
+        
+        nearbyCarriers = 0;
 
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
                 if(robot.type == RobotType.CARRIER) {
                     potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) * 2;
                 }
+                nearbyCarriers++;
             } else {
                 // Process enemy robots here
                 if (robot.type.damage > 0 && robot.type != RobotType.HEADQUARTERS) {
@@ -128,7 +142,7 @@ public strictfp class CarrierRobot extends Robot {
             nearbyEnemyHQs[i] = tempEnemyHQs[i];
         }
 
-        MapLocation nearestHQ = hqs[0];
+        nearestHQ = hqs[0];
         int nearestHQdist = nearestHQ.distanceSquaredTo(curr);
 
         int dist;
@@ -293,8 +307,10 @@ public strictfp class CarrierRobot extends Robot {
         double bestScore = 0;
         MapLocation curr = rc.getLocation();
         double score = 0;
+        int round = rc.getRoundNum();
         for (MapCache.WellData wdata : cache.wellCache) {
-            if (wdata == null)
+            if (wdata == null ||
+                    (round - blacklistRound < BLACKLIST_ROUNDS && wdata.location.distanceSquaredTo(blacklist) <= BLACKLIST_RADIUS))
                 continue;
             switch (wdata.type) {
             case MANA:
@@ -330,6 +346,10 @@ public strictfp class CarrierRobot extends Robot {
      * @return true if moved, false otherwise
      */
     public boolean tryFindResources() throws GameActionException {
+
+        MapLocation curr = rc.getLocation();
+
+
         if (collectTarget != null && collectTargetWeight < KNOWN_LOC_WEIGHT) {
             if (rc.canSenseLocation(collectTarget)) {
                 WellInfo well = rc.senseWell(collectTarget);
@@ -344,20 +364,116 @@ public strictfp class CarrierRobot extends Robot {
             collectTargetWeight = RANDOM_LOC_WEIGHT;
         }
 
+
+
         WellInfo[] nearbyWells = rc.senseNearbyWells(-1);
         cache.updateWellCache(nearbyWells);
-
+        if (rc.canSenseLocation(collectTarget) && curr.distanceSquaredTo(collectTarget) > 2) {
+            RobotInfo[] allies = rc.senseNearbyRobots(collectTarget, WELL_RADIUS, rc.getTeam());
+            int carriers = 0;
+            for (RobotInfo ally : allies) {
+                if (ally.type == RobotType.CARRIER) carriers++;
+            }
+            if (carriers > WELL_SATURATED_THRESHOLD) {
+                blacklist = collectTarget;
+                blacklistRound = rc.getRoundNum();
+            }
+        }
+            
         MapLocation selectedWell = selectWell();
         if (selectedWell != null) {
             collectTarget = selectedWell;
             collectTargetWeight = KNOWN_LOC_WEIGHT;
         }
 
-        MapLocation curr = rc.getLocation();
         
         //rc.setIndicatorLine(curr, collectTarget, 255, 255, 0);
+        
+        if (curr.distanceSquaredTo(collectTarget) <= 2) {
+            // do micro
+            Direction best = Direction.CENTER;
+            MapLocation l;
+            if (rc.getWeight() >= PREFER_HQ_KG) {
+                // Go for closest to HQ
+                int bestScore;
+                int score;
+                l = curr.add(rc.senseMapInfo(curr).getCurrentDirection());
+                bestScore = l.distanceSquaredTo(nearestHQ);
+                if (!l.isWithinDistanceSquared(collectTarget, 2)) {
+                    score = 1000000;
+                }
+                for (Direction d : directions) {
+                    if (!rc.canMove(d)) continue;
 
-        return curr.distanceSquaredTo(collectTarget) > 2 && snav.tryNavigate(collectTarget, nearbyEnemyHQs);
+                    l = curr.add(d);
+                    l = l.add(rc.senseMapInfo(l).getCurrentDirection());
+
+                    if (l.isWithinDistanceSquared(collectTarget, 2)) {
+                        score = l.distanceSquaredTo(nearestHQ);
+                        if (score < bestScore) {
+                            bestScore = score;
+                            best = d;
+                        }
+                    }
+                }
+            } else if (nearbyCarriers < DO_THE_SHUFFLE_THRESHOLD) {
+                // Go for low cooldown
+                double bestScore;
+                double score;
+                Team team = rc.getTeam();
+                l = curr.add(rc.senseMapInfo(curr).getCurrentDirection());
+                bestScore = rc.senseMapInfo(l).getCooldownMultiplier(team);
+                if (!l.isWithinDistanceSquared(collectTarget, 2)) {
+                    score = 1000000;
+                }
+                Direction d = Direction.NORTH;
+                do {
+                    //System.out.println("BRR direction is " + d);
+                    if (!rc.canMove(d)) {
+                        d = d.rotateRight();
+                        continue;
+                    }
+
+                    l = curr.add(d);
+                    l = l.add(rc.senseMapInfo(l).getCurrentDirection());
+
+                    if (l.isWithinDistanceSquared(collectTarget, 2)) {
+                        score = rc.senseMapInfo(l).getCooldownMultiplier(team);
+                        if (score <= bestScore) {
+                            bestScore = score;
+                            best = d;
+                        }
+                    }
+                    d = d.rotateRight();
+                } while (d != Direction.NORTH);
+            } else {
+                // Do the shuffe! AKA, move to any position around the well to try to make room.
+                MapInfo info;
+                Direction d = Direction.NORTH;
+                do {
+                    if (!rc.canMove(d)) {
+                        d = d.rotateRight();
+                        continue;
+                    }
+
+                    l = curr.add(d);
+                    l = l.add(rc.senseMapInfo(l).getCurrentDirection());
+
+                    if (l.isWithinDistanceSquared(collectTarget, 2)) {
+                        best = d;
+                        break;
+                    }
+                    d = d.rotateRight();
+                } while (d != Direction.NORTH);
+            }
+            if (rc.canMove(best)) {
+                rc.move(best);
+                return true;
+            }
+            return false;
+        } else {
+            return snav.tryNavigate(collectTarget, nearbyEnemyHQs);
+        }
     }
     
     /**
