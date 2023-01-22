@@ -56,105 +56,13 @@ public strictfp class StinkyNavigation {
 
                 return getDestination(next, depth + 1, maxDepth);
             }
-            return loc;
+            return next;
         }
     }
 
     public void reset() {
         resetRound = rc.getRoundNum();
         minDist = INF;
-    }
-
-    // deprecating, use navigate(loc, avoidHqs) instead
-    public Direction navigate(MapLocation loc) throws GameActionException {
-        Direction bestDir = Direction.CENTER;
-        double score;
-        MapLocation curr = rc.getLocation();
-        int round = rc.getRoundNum();
-        roundVisited[curr.x][curr.y] = round;
-
-        if (lastTarget == null || lastTarget.distanceSquaredTo(loc) >= RESET_THRESHOLD) {
-            resetRound = round;
-            minDist = INF;
-        }
-        lastTarget = loc;
-
-        double bestScore = Math.sqrt(curr.distanceSquaredTo(loc)) + stinkyFactor(curr, round);
-
-        MapLocation next;
-        if (rc.canMove(Direction.NORTH)) {
-            next = curr.add(Direction.NORTH);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.NORTH;
-            }
-        }
-
-        if (rc.canMove(Direction.NORTHEAST)) {
-            next = curr.add(Direction.NORTHEAST);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.NORTHEAST;
-            }
-        }
-
-        if (rc.canMove(Direction.EAST)) {
-            next = curr.add(Direction.EAST);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.EAST;
-            }
-        }
-
-        if (rc.canMove(Direction.SOUTHEAST)) {
-            next = curr.add(Direction.SOUTHEAST);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.SOUTHEAST;
-            }
-        }
-
-        if (rc.canMove(Direction.SOUTH)) {
-            next = curr.add(Direction.SOUTH);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.SOUTH;
-            }
-        }
-
-        if (rc.canMove(Direction.SOUTHWEST)) {
-            next = curr.add(Direction.SOUTHWEST);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.SOUTHWEST;
-            }
-        }
-
-        if (rc.canMove(Direction.WEST)) {
-            next = curr.add(Direction.WEST);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.WEST;
-            }
-        }
-
-        if (rc.canMove(Direction.NORTHWEST)) {
-            next = curr.add(Direction.NORTHWEST);
-            score = Math.sqrt(next.distanceSquaredTo(loc)) + stinkyFactor(next, round);
-            if (score < bestScore) {
-                bestScore = score;
-                bestDir = Direction.NORTHWEST;
-            }
-        }
-
-        return bestDir;
     }
 
     //
