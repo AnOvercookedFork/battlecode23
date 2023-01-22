@@ -37,7 +37,11 @@ public strictfp class StinkyNavigation {
     }
 
     public MapLocation getDestination(MapLocation loc) throws GameActionException {
-        if (!rc.canSenseLocation(loc)) {
+        return getDestination(loc, 0, 2);
+    }
+    
+    public MapLocation getDestination(MapLocation loc, int depth, int maxDepth) throws GameActionException {
+        if (depth >= maxDepth || !rc.canSenseLocation(loc)) {
             return loc;
         }
         MapInfo info = rc.senseMapInfo(loc);
@@ -50,7 +54,7 @@ public strictfp class StinkyNavigation {
                     return loc;
                 }
 
-                return getDestination(next);
+                return getDestination(next, depth + 1, maxDepth);
             }
             return loc;
         }

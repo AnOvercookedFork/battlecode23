@@ -19,7 +19,7 @@ def run_matches(teamA, teamB, score):
     for map in maps:
         current = time.time()
         result = os.popen('gradlew run -Pmaps={map} -PteamA={a} -PteamB={b} -Pdebug=false -Penableprofiler=false -PoutputVerbose=false -PshowIndicators=false'.format(map = map, a = teamA, b = teamB)).read().splitlines()
-        print('Last round took {} seconds'.format(time.time() - current))
+        print('Last round {} took {} seconds'.format(map, time.time() - current))
         winner = get_winner(result)[1:2]
         if winner == 'A':
             score[0] += 1
@@ -36,6 +36,7 @@ def main():
     os.system('gradlew update')
     os.system('gradlew build')
 
+    current = time.time()
     score1 = run_matches(teamA, teamB, [0, 0])
     print('Match 1 score ({} vs {}): {}'.format(teamA, teamB, score1[0]))
     print('Match 1 maps: {}'.format(score1[1]))
@@ -44,6 +45,7 @@ def main():
     print('Match 2 maps: {}'.format(score2[1]))
     final_score = [score1[0][0] + score2[0][1], score1[0][1] + score2[0][0]]
     print('Final score ({} vs {}): {}'.format(teamA, teamB, final_score))
+    print('Total runtime was {} seconds'.format(time.time() - current))
 
 if __name__ == '__main__':
     main()

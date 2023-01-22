@@ -245,7 +245,7 @@ public strictfp class LauncherRobot extends Robot {
 
             boolean success = false;
 
-            //targetWeight *= 0.8;
+            targetWeight *= 0.8;
 
             if (nearestDangerous != null) {
                 Direction away = nearestDangerous.location.directionTo(curr);
