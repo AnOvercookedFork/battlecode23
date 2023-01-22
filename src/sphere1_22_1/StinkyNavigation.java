@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_22_1;
 
 import battlecode.common.*;
 
@@ -178,8 +178,9 @@ public strictfp class StinkyNavigation {
     }
 
     public boolean tryNavigate(MapLocation loc, MapLocation[] avoidHQs) throws GameActionException {
+        MapLocation[] blank = {};
         //if (greedyMoves < BUG_THRESHOLD) {
-            Direction dir = navigate(loc, avoidHQs);
+            Direction dir = navigate(loc, blank);
             if (dir != Direction.CENTER) {
                 rc.move(dir);
                 int dist = rc.getLocation().distanceSquaredTo(loc);
