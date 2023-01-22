@@ -327,7 +327,7 @@ public strictfp class Communications {
     }
     
     public static void tryAddEnemy(RobotController rc, MapLocation location) throws GameActionException {
-        if (rc.canWriteSharedArray(0, 0)) { // should always be able to write
+        if (rc.canWriteSharedArray(0, 0)) {
             int code = location.x + (location.y << 6) + 1;
             int idx;
             for(int i = code % ENEMIES_SIZE; i < 64; i = (i + 1) % ENEMIES_SIZE) {
@@ -335,6 +335,21 @@ public strictfp class Communications {
                 if(array[idx] == 0) {
                     array[idx] = code;
                     rc.writeSharedArray(idx, code);
+                }
+            }
+        }
+    }
+    
+    public static void updateEnemyArray(RobotController rc) throws GameActionException {
+        if (rc.canWriteSharedArray(0, 0)) {
+            for(int i = ENEMIES_START; i < 64; i++) {
+                if((array[i] & (1 << 12)) == 1) {
+                    array[i] = 0;
+                    rc.writeSharedArray(i,  0);
+                }
+                else {
+                    array[i] += (1 << 12);
+                    rc.writeSharedArray(i,  array[i]);
                 }
             }
         }

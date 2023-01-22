@@ -124,6 +124,7 @@ public strictfp class HeadquartersRobot extends Robot {
         Communications.cycleIslands(rc, cache);
         Communications.updateAmpCount(rc);
         Communications.clearReportEnemy(rc);
+        Communications.updateEnemyArray(rc);
         //cache.debugWellCache();
     }
     
