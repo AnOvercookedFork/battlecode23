@@ -329,7 +329,7 @@ public strictfp class Communications {
     }
     
     public static void tryAddEnemy(RobotController rc, MapLocation location) throws GameActionException {
-        if (rc.canWriteSharedArray(0, 0)) { // should always be able to write
+        if (rc.canWriteSharedArray(0, 0)) {
             int code = location.x + (location.y << 6) + 1;
             int idx;
             int hash = code % ENEMIES_SIZE;
