@@ -24,7 +24,7 @@ public strictfp class CarrierRobot extends Robot {
     double collectTargetWeight;
     MapLocation collectTarget;
     MapLocation enemyLastSeenLoc = null;
-    BugNavigation snav;
+    StinkyNavigation snav;
     MapCache cache;
     ResourceType prevResource = ResourceType.ADAMANTIUM;
 
@@ -37,7 +37,7 @@ public strictfp class CarrierRobot extends Robot {
         super(rc);
         hqs = null;
         cache = new MapCache(rc, 16);
-        snav = new BugNavigation(rc);
+        snav = new StinkyNavigation(rc);
     }
 
     public void run() throws GameActionException {
@@ -158,7 +158,7 @@ public strictfp class CarrierRobot extends Robot {
             enemyLastSeenLoc = nearestDangerousEnemy;
             turnsSinceSeenEnemy = 0;
 
-            if (potentialDamage > enemyHp && getWeight() > 5 && nearestHQdist > 8) {
+            if (potentialDamage > enemyHp && rc.getWeight() > 5 && nearestHQdist > 8) {
                 System.out.println("defending aggressively");
                 if (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
                     snav.tryNavigate(nearestDangerousEnemy, nearbyEnemyHQs);
@@ -213,7 +213,7 @@ public strictfp class CarrierRobot extends Robot {
         if (maxScore > 0) {
             return finalTarget;
         }
-        int round = rc.getRoundNum();
+        /*int round = rc.getRoundNum();
         /*for (MapCache.EnemyData enemy : cache.enemyCache) {
             if (enemy == null || enemy.roundSeen < round
                     || !enemy.location.isWithinDistanceSquared(curr, RobotType.CARRIER.actionRadiusSquared))
@@ -225,12 +225,6 @@ public strictfp class CarrierRobot extends Robot {
         }*/
         if (maxScore > 0 && finalTarget != null) {
             return finalTarget;
-        }
-
-        for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(curr, 16)) {
-            if (rc.canAttack(loc)) {
-                return loc;
-            }
         }
 
         return null;
@@ -386,7 +380,7 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         
-        //rc.setIndicatorLine(curr, collectTarget, 255, 255, 0);
+        rc.setIndicatorLine(curr, collectTarget, 255, 255, 0);
         
         if (curr.distanceSquaredTo(collectTarget) <= 2) {
             // do micro

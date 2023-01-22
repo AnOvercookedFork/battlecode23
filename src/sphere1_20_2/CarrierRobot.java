@@ -227,12 +227,6 @@ public strictfp class CarrierRobot extends Robot {
             return finalTarget;
         }
 
-        for (MapLocation loc : rc.getAllLocationsWithinRadiusSquared(curr, 16)) {
-            if (rc.canAttack(loc)) {
-                return loc;
-            }
-        }
-
         return null;
     }
     

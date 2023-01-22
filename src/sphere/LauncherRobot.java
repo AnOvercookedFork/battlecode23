@@ -21,7 +21,7 @@ public strictfp class LauncherRobot extends Robot {
     double targetWeight;
     MapLocation leader;
     MapCache cache;
-    BugNavigation snav;
+    StinkyNavigation snav;
     MapLocation[] reflectedHQs;
     int hqTargetIndex = 0;
     int turnsSinceInCombat = 0;
@@ -34,7 +34,7 @@ public strictfp class LauncherRobot extends Robot {
 
     public LauncherRobot(RobotController rc) throws GameActionException {
         super(rc);
-        snav = new BugNavigation(rc);
+        snav = new StinkyNavigation(rc);
         cache = new MapCache(rc, 4);
         hqLocs = new HQLocations(rc);
         hqTarget = null;
@@ -245,7 +245,7 @@ public strictfp class LauncherRobot extends Robot {
 
             boolean success = false;
 
-            targetWeight *= 0.8;
+            //targetWeight *= 0.8;
 
             if (nearestDangerous != null) {
                 Direction away = nearestDangerous.location.directionTo(curr);
@@ -253,7 +253,13 @@ public strictfp class LauncherRobot extends Robot {
                 success = true;
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                        && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0) && snav.tryNavigate(leader)) {
+                        && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0)
+                        && snav.tryNavigate(leader)) {
+                    /*if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS) {
+                        success = snav.tryNavigate(leader);
+                    } else {
+                        success = stnav.tryNavigate(leader);
+                    }*/
                     success = true;
                 } else if ((curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
                             || targets.length == 0)

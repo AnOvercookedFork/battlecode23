@@ -8,15 +8,23 @@ public strictfp class StinkyNavigation {
 
     MapLocation lastTarget;
     RobotController rc;
+    BugNavigation bnav;
 
     public static final double STINKY_BASE = 4;
     public static final double STINKY_DECAY = 0.9;
     public static final double RESET_THRESHOLD = 2;
+    public static final int BUG_THRESHOLD = 8; // After making this many moves without progress, start bugging
+    public static final int INF = Integer.MAX_VALUE;
+
+    int minDist;
+    int greedyMoves;
 
     public StinkyNavigation(RobotController rc) {
         resetRound = 0;
         roundVisited = new int[rc.getMapWidth()][rc.getMapHeight()];
         lastTarget = null;
+        bnav = new BugNavigation(rc);
+        minDist = INF;
         this.rc = rc;
     }
 
@@ -50,6 +58,7 @@ public strictfp class StinkyNavigation {
 
     public void reset() {
         resetRound = rc.getRoundNum();
+        minDist = INF;
     }
 
     // deprecating, use navigate(loc, avoidHqs) instead
@@ -62,6 +71,7 @@ public strictfp class StinkyNavigation {
 
         if (lastTarget == null || lastTarget.distanceSquaredTo(loc) >= RESET_THRESHOLD) {
             resetRound = round;
+            minDist = INF;
         }
         lastTarget = loc;
 
@@ -168,6 +178,7 @@ public strictfp class StinkyNavigation {
 
         if (lastTarget == null || lastTarget.distanceSquaredTo(loc) >= RESET_THRESHOLD) {
             resetRound = round;
+            minDist = INF;
         }
         lastTarget = loc;
 
@@ -251,21 +262,33 @@ public strictfp class StinkyNavigation {
 
     public boolean tryNavigate(MapLocation loc) throws GameActionException {
         MapLocation[] blank = {};
-        Direction dir = navigate(loc, blank);
-        if (dir != Direction.CENTER) {
-            rc.move(dir);
-            return true;
-        }
-        return false;
+        return tryNavigate(loc, blank);
     }
 
     public boolean tryNavigate(MapLocation loc, MapLocation[] avoidHQs) throws GameActionException {
         MapLocation[] blank = {};
-        Direction dir = navigate(loc, blank);
-        if (dir != Direction.CENTER) {
-            rc.move(dir);
-            return true;
-        }
+        //if (greedyMoves < BUG_THRESHOLD) {
+            Direction dir = navigate(loc, blank);
+            if (dir != Direction.CENTER) {
+                rc.move(dir);
+                int dist = rc.getLocation().distanceSquaredTo(loc);
+                if (dist >= minDist) {
+                    greedyMoves++;
+                } else {
+                    greedyMoves = 0;
+                    minDist = dist;
+                }
+                return true;
+            }
+        /*} else {
+            boolean success = bnav.tryNavigate(loc);
+            int dist = rc.getLocation().distanceSquaredTo(loc);
+            if (dist < minDist) {
+                greedyMoves = 0;
+                minDist = dist;
+            }
+            return success;
+        }*/
         return false;
     }
 }
