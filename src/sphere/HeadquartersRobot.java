@@ -13,6 +13,8 @@ public strictfp class HeadquartersRobot extends Robot {
     public static final int ANCHOR_BUILD_COOLDOWN = 50;
     public static final int MIN_TURN_BUILD_ANCHOR = 750;
     public static final int CARRIER_SATURATION = 50;
+    public static final int MAX_ENEMIES_TO_REPORT = 6;
+    public static final int MANA_POOL_AMOUNT = 4 * RobotType.LAUNCHER.buildCostMana;
 
     MapLocation farthestLauncher;
     int enemiesNearby = 0;
@@ -22,6 +24,7 @@ public strictfp class HeadquartersRobot extends Robot {
     HashSet<Integer> resourcesSet;
     int carouselIndex = 0;
     int anchorBuildCooldown = 0;
+    boolean pool_mana = false;
 
     MapCache cache;
     
@@ -62,7 +65,7 @@ public strictfp class HeadquartersRobot extends Robot {
             anchorBuildCooldown = ANCHOR_BUILD_COOLDOWN;
         }
 
-        while ((!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) && tryBuildLauncher()) {}
+        while ((!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) && (!pool_mana || rc.getResourceAmount(ResourceType.MANA) > MANA_POOL_AMOUNT) && tryBuildLauncher()) {}
 
         while ((!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost)
                 && carriersNearby < CARRIER_SATURATION
@@ -86,6 +89,8 @@ public strictfp class HeadquartersRobot extends Robot {
         enemiesNearby = 0;
         launchersNearby = 0;
         MapLocation enemyLoc = null;
+        int enemiesReported = 0;
+        int dangerousEnemies = 0;
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == rc.getTeam()) {
                 switch (robot.type) {
@@ -104,11 +109,22 @@ public strictfp class HeadquartersRobot extends Robot {
             } else {
                 // process enemies here
                 if (robot.type != RobotType.HEADQUARTERS) {
+                    if (robot.type.damage > 0) {
+                        dangerousEnemies++;
+                    }
                     enemiesNearby++;
-                    enemyLoc = robot.getLocation();
-                    Communications.tryAddEnemy(rc, enemyLoc);
+                    if (enemiesReported < MAX_ENEMIES_TO_REPORT) {
+                        Communications.tryAddEnemy(rc, robot.location);
+                        enemiesReported++;
+                    }
                 }
             }
+        }
+
+        if (launchersNearby == 0 && dangerousEnemies > 0) {
+            pool_mana = true;
+        } else {
+            pool_mana = false;
         }
         
         /*if(enemyLoc != null) {

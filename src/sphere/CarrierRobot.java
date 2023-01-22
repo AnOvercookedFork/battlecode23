@@ -15,6 +15,7 @@ public strictfp class CarrierRobot extends Robot {
     public static final int BLACKLIST_RADIUS = 4;
     public static final int WELL_RADIUS = 4;
     public static final int BLACKLIST_ROUNDS = 50;
+    public static final int IS_ENEMY_BLACKLIST_ROUNDS = 20;
     public static final int PREFER_HQ_KG = 30;
     public static final int DO_THE_SHUFFLE_THRESHOLD = 6;
 
@@ -116,7 +117,7 @@ public strictfp class CarrierRobot extends Robot {
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
                 if(robot.type == RobotType.CARRIER) {
-                    //potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) * 2;
+                    potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) * 2;
                     nearbyCarriers++;
                 }
             } else {
@@ -160,6 +161,12 @@ public strictfp class CarrierRobot extends Robot {
         if (nearestDangerousEnemy != null) {
             enemyLastSeenLoc = nearestDangerousEnemy;
             turnsSinceSeenEnemy = 0;
+            if (collectTarget != null
+                    && nearestDangerousEnemy.isWithinDistanceSquared(collectTarget, RobotType.LAUNCHER.visionRadiusSquared)) {
+                BlacklistMap.blacklist(collectTarget.x, collectTarget.y, rc.getRoundNum() + IS_ENEMY_BLACKLIST_ROUNDS);
+                collectTarget = null;
+                collectTargetWeight = 0;
+            }
 
             if (potentialDamage > enemyHp && rc.getWeight() > 5 && nearestHQdist > 8) {
                 //System.out.println("defending aggressively");
@@ -372,7 +379,25 @@ public strictfp class CarrierRobot extends Robot {
             for (RobotInfo ally : allies) {
                 if (ally.type == RobotType.CARRIER) carriers++;
             }
-            if (carriers > WELL_SATURATED_THRESHOLD) {
+            
+            int blocked = 0;
+            MapLocation l = curr.add(Direction.NORTH);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            l = curr.add(Direction.NORTHEAST);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            l = curr.add(Direction.EAST);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            l = curr.add(Direction.SOUTHEAST);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            l = curr.add(Direction.SOUTH);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            l = curr.add(Direction.SOUTHWEST);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            l = curr.add(Direction.WEST);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            l = curr.add(Direction.NORTHWEST);
+            if (rc.canSenseLocation(l) && !rc.sensePassability(l)) blocked++;
+            if (carriers + blocked > WELL_SATURATED_THRESHOLD) {
                 BlacklistMap.blacklist(collectTarget.x, collectTarget.y, rc.getRoundNum() + BLACKLIST_ROUNDS);
             }
         }
