@@ -121,19 +121,22 @@ public strictfp class CarrierRobot extends Robot {
                 }
             } else {
                 // Process enemy robots here
-                if (robot.type.damage > 0 && robot.type != RobotType.HEADQUARTERS) {
-                    int dist = robot.location.distanceSquaredTo(curr);
-                    if (dist < nearestDangerousEnemyDist) {
-                        nearestDangerousEnemyDist = dist;
-                        nearestEnemy = robot;
-                        nearestDangerousEnemy = robot.location;
-                    }
-                }
-                else if (robot.type == RobotType.HEADQUARTERS) {
+                if (robot.type == RobotType.HEADQUARTERS) {
+
                     tempEnemyHQs[hqCt] = robot.getLocation();
                     hqCt++;
+                } else {
+                    if (robot.type.damage > 0) {
+                        int dist = robot.location.distanceSquaredTo(curr);
+                        if (dist < nearestDangerousEnemyDist) {
+                            nearestDangerousEnemyDist = dist;
+                            nearestEnemy = robot;
+                            nearestDangerousEnemy = robot.location;
+                        }
+                    }
+                    enemyHp += robot.getHealth();
+                    Communications.tryAddEnemy(rc, robot.location);
                 }
-                enemyHp += robot.getHealth();
             }
         }
         

@@ -26,6 +26,8 @@ public strictfp class Communications {
     public static final int AMP_INDEX = 36; // size 2
     public static final int ENEMIES_START = 38; // fills remainder of array
     public static final int ENEMIES_ASSOCIATIVITY = 4;
+    public static final int AGE_MASK = (1 << 12);
+    public static int ENEMIES_SIZE;
     /*
     public static final int ENEMIES_SIZE = 16;
     public static final int ENEMY_LOCATION = 54; // just the one
@@ -117,7 +119,7 @@ public strictfp class Communications {
         return new MapLocation(i % 64, (i >> 6) % 64);
     }
     
-    public static void panicReportEnemy(RobotController rc, MapLocation loc) throws GameActionException {
+    /*public static void panicReportEnemy(RobotController rc, MapLocation loc) throws GameActionException {
         if (!rc.canWriteSharedArray(0, 0)) return;
         array[ENEMY_LOCATION] = (1 << 12) + locToInt(loc);
         rc.writeSharedArray(ENEMY_LOCATION, array[ENEMY_LOCATION]);
@@ -130,7 +132,7 @@ public strictfp class Communications {
     public static void clearReportEnemy(RobotController rc) throws GameActionException {
         if (!rc.canWriteSharedArray(0, 0)) return;
         rc.writeSharedArray(ENEMY_LOCATION, 0);
-    }
+    }*/
 
     public static void reportWell(RobotController rc, MapCache cache) throws GameActionException {
         if (!rc.canWriteSharedArray(0, 0)) return;
@@ -330,12 +332,63 @@ public strictfp class Communications {
         if (rc.canWriteSharedArray(0, 0)) { // should always be able to write
             int code = location.x + (location.y << 6) + 1;
             int idx;
-            for(int i = code % ENEMIES_SIZE; i < 64; i = (i + 1) % ENEMIES_SIZE) {
-                idx = ENEMIES_START + i;
-                if(array[idx] == 0) {
+            int hash = code % ENEMIES_SIZE;
+            for(int i = ENEMIES_ASSOCIATIVITY; i-- > 0;) {
+                idx = ENEMIES_START + (i + hash) % ENEMIES_SIZE;
+                if(array[idx] == 0 || (array[idx] & AGE_MASK) > 0) {
                     array[idx] = code;
                     rc.writeSharedArray(idx, code);
                 }
+            }
+        }
+    }
+
+    public static MapLocation getNearestEnemy(RobotController rc) throws GameActionException {
+        int dist;
+        int code;
+        MapLocation best = null;
+        MapLocation l;
+        double bestScore = 0;
+        double score;
+        MapLocation curr = rc.getLocation();
+        for (int i = ENEMIES_START; i < 64; i++) {
+            if (array[i] != 0) {
+                code = array[i]-1;
+                l = new MapLocation(code % 64, (code >> 6) % 64);
+                boolean is_old = (code & AGE_MASK) > 0;
+                score = (is_old? 0 : 1) + 1.0 / curr.distanceSquaredTo(l);
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = l;
+                }
+            }
+        }
+        return best;
+    }
+
+    public static void ageEnemies(RobotController rc) throws GameActionException {
+        for (int i = ENEMIES_START; i < 64; i++) {
+            if (array[i] != 0) {
+                if ((array[i] & AGE_MASK) > 0) {
+                    array[i] = 0;
+                    rc.writeSharedArray(i, 0);
+                } else {
+                    array[i] |= AGE_MASK;
+                    rc.writeSharedArray(i, array[i]);
+                }
+            }
+        }
+    }
+
+    public static void debugEnemies(RobotController rc) {
+        MapLocation l;
+        int code;
+        for (int i = ENEMIES_START; i < 64; i++) {
+            if (array[i] != 0) {
+                code = array[i]-1;
+                l = new MapLocation(code % 64, (code >> 6) % 64);
+                boolean is_old = (code & AGE_MASK) > 0;
+                rc.setIndicatorDot(l, (is_old ? 100 : 200), 0, 0);
             }
         }
     }

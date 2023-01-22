@@ -30,6 +30,7 @@ public strictfp class LauncherRobot extends Robot {
     HQLocations hqLocs;
     MapLocation hqTarget;
     Micro micro;
+    MapLocation nearestReportedEnemy;
 
     RobotInfo[] prevTargets;
 
@@ -52,6 +53,8 @@ public strictfp class LauncherRobot extends Robot {
         Communications.readIslands(rc, cache);
         Communications.reportIsland(rc, cache);
         hqLocs.updateHQSymms(rc);
+
+        nearestReportedEnemy = Communications.getNearestEnemy(rc);
 
         while (rc.isActionReady() && tryAttack()) {
         }
@@ -100,11 +103,12 @@ public strictfp class LauncherRobot extends Robot {
                     break;
                 }
             } else {
-                switch (robot.type) {
-                case HEADQUARTERS:
+                if (robot.type == RobotType.HEADQUARTERS) {
                     tempEnemyHQs[enemyHQCount] = robot.getLocation();
                     enemyHQCount++;
                     break;
+                } else {
+                    Communications.tryAddEnemy(rc, robot.location);
                 }
             }
         }
@@ -254,6 +258,11 @@ public strictfp class LauncherRobot extends Robot {
             if (nearest != null) {
                 target = nearest.getLocation();
                 targetWeight = FOUND_BASE_WEIGHT;
+            } else {
+                if (nearestReportedEnemy != null) {
+                    target = nearestReportedEnemy;
+                    targetWeight = FOUND_BASE_WEIGHT;
+                }
             }
 
             boolean success = false;
@@ -340,6 +349,13 @@ public strictfp class LauncherRobot extends Robot {
             if (maxScore > 0 && finalTarget != null) {
                 return finalTarget;
             }
+
+
+            /*if (!rc.isMovementReady() && maxScore <= 0 && rc.getActionCooldownTurns() == 0) {
+                if (nearestReportedEnemy != null && nearestReportedEnemy.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared)) {
+                    return nearestReportedEnemy;
+                }
+            }*/
 
             return null;
         }
