@@ -36,7 +36,7 @@ public strictfp class StinkyNavigation {
         return 0;
     }
 
-    public MapLocation getDestination(MapLocation loc) throws GameActionException {
+    /*public MapLocation getDestination(MapLocation loc) throws GameActionException {
         return getDestination(loc, 0, 2);
     }
     
@@ -57,6 +57,18 @@ public strictfp class StinkyNavigation {
                 return getDestination(next, depth + 1, maxDepth);
             }
             return next;
+        }
+    }*/
+
+    public MapLocation getDestination(MapLocation loc) throws GameActionException {
+        if (rc.canSenseLocation(loc)) {
+            loc = loc.add(rc.senseMapInfo(loc).getCurrentDirection());
+            /*if (rc.canSenseLocation(loc)) {
+                return loc.add(rc.senseMapInfo(loc).getCurrentDirection());
+            }*/
+            return loc;
+        } else {
+            return loc;
         }
     }
 
