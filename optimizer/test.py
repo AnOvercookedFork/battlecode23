@@ -9,7 +9,7 @@ maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Cl
 
 # set these
 teamA = 'sphere'
-teamB = 'sphere1_20_1'
+teamB = 'sphere1_22_1'
 
 def get_winner(data):
     return data[-6].split(' ')[-4]
@@ -45,6 +45,11 @@ def main():
     print('Match 2 maps: {}'.format(score2[1]))
     final_score = [score1[0][0] + score2[0][1], score1[0][1] + score2[0][0]]
     print('Final score ({} vs {}): {}'.format(teamA, teamB, final_score))
+
+    for key in score1[1].keys():
+        if score1[1][key] == score2[1][key]:
+            print('{} won both sides on {}'.format(score1[1][key], key))
+
     print('Total runtime was {} seconds'.format(time.time() - current))
 
 if __name__ == '__main__':

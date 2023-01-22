@@ -1,4 +1,4 @@
-package sphere;
+package sphere1_22_1;
 
 import battlecode.common.*;
 
@@ -135,7 +135,7 @@ public strictfp class LauncherRobot extends Robot {
                 int health = rc.getHealth();
                 if (rc.getHealth() <= HEAL_HEALTH
                         || (health < RobotType.LAUNCHER.health && islandTarget.distanceSquaredTo(curr) <= 8)) {
-                    return rc.getLocation().distanceSquaredTo(islandTarget) > 0 && snav.tryNavigate(islandTarget, nearbyEnemyHQs);
+                    return rc.getLocation().distanceSquaredTo(islandTarget) > 0 && snav.tryNavigate(islandTarget);
                 }
             }
         }
@@ -195,10 +195,10 @@ public strictfp class LauncherRobot extends Robot {
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
-                        && snav.tryNavigate(leader, nearbyEnemyHQs)) {
+                        && snav.tryNavigate(leader)) {
                     success = true;
                 } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
-                        && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
+                        && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
                     success = true;
                 }
             }
@@ -262,17 +262,18 @@ public strictfp class LauncherRobot extends Robot {
 
             if (nearestDangerous != null) {
                 Direction away = nearestDangerous.location.directionTo(curr);
-                success = tryFuzzy(away);
+                tryFuzzy(away);
+                success = true;
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                        && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0) && snav.tryNavigate(leader, nearbyEnemyHQs)) {
+                        && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0) && snav.tryNavigate(leader)) {
                     /*
                      * if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS) { success =
                      * snav.tryNavigate(leader); } else { success = stnav.tryNavigate(leader); }
                      */
                     success = true;
                 } else if ((curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
-                        || targets.length == 0) && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
+                        || targets.length == 0) && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target)) {
                     success = true;
                 }
             }
