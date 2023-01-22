@@ -22,12 +22,15 @@ public strictfp class Communications {
     public static final int ISLAND_SIZE = 4;
     public static final int ISLAND_REPORT_START = 20;
     public static final int ISLAND_REPORT_SIZE = 12;
-    public static final int ENEMIES_START = 32;
+    public static final int HQ_INDEX = 32; // size 4
+    public static final int AMP_INDEX = 36; // size 2
+    public static final int ENEMIES_START = 38; // fills remainder of array
+    public static final int ENEMIES_ASSOCIATIVITY = 4;
+    /*
     public static final int ENEMIES_SIZE = 16;
-    public static final int HQ_INDEX = 48;
-    public static final int AMP_INDEX = 52; // size 2
     public static final int ENEMY_LOCATION = 54; // just the one
     public static final int ENEMY_SNIPE_START = 55; // fills remainder of array
+    */
 
     public static int[] array = new int[64];
     private static int lastRead = -1;
@@ -35,6 +38,7 @@ public strictfp class Communications {
     
     // should be called at the start of each robots turn, ideally
     public static void readArray(RobotController rc) throws GameActionException {
+        ENEMIES_SIZE = 64 - ENEMIES_START;
         if (lastRead < rc.getRoundNum()) {
             lastRead = rc.getRoundNum();
             array[0] = rc.readSharedArray(0);
@@ -322,12 +326,15 @@ public strictfp class Communications {
         rc.writeSharedArray(AMP_INDEX, array[AMP_INDEX]);
     }
     
-    public static void tryAddEnemySnipe(RobotController rc, MapLocation location) throws GameActionException {
+    public static void tryAddEnemy(RobotController rc, MapLocation location) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) { // should always be able to write
-            for(int i = ENEMY_SNIPE_START; i < 64; i++) {
-                if(array[i] == 0) {
-                    array[i] = (1 << 12) + locToInt(location);
-                    rc.writeSharedArray(i, array[i]);
+            int code = location.x + (location.y << 6) + 1;
+            int idx;
+            for(int i = code % ENEMIES_SIZE; i < 64; i = (i + 1) % ENEMIES_SIZE) {
+                idx = ENEMIES_START + i;
+                if(array[idx] == 0) {
+                    array[idx] = code;
+                    rc.writeSharedArray(idx, code);
                 }
             }
         }

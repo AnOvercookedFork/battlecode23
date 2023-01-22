@@ -249,8 +249,7 @@ public strictfp class LauncherRobot extends Robot {
 
             if (nearestDangerous != null) {
                 Direction away = nearestDangerous.location.directionTo(curr);
-                tryFuzzy(away);
-                success = true;
+                success = tryFuzzy(away);
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
                         && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0)

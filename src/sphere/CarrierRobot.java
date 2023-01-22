@@ -106,7 +106,7 @@ public strictfp class CarrierRobot extends Robot {
         RobotInfo nearestEnemy = null;
         MapLocation nearestDangerousEnemy = null;
         int nearestDangerousEnemyDist = Integer.MAX_VALUE;
-        int potentialDamage = getWeight() / 5;
+        int potentialDamage = rc.getWeight() / 5;
         int enemyHp = 0;
 
         Team team = rc.getTeam();
@@ -116,9 +116,9 @@ public strictfp class CarrierRobot extends Robot {
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
                 if(robot.type == RobotType.CARRIER) {
-                    potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) * 2;
+                    //potentialDamage += (robot.getResourceAmount(ResourceType.ADAMANTIUM) + robot.getResourceAmount(ResourceType.MANA)) * 2;
+                    nearbyCarriers++;
                 }
-                nearbyCarriers++;
             } else {
                 // Process enemy robots here
                 if (robot.type.damage > 0 && robot.type != RobotType.HEADQUARTERS) {
@@ -159,7 +159,7 @@ public strictfp class CarrierRobot extends Robot {
             turnsSinceSeenEnemy = 0;
 
             if (potentialDamage > enemyHp && rc.getWeight() > 5 && nearestHQdist > 8) {
-                System.out.println("defending aggressively");
+                //System.out.println("defending aggressively");
                 if (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
                     snav.tryNavigate(nearestDangerousEnemy, nearbyEnemyHQs);
                 }
@@ -175,11 +175,12 @@ public strictfp class CarrierRobot extends Robot {
                 }
             }
 
-            if (rc.getHealth() <= PANIC_HEALTH && getWeight() >= 5 && rc.canAttack(nearestDangerousEnemy)) {
+            if (rc.getHealth() <= PANIC_HEALTH && rc.getWeight() >= 5 && rc.canAttack(nearestDangerousEnemy)) {
                 rc.attack(nearestDangerousEnemy);
             }
 
             if (collectTargetWeight < KNOWN_LOC_WEIGHT) {
+
                 collectTarget = null;
             }
         } else {
@@ -265,7 +266,7 @@ public strictfp class CarrierRobot extends Robot {
     }
     
     /**
-     * Returns total weight this robot is carrying.
+     * Returns total weight this robot is carrying. DEPRECATED use rc.getWeight() instead
      */
     public int getWeight() throws GameActionException {
         return rc.getResourceAmount(ResourceType.ADAMANTIUM) + rc.getResourceAmount(ResourceType.MANA)
