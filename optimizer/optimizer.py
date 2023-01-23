@@ -1,19 +1,24 @@
 import os
+import random
 
 # constants
 maps = ['maptestsmall', 'SmallElements', 'AllElements', 'DefaultMap']
 constants_to_optimize = ['weight1', 'weight2']
+resolution = [0.1, 0.1] # smallest significant change
 bot_to_optimize = 'sphere'
 optimized_name = 'optimized_sphere'
 additional_args = '-Pdebug=false -Penableprofiler=false -PoutputVerbose=false -PshowIndicators=false'
 
 bot_template = ('constant 1', 'constant 2') # bots are represented as tuples of constants in the same order as the constants that are provided to optimize
-resolution = (0.1, 0.1) # subjective opinion of smallest significant change
 # run format:
 # gradlew run -Pmaps=[map] -PteamA=[Team A] -PteamB=[Team B]
 
 # mutate one stat by random * resolution
 def mutate(bot):
+    index = random.randint(0, len(bot) - 1)
+    magnitude = random.randint(-2, 2)
+
+    bot[index] += magnitude * resolution[index]
     pass
 
 # produce two offspring, one based on bot 1 with x crossover, and one based on bot2

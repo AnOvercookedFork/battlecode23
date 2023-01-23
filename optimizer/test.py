@@ -4,12 +4,12 @@ import os
 import time
 
 # these constants are probably fine
-maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Clown', 'DefaultMap', 'Diagonal', 'Eyelands', 'Frog', 'Greivance', 'Hah', 'Jail', 'KingdomRush', 'SmallElements', 'maptestsmall', 'Minefield', 'Movepls', 'Orbit', 'Pathfind', 'Pit', 'Pizza', 'Quiet', 'Scatter', 'Sun', 'Tacocat']
+maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Clown', 'DefaultMap', 'Diagonal', 'Eyelands', 'Frog', 'Hah', 'Jail', 'KingdomRush', 'SmallElements', 'maptestsmall', 'Minefield', 'Movepls', 'Orbit', 'Pathfind', 'Pit', 'Pizza', 'Quiet', 'Scatter', 'Sun', 'Tacocat']
 
 
 # set these
-teamA = 'sphere'
-teamB = 'sphere1_23_1'
+teamA = 'torus'
+teamB = 'sprint2'
 
 def get_winner(data):
     return data[-6].split(' ')[-4]
