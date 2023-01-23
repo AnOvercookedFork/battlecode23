@@ -25,7 +25,7 @@ public strictfp class LauncherRobot extends Robot {
     StinkyNavigation snav;
     MapLocation[] reflectedHQs;
     int hqTargetIndex = 0;
-    int turnsSinceInCombat = 0;
+    int turnsSinceInCombat = 9001;
     MapLocation[] nearbyEnemyHQs;
 
     HQLocations hqLocs;
@@ -201,7 +201,7 @@ public strictfp class LauncherRobot extends Robot {
             targetWeight *= 0.8;
 
             if (turnsSinceInCombat < STAY_IN_COMBAT_TURNS) {
-                success = micro.doMicro(target, otherLeader);
+                success = micro.doMicro(target, otherLeader, prevTargets);
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
