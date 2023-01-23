@@ -15,12 +15,16 @@ public strictfp class Micro {
     static boolean hurt;
     static boolean canAttack;
     static boolean shouldCharge;
+    static boolean shouldMoveLeader;
+    static boolean dangerousEnemiesInSight;
     static MapLocation leader;
+    static MapLocation target;
     
     static Team enemyTeam;
     static double robotDPS;
     static int robotActionRadius;
     static int robotActionRadiusExtended;
+    static RobotInfo[] prevRobots = null;
 
     static double[] baseDPS = {0, 0, 0, 0, 0, 0};
     static int[] actionRadiusExtended = {0, 0, 0, 0, 0, 0};
@@ -65,6 +69,7 @@ public strictfp class Micro {
         MapLocation after; // location after turn ends and pushed by current
         boolean canMove;
         int minDistToEnemy = 9001;
+        int minDistToDangerousEnemy = 9001;
         /*double receivedDPS = 0;
         double targetingDPS = 0;
         double allyDPS = 0;*/
@@ -72,8 +77,10 @@ public strictfp class Micro {
         double myDps = 0;
         int enemiesAttacking = 0;
         int enemiesTargeting = 0;
+        int potentialAttackers = 0;
         double leaderHealth = 0;
         int leaderDist = 0;
+        int targetDist = 0;
 
         public MicroInfo(Direction d) throws GameActionException {
             this.d = d;
@@ -92,6 +99,7 @@ public strictfp class Micro {
                 }
 
                 if (leader != null) leaderDist = l.distanceSquaredTo(leader);
+                if (target != null) targetDist = l.distanceSquaredTo(target);
             }
         }
 
@@ -100,11 +108,18 @@ public strictfp class Micro {
             if (robot.location.isWithinDistanceSquared(l, myActionRange)) inRange = true;
             int dist = robot.location.distanceSquaredTo(after);
             if (dist < minDistToEnemy) minDistToEnemy = dist;
+            if (robot.type.damage > 0 && dist < minDistToDangerousEnemy) minDistToDangerousEnemy = dist;
             if (robot.location.add(robot.location.directionTo(after)).distanceSquaredTo(after)
                     <= robotActionRadius) {
                 enemiesTargeting++;
                 if (dist <= robotActionRadius) enemiesAttacking++;
             }
+        }
+
+        void updatePotentialEnemy(RobotInfo robot, MapLocation location) {
+            if (!canMove) return;
+            int dist = location.distanceSquaredTo(after);
+            if (dist <= robotActionRadius) potentialAttackers++;
         }
 
         /*void updateAlly(RobotInfo robot) {
@@ -122,22 +137,53 @@ public strictfp class Micro {
         }*/
 
         int safety() {
-            if (enemiesAttacking > 0) return 0;
-            if (enemiesTargeting > 0) return 1;
-            return 2;
+            //if (hurt) {
+                if (enemiesAttacking > 0) return 0;
+                if (enemiesTargeting > 0) return 1;
+                if (potentialAttackers > 0) return 2;
+                return 3;
+            /*} else {
+                if (enemiesAttacking > 0) return 1;
+                if (!canAttack && potentialAttackers > 0) return 2;
+                return 3;
+            }*/
+            /*if (enemiesAttacking > 0) return (d == Direction.CENTER ? 1 : 0);
+            if (enemiesTargeting > 0) return (d == Direction.CENTER ? 2 : 1);
+            return (d == Direction.CENTER ? 2 : 1);*/
         }
 
         boolean betterThan(MicroInfo other) {
             if (!canMove) return false;
             if (!other.canMove) return true;
+
+
             if (shouldCharge) {
                 if (inRange && !other.inRange) return true;
                 if (!inRange && other.inRange) return false;
             }
-            if (leaderDist < other.leaderDist) return true;
-            if (leaderDist > other.leaderDist) return false;
+
             if (safety() > other.safety()) return true;
             if (safety() < other.safety()) return false;
+
+            if (enemiesAttacking > 0) {
+                if (minDistToDangerousEnemy > other.minDistToDangerousEnemy) return true;
+                if (minDistToDangerousEnemy < other.minDistToDangerousEnemy) return false;
+            }
+
+            if (!dangerousEnemiesInSight || shouldMoveLeader) {
+                if (leaderDist < other.leaderDist) return true;
+                if (leaderDist > other.leaderDist) return false;
+            }
+
+
+            if (!inRange) {
+                if (minDistToEnemy < other.minDistToEnemy) return true;
+                if (minDistToEnemy > other.minDistToEnemy) return false;
+                if (targetDist < other.targetDist) return true;
+                if (other.targetDist < targetDist) return false;
+            }
+
+            
             //if (myDps > other.myDps) return true;
             //if (myDps < other.myDps) return false;
             if (inRange) return minDistToEnemy >= other.minDistToEnemy;
@@ -146,12 +192,20 @@ public strictfp class Micro {
     }
 
 
-    boolean doMicro(MapLocation lead) throws GameActionException {
+    boolean doMicro(MapLocation targ, MapLocation lead, RobotInfo[] prev) throws GameActionException {
         curr = rc.getLocation();
         hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
-        shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt;
+        shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt && lead != null;
+        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) >= 2;
+        else shouldMoveLeader = false;
         leader = lead;
+        target = targ;
+        dangerousEnemiesInSight = false;
+        prevRobots = prev;
+
+        StringBuilder robotIDs = new StringBuilder();
+
         mi[0] = new MicroInfo(Direction.NORTH);
         mi[1] = new MicroInfo(Direction.NORTHEAST);
         mi[2] = new MicroInfo(Direction.EAST);
@@ -162,9 +216,9 @@ public strictfp class Micro {
         mi[7] = new MicroInfo(Direction.NORTHWEST);
         mi[8] = new MicroInfo(Direction.CENTER);
 
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(-1);
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
         for (RobotInfo robot : nearbyRobots) {
-            if (robot.team != myTeam) {
+            //if (robot.team != myTeam) {
             /*
                 //robotDPS = baseDPS[robot.type.ordinal()] / rc.senseMapInfo(robot.location).getCooldownMultiplier(myTeam);
                 //robotDPS = baseDPS[robot.type.ordinal()];
@@ -180,6 +234,10 @@ public strictfp class Micro {
             } else {*/
                 //robotDPS = baseDPS[robot.type.ordinal()] / rc.senseMapInfo(robot.location).getCooldownMultiplier(enemyTeam);
                 //robotDPS = baseDPS[robot.type.ordinal()];
+                if (robot.type.damage > 0) {
+                    dangerousEnemiesInSight = true;
+                    robotIDs.append(robot.ID).append("|");
+                }
                 robotActionRadius = robot.type.actionRadiusSquared;
                 robotActionRadiusExtended = actionRadiusExtended[robot.type.ordinal()];
                 mi[0].updateEnemy(robot);
@@ -191,18 +249,197 @@ public strictfp class Micro {
                 mi[6].updateEnemy(robot);
                 mi[7].updateEnemy(robot);
                 mi[8].updateEnemy(robot);
+            //}
+        }
+
+        if (prevRobots != null) {
+            for (RobotInfo robot : prevRobots) {
+                if (robot.type.damage > 0 && robotIDs.indexOf(Integer.toString(robot.ID)) < 0) {
+                    robotActionRadius = robot.type.actionRadiusSquared;
+                    robotActionRadiusExtended = actionRadiusExtended[robot.type.ordinal()];
+
+                    MapLocation l = robot.location;
+                    do {
+                        if (!rc.canSenseLocation(l)) break;
+                        switch (robot.location.directionTo(curr)) {
+                            case NORTH:
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                            case NORTHEAST:
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                            case EAST:
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                            case SOUTHEAST:
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                            case SOUTH:
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                            case SOUTHWEST:
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                            case WEST:
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                            case NORTHWEST:
+                                l = robot.location.add(Direction.NORTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.WEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.NORTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHWEST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.EAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTH);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = robot.location.add(Direction.SOUTHEAST);
+                                if (!rc.canSenseLocation(l)) break;
+                                l = null;
+                                break;
+                        }
+                    } while (false);
+                    if (l != null) {
+                        mi[0].updatePotentialEnemy(robot, l);
+                        mi[1].updatePotentialEnemy(robot, l);
+                        mi[2].updatePotentialEnemy(robot, l);
+                        mi[3].updatePotentialEnemy(robot, l);
+                        mi[4].updatePotentialEnemy(robot, l);
+                        mi[5].updatePotentialEnemy(robot, l);
+                        mi[6].updatePotentialEnemy(robot, l);
+                        mi[7].updatePotentialEnemy(robot, l);
+                        mi[8].updatePotentialEnemy(robot, l);
+                    }
+                }
             }
         }
 
-        if (mi[0].canMove) rc.setIndicatorDot(mi[0].l, 0, 85 * mi[0].safety(), 0);
-        if (mi[1].canMove) rc.setIndicatorDot(mi[1].l, 0, 85 * mi[1].safety(), 0);
-        if (mi[2].canMove) rc.setIndicatorDot(mi[2].l, 0, 85 * mi[2].safety(), 0);
-        if (mi[3].canMove) rc.setIndicatorDot(mi[3].l, 0, 85 * mi[3].safety(), 0);
-        if (mi[4].canMove) rc.setIndicatorDot(mi[4].l, 0, 85 * mi[4].safety(), 0);
-        if (mi[5].canMove) rc.setIndicatorDot(mi[5].l, 0, 85 * mi[5].safety(), 0);
-        if (mi[6].canMove) rc.setIndicatorDot(mi[6].l, 0, 85 * mi[6].safety(), 0);
-        if (mi[7].canMove) rc.setIndicatorDot(mi[7].l, 0, 85 * mi[7].safety(), 0);
-        if (mi[8].canMove) rc.setIndicatorDot(mi[8].l, 0, 85 * mi[8].safety(), 0);
+        if (mi[0].canMove) rc.setIndicatorDot(mi[0].l, 0, 60 * mi[0].safety(), 0);
+        if (mi[1].canMove) rc.setIndicatorDot(mi[1].l, 0, 60 * mi[1].safety(), 0);
+        if (mi[2].canMove) rc.setIndicatorDot(mi[2].l, 0, 60 * mi[2].safety(), 0);
+        if (mi[3].canMove) rc.setIndicatorDot(mi[3].l, 0, 60 * mi[3].safety(), 0);
+        if (mi[4].canMove) rc.setIndicatorDot(mi[4].l, 0, 60 * mi[4].safety(), 0);
+        if (mi[5].canMove) rc.setIndicatorDot(mi[5].l, 0, 60 * mi[5].safety(), 0);
+        if (mi[6].canMove) rc.setIndicatorDot(mi[6].l, 0, 60 * mi[6].safety(), 0);
+        if (mi[7].canMove) rc.setIndicatorDot(mi[7].l, 0, 60 * mi[7].safety(), 0);
+        if (mi[8].canMove) rc.setIndicatorDot(mi[8].l, 0, 60 * mi[8].safety(), 0);
 
         MicroInfo best = mi[8];
         
