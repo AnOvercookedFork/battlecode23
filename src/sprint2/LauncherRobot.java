@@ -1,4 +1,4 @@
-package torus;
+package sprint2;
 
 import battlecode.common.*;
 

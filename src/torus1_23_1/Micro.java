@@ -1,4 +1,4 @@
-package torus;
+package torus1_23_1;
 
 import battlecode.common.*;
 
@@ -110,13 +110,10 @@ public strictfp class Micro {
             if (dist < minDistToEnemy) minDistToEnemy = dist;
             if (robot.type.damage > 0) {
                 if (dist < minDistToDangerousEnemy) minDistToDangerousEnemy = dist;
-
-                if (dist <= robotActionRadius) {
-                    enemiesAttacking++;
+                if (robot.location.add(robot.location.directionTo(after)).distanceSquaredTo(after)
+                        <= robotActionRadius) {
                     enemiesTargeting++;
-                } else if (enemiesTargeting == 0 && robot.location.add(robot.location.directionTo(after)).distanceSquaredTo(after)
-                        <= robotActionRadius) { // current micro only uses enemiesTargeting > 0, so no need to check if it is already > 0
-                    enemiesTargeting++;
+                    if (dist <= robotActionRadius) enemiesAttacking++;
                 }
             }
         }

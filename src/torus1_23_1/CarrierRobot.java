@@ -1,4 +1,4 @@
-package torus;
+package torus1_23_1;
 
 import battlecode.common.*;
 
