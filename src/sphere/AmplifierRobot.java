@@ -93,7 +93,7 @@ public strictfp class AmplifierRobot extends Robot {
 
         if (nearest != null) {
             Direction d = nearest.getLocation().directionTo(curr);
-            success = snav.tryFuzzy(d);
+            success = tryFuzzy(d);
         } 
         else if (leader != null) {
             success = snav.tryNavigate(leader, enemyHQs);
