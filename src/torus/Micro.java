@@ -73,7 +73,7 @@ public strictfp class Micro {
         /*double receivedDPS = 0;
         double targetingDPS = 0;
         double allyDPS = 0;*/
-        boolean inRange = false;
+        int inRange = 0;
         double myDps = 0;
         int enemiesAttacking = 0;
         int enemiesTargeting = 0;
@@ -105,7 +105,7 @@ public strictfp class Micro {
 
         void updateEnemy(RobotInfo robot) {
             if (!canMove) return;
-            if (robot.location.isWithinDistanceSquared(l, myActionRange)) inRange = true;
+            if (inRange < 2 && robot.location.isWithinDistanceSquared(l, myActionRange)) inRange = 2;
             int dist = robot.location.distanceSquaredTo(after);
             if (dist < minDistToEnemy) minDistToEnemy = dist;
             if (robot.type.damage > 0) {
@@ -123,8 +123,8 @@ public strictfp class Micro {
 
         void updatePotentialEnemy(RobotInfo robot, MapLocation location) {
             if (!canMove) return;
-            int dist = location.distanceSquaredTo(after);
-            if (dist <= robotActionRadius) potentialAttackers++;
+            if (inRange == 0 && location.isWithinDistanceSquared(l, myActionRange)) inRange = 1;
+            if (location.isWithinDistanceSquared(after, robotActionRadius)) potentialAttackers++;
         }
 
         /*void updateAlly(RobotInfo robot) {
@@ -163,8 +163,8 @@ public strictfp class Micro {
 
 
             if (shouldCharge) {
-                if (inRange && !other.inRange) return true;
-                if (!inRange && other.inRange) return false;
+                if (inRange > other.inRange) return true;
+                if (inRange < other.inRange) return false;
             }
 
             if (safety() > other.safety()) return true;
@@ -181,7 +181,7 @@ public strictfp class Micro {
             }
 
 
-            if (!inRange) {
+            if (inRange < 2) {
                 if (minDistToEnemy < other.minDistToEnemy) return true;
                 if (minDistToEnemy > other.minDistToEnemy) return false;
                 if (targetDist < other.targetDist) return true;
@@ -191,7 +191,7 @@ public strictfp class Micro {
             
             //if (myDps > other.myDps) return true;
             //if (myDps < other.myDps) return false;
-            if (inRange) return minDistToEnemy >= other.minDistToEnemy;
+            if (inRange == 2) return minDistToEnemy >= other.minDistToEnemy;
             return minDistToEnemy <= other.minDistToEnemy;
         }
     }
