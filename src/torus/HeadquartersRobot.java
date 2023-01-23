@@ -509,6 +509,7 @@ public strictfp class HeadquartersRobot extends Robot {
         }
         if (chosenBuildLocation != null) {
             rc.buildRobot(RobotType.LAUNCHER, chosenBuildLocation);
+            pool_mana = false;
             return true;
         }
         return false;

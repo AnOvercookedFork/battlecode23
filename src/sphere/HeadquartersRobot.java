@@ -144,6 +144,9 @@ public strictfp class HeadquartersRobot extends Robot {
         Communications.debugEnemies(rc);
         Communications.ageEnemies(rc);
         //cache.debugWellCache();
+//        if(rc.getRoundNum() > 400 && rc.getRobotCount() <= 4) {
+//            rc.resign();
+//        }
     }
     
     public boolean shouldBuildAnchor() {
