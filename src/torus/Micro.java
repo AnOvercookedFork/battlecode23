@@ -1,4 +1,4 @@
-package sphere;
+package torus;
 
 import battlecode.common.*;
 
