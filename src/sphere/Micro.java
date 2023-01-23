@@ -15,7 +15,10 @@ public strictfp class Micro {
     static boolean hurt;
     static boolean canAttack;
     static boolean shouldCharge;
+    static boolean shouldMoveLeader;
+    static boolean dangerousEnemiesInSight;
     static MapLocation leader;
+    static MapLocation target;
     
     static Team enemyTeam;
     static double robotDPS;
@@ -65,6 +68,7 @@ public strictfp class Micro {
         MapLocation after; // location after turn ends and pushed by current
         boolean canMove;
         int minDistToEnemy = 9001;
+        int minDistToDangerousEnemy = 9001;
         /*double receivedDPS = 0;
         double targetingDPS = 0;
         double allyDPS = 0;*/
@@ -74,6 +78,7 @@ public strictfp class Micro {
         int enemiesTargeting = 0;
         double leaderHealth = 0;
         int leaderDist = 0;
+        int targetDist = 0;
 
         public MicroInfo(Direction d) throws GameActionException {
             this.d = d;
@@ -92,6 +97,7 @@ public strictfp class Micro {
                 }
 
                 if (leader != null) leaderDist = l.distanceSquaredTo(leader);
+                if (target != null) targetDist = l.distanceSquaredTo(target);
             }
         }
 
@@ -100,6 +106,7 @@ public strictfp class Micro {
             if (robot.location.isWithinDistanceSquared(l, myActionRange)) inRange = true;
             int dist = robot.location.distanceSquaredTo(after);
             if (dist < minDistToEnemy) minDistToEnemy = dist;
+            if (robot.type.damage > 0 && dist < minDistToDangerousEnemy) minDistToDangerousEnemy = dist;
             if (robot.location.add(robot.location.directionTo(after)).distanceSquaredTo(after)
                     <= robotActionRadius) {
                 enemiesTargeting++;
@@ -122,22 +129,45 @@ public strictfp class Micro {
         }*/
 
         int safety() {
-            if (enemiesAttacking > 0) return 0;
-            if (enemiesTargeting > 0) return 1;
-            return 2;
+            if (hurt) {
+                if (enemiesAttacking > 0) return 0;
+                if (enemiesTargeting > 0) return 1;
+                return 2;
+            } else {
+                if (enemiesAttacking > 0) return 1;
+                return 2;
+            }
+            /*if (enemiesAttacking > 0) return (d == Direction.CENTER ? 1 : 0);
+            if (enemiesTargeting > 0) return (d == Direction.CENTER ? 2 : 1);
+            return (d == Direction.CENTER ? 2 : 1);*/
         }
 
         boolean betterThan(MicroInfo other) {
             if (!canMove) return false;
             if (!other.canMove) return true;
+
+            if (safety() > other.safety()) return true;
+            if (safety() < other.safety()) return false;
+
+            if (enemiesAttacking > 0) {
+                if (minDistToDangerousEnemy > other.minDistToDangerousEnemy) return true;
+                if (minDistToDangerousEnemy < other.minDistToDangerousEnemy) return false;
+            }
+
+            if (!dangerousEnemiesInSight || shouldMoveLeader) {
+                if (leaderDist < other.leaderDist) return true;
+                if (leaderDist > other.leaderDist) return false;
+            }
+
             if (shouldCharge) {
                 if (inRange && !other.inRange) return true;
                 if (!inRange && other.inRange) return false;
+                if (!inRange) {
+                    if (targetDist < other.targetDist) return true;
+                    if (other.targetDist < targetDist) return false;
+                }
             }
-            if (leaderDist < other.leaderDist) return true;
-            if (leaderDist > other.leaderDist) return false;
-            if (safety() > other.safety()) return true;
-            if (safety() < other.safety()) return false;
+            
             //if (myDps > other.myDps) return true;
             //if (myDps < other.myDps) return false;
             if (inRange) return minDistToEnemy >= other.minDistToEnemy;
@@ -146,12 +176,16 @@ public strictfp class Micro {
     }
 
 
-    boolean doMicro(MapLocation lead) throws GameActionException {
+    boolean doMicro(MapLocation targ, MapLocation lead) throws GameActionException {
         curr = rc.getLocation();
         hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
         shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt;
+        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) >= 2;
+        else shouldMoveLeader = false;
         leader = lead;
+        target = targ;
+        dangerousEnemiesInSight = false;
         mi[0] = new MicroInfo(Direction.NORTH);
         mi[1] = new MicroInfo(Direction.NORTHEAST);
         mi[2] = new MicroInfo(Direction.EAST);
@@ -180,6 +214,9 @@ public strictfp class Micro {
             } else {*/
                 //robotDPS = baseDPS[robot.type.ordinal()] / rc.senseMapInfo(robot.location).getCooldownMultiplier(enemyTeam);
                 //robotDPS = baseDPS[robot.type.ordinal()];
+                if (robot.type.damage > 0) {
+                    dangerousEnemiesInSight = true;
+                }
                 robotActionRadius = robot.type.actionRadiusSquared;
                 robotActionRadiusExtended = actionRadiusExtended[robot.type.ordinal()];
                 mi[0].updateEnemy(robot);
