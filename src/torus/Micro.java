@@ -264,7 +264,7 @@ public strictfp class Micro {
                     robotActionRadiusExtended = actionRadiusExtended[robot.type.ordinal()];
 
                     MapLocation l = robot.location;
-                    do {
+                    /*do {
                         if (!rc.canSenseLocation(l)) break;
                         switch (robot.location.directionTo(curr)) {
                             case NORTH:
@@ -420,8 +420,8 @@ public strictfp class Micro {
                                 l = null;
                                 break;
                         }
-                    } while (false);
-                    if (l != null) {
+                    } while (false);*/
+                    if (!rc.canSenseLocation(l)) {
                         System.out.println("updating potential enemies");
                         mi[0].updatePotentialEnemy(robot, l);
                         mi[1].updatePotentialEnemy(robot, l);
