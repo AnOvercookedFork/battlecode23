@@ -114,8 +114,8 @@ public strictfp class Micro {
                 if (dist <= robotActionRadius) {
                     enemiesAttacking++;
                     enemiesTargeting++;
-                } else if (enemiesTargeting == 0 && robot.location.add(robot.location.directionTo(after)).distanceSquaredTo(after)
-                        <= robotActionRadius) { // current micro only uses enemiesTargeting > 0, so no need to check if it is already > 0
+                } else if (robot.location.add(robot.location.directionTo(after)).distanceSquaredTo(after)
+                        <= robotActionRadius) {
                     enemiesTargeting++;
                 }
             }
@@ -141,11 +141,11 @@ public strictfp class Micro {
             }
         }*/
 
-        int safety() {
+        double safety() {
             //if (hurt) {
-                if (enemiesAttacking > 0) return 0;
-                if (enemiesTargeting > 0) return 1;
-                if (potentialAttackers > 0) return 2;
+                if (enemiesAttacking > 0) return 0.9 / enemiesAttacking;
+                if (enemiesTargeting > 0) return 1 + 0.9 / enemiesTargeting;
+                if (potentialAttackers > 0) return 2 + 0.9 / potentialAttackers;
                 return 3;
             /*} else {
                 if (enemiesAttacking > 0) return 1;
@@ -201,8 +201,8 @@ public strictfp class Micro {
         curr = rc.getLocation();
         hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
-        shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt && lead != null;
-        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) >= 2;
+        shouldCharge = canAttack && rc.getRoundNum() % 3 == 1 && !hurt && lead != null;
+        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 3 != 0 && curr.distanceSquaredTo(lead) >= 2;
         else shouldMoveLeader = false;
         leader = lead;
         target = targ;

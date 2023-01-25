@@ -212,11 +212,11 @@ public strictfp class LauncherRobot extends Robot {
                 success = micro.doMicro(target, otherLeader, prevRoundTargets);
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                        && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
+                        && (rc.getRoundNum() % 3 != 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
                 } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
-                        && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
+                        && rc.getRoundNum() % 3 != 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
                     success = true;
                 }
             }
