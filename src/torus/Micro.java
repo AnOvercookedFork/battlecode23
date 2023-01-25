@@ -201,8 +201,8 @@ public strictfp class Micro {
         curr = rc.getLocation();
         hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
-        shouldCharge = canAttack && rc.getRoundNum() % 3 == 1 && !hurt && lead != null;
-        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 3 != 0 && curr.distanceSquaredTo(lead) >= 2;
+        shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt && lead != null;
+        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) >= 2;
         else shouldMoveLeader = false;
         leader = lead;
         target = targ;

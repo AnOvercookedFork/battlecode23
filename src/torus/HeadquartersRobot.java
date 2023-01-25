@@ -26,6 +26,7 @@ public strictfp class HeadquartersRobot extends Robot {
     int anchorBuildCooldown = 0;
     boolean pool_mana = false;
     MapLocation nearestDangerous = null;
+    HQLocations hqLocs;
 
     MapCache cache;
     
@@ -36,11 +37,18 @@ public strictfp class HeadquartersRobot extends Robot {
         cache = new MapCache(rc, 32);
         Communications.readArray(rc);
         Communications.tryAddHQ(rc, rc.getLocation());
+        hqLocs = new HQLocations(rc);
     }
 
     public void run() throws GameActionException {
 
         Communications.readArray(rc);
+        hqLocs.updateHQSymms(rc);
+        hqLocs.updateSymmsFromComms();
+        System.out.println("IS HORIZONTAL ELIMINATED? " + Communications.isHorizontalSymmetryEliminated(rc));
+        System.out.println("IS VERTICAL ELIMINATED? " + Communications.isVerticalSymmetryEliminated(rc));
+        System.out.println("IS ROTATIONAL ELIMINATED? " + Communications.isRotationalSymmetryEliminated(rc));
+        
         
         if (Communications.isFirstHQ(rc)) {
         }

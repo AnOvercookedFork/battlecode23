@@ -24,9 +24,13 @@ public strictfp class Communications {
     public static final int ISLAND_REPORT_SIZE = 12;
     public static final int HQ_INDEX = 32; // size 4
     public static final int AMP_INDEX = 36; // size 2
-    public static final int ENEMIES_START = 38; // fills remainder of array
+    public static final int SYMMETRY_INDEX = 38; // size 1
+    public static final int ENEMIES_START = 39; // fills remainder of array
     public static final int ENEMIES_ASSOCIATIVITY = 4;
     public static final int AGE_MASK = (1 << 12);
+    public static final int NOT_RSYMM_MASK = 1;
+    public static final int NOT_HSYMM_MASK = 2;
+    public static final int NOT_VSYMM_MASK = 4;
     public static int ENEMIES_SIZE;
     /*
     public static final int ENEMIES_SIZE = 16;
@@ -395,5 +399,38 @@ public strictfp class Communications {
                 rc.setIndicatorDot(l, (is_old ? 100 : 200), 0, 0);
             }
         }
+    }
+    
+    public static void eliminateRotationalSymmetry(RobotController rc) throws GameActionException {
+        if (rc.canWriteSharedArray(0, 0)) {
+            array[SYMMETRY_INDEX] |= NOT_RSYMM_MASK;
+            rc.writeSharedArray(SYMMETRY_INDEX, array[SYMMETRY_INDEX]);
+        }
+    }
+
+    public static void eliminateHorizontalSymmetry(RobotController rc) throws GameActionException {
+        if (rc.canWriteSharedArray(0, 0)) {
+            array[SYMMETRY_INDEX] |= NOT_HSYMM_MASK;
+            rc.writeSharedArray(SYMMETRY_INDEX, array[SYMMETRY_INDEX]);
+        }
+    }
+
+    public static void eliminateVerticalSymmetry(RobotController rc) throws GameActionException {
+        if (rc.canWriteSharedArray(0, 0)) {
+            array[SYMMETRY_INDEX] |= NOT_VSYMM_MASK;
+            rc.writeSharedArray(SYMMETRY_INDEX, array[SYMMETRY_INDEX]);
+        }
+    }
+
+    public static boolean isRotationalSymmetryEliminated(RobotController rc) throws GameActionException {
+        return (array[SYMMETRY_INDEX] & NOT_RSYMM_MASK) > 0;
+    }
+
+    public static boolean isHorizontalSymmetryEliminated(RobotController rc) throws GameActionException {
+        return (array[SYMMETRY_INDEX] & NOT_HSYMM_MASK) > 0;
+    }
+
+    public static boolean isVerticalSymmetryEliminated(RobotController rc) throws GameActionException {
+        return (array[SYMMETRY_INDEX] & NOT_VSYMM_MASK) > 0;
     }
 }
