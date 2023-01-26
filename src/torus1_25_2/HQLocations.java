@@ -1,4 +1,4 @@
-package torus;
+package torus1_25_2;
 
 import battlecode.common.*;
 
@@ -92,8 +92,8 @@ public strictfp class HQLocations {
     public void eliminateSymms(RobotController rc) throws GameActionException {
         if (isSymmetryDetermined()) return;
         MapLocation m;
-        int dx;
-        int dy;
+        int rx;
+        int ry;
         MapLocation curr = rc.getLocation();
         for (MapInfo mi : rc.senseNearbyMapInfos()) {
             m = mi.getMapLocation();
@@ -102,37 +102,37 @@ public strictfp class HQLocations {
 
             if (sensed.indexOf(m.toString()) >= 0) continue;
 
-            sensed.append(m);
+            sensed.append(m.toString()).append("|");
             
-            dx = mapWidth - 2 * m.x - 1;
-            dy = mapHeight - 2 * m.y - 1;
+            rx = mapWidth - m.x - 1;
+            ry = mapHeight - m.y - 1;
             if (mi.isPassable()) {
                 passable.append(m);
 
-                if (r && notPassable.indexOf(m.translate(dx, dy).toString()) >= 0) {
+                if (r && notPassable.indexOf(new MapLocation(rx, ry).toString()) >= 0) {
                     r = false;
                     //System.out.println(m.toString() + " passable eliminated rotational (" + rx + ", " + (ry60 / 60) + " not passable)");
                 }
-                if (v && notPassable.indexOf(m.translate(0, dy).toString()) >= 0) {
+                if (v && notPassable.indexOf(new MapLocation(m.x, ry).toString()) >= 0) {
                     v = false;
                     //System.out.println(m.toString() + " passable eliminated vertical (" + m.x + ", " +  (ry60 / 60) + " not passable)");
                 }
-                if (h && notPassable.indexOf(m.translate(dx, 0).toString()) >= 0) {
+                if (h && notPassable.indexOf(new MapLocation(rx, m.y).toString()) >= 0) {
                     h = false;
                     //System.out.println(m.toString() + " passable eliminated horizontal (" + rx + ", " + m.y + " not passable)");
                 }
             } else {
                 notPassable.append(m);
 
-                if (r && passable.indexOf(m.translate(dx, dy).toString()) >= 0) {
+                if (r && passable.indexOf(new MapLocation(rx, ry).toString()) >= 0) {
                     r = false;
                     //System.out.println(m.toString() + " not passable eliminated rotational (" + rx + ", " + (ry60 / 60) + " passable)");
                 }
-                if (v && passable.indexOf(m.translate(0, dy).toString()) >= 0) {
+                if (v && passable.indexOf(new MapLocation(m.x, ry).toString()) >= 0) {
                     v = false;
                     //System.out.println(m.toString() + " not passable eliminated vertical (" + m.x + ", " +  (ry60 / 60) + " passable)");
                 }
-                if (h && passable.indexOf(m.translate(dx, 0).toString()) >= 0) {
+                if (h && passable.indexOf(new MapLocation(rx, m.y).toString()) >= 0) {
                     h = false;
                     //System.out.println(m.toString() + " not passable eliminated horizontal (" + rx + ", " + m.y + " passable)");
                 }
@@ -210,41 +210,6 @@ public strictfp class HQLocations {
             }
         }
         return ret;
-    }
-
-    public MapLocation getNearestPossibleEnemyHQ(RobotController rc) {
-        MapLocation nearest = null;
-        MapLocation curr = rc.getLocation();
-        int nearestDist = 1000000;
-        int dist;
-        if (r) {
-            for (int i = hqs.length; i-->0;) {
-                dist = hqs_rsymm[i].distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = hqs_rsymm[i];
-                    nearestDist = dist;
-                }
-            }
-        }
-        if (h) {
-            for (int i = hqs.length; i-->0;) {
-                dist = hqs_hsymm[i].distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = hqs_hsymm[i];
-                    nearestDist = dist;
-                }
-            }
-        }
-        if (v) {
-            for (int i = hqs.length; i-->0;) {
-                dist = hqs_vsymm[i].distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = hqs_vsymm[i];
-                    nearestDist = dist;
-                }
-            }
-        }
-        return nearest;
     }
 
     public void markVisited(MapLocation l) {

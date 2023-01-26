@@ -1,4 +1,4 @@
-package torus;
+package torus1_25_3;
 
 import battlecode.common.*;
 
@@ -7,7 +7,6 @@ public strictfp class LauncherRobot extends Robot {
     public static final double HQ_LOC_WEIGHT = 120;
     public static final double INITIAL_LOC_WEIGHT = 100;
     public static final double FOUND_BASE_WEIGHT = 100;
-    public static final double REPORTED_BASE_WEIGHT = 80;
     public static final double GIVE_UP_WEIGHT = 10;
     public static final int GIVE_UP_RADIUS_SQ = 2;
     private static final int EXECUTE_THRESHOLD = 20; // increased priority against robots with this hp or under
@@ -168,25 +167,11 @@ public strictfp class LauncherRobot extends Robot {
 
         if (USE_NEW_MICRO) {
             if (target != null) {
-                if (rc.canSenseLocation(target)) {
-                    if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
-                        hqLocs.markVisited(target);
-                        target = null;
-                    } else {
-                        RobotInfo robot = rc.senseRobotAtLocation(target);
-                        if (robot != null && robot.type == RobotType.HEADQUARTERS) {
-                            hqLocs.markVisited(target);
-                            target = null;
-                        }
-                    }
-                }
-            }
-
-            if (targetWeight == REPORTED_BASE_WEIGHT) {
-                if (nearestReportedEnemy != null && target.distanceSquaredTo(nearestReportedEnemy) > 4) {
+                if ((curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) && rc.canSenseLocation(target))
+                        || targetWeight < GIVE_UP_WEIGHT) {
+                    hqLocs.markVisited(hqTarget);
                     target = null;
-                } else {
-                    target = nearestReportedEnemy;
+
                 }
             }
 
@@ -199,7 +184,7 @@ public strictfp class LauncherRobot extends Robot {
                     hqTarget = hqLocs.getHQRushLocation(rc);
                 }*/
                 target = hqLocs.getHQRushLocation(rc);
-                //rc.setIndicatorLine(curr, target, 255, 0, 0);
+                rc.setIndicatorLine(curr, target, 255, 0, 0);
                 targetWeight = HQ_LOC_WEIGHT;
             }
 
@@ -225,10 +210,9 @@ public strictfp class LauncherRobot extends Robot {
                 target = nearest;
                 targetWeight = FOUND_BASE_WEIGHT;
             } else {
-                if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS && nearestReportedEnemy != null
-                        && nearestReportedEnemy.distanceSquaredTo(curr) < target.distanceSquaredTo(curr)) {
+                if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS && nearestReportedEnemy != null) {
                     target = nearestReportedEnemy;
-                    targetWeight = REPORTED_BASE_WEIGHT;
+                    targetWeight = FOUND_BASE_WEIGHT;
                 }
             }
 
@@ -239,13 +223,11 @@ public strictfp class LauncherRobot extends Robot {
             if (turnsSinceInCombat < STAY_IN_COMBAT_TURNS) {
                 success = micro.doMicro(target, otherLeader, prevRoundTargets);
             } else {
-                if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
-                else rc.setIndicatorLine(curr, target, 255, 0, 0);
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
-                } else if (curr.distanceSquaredTo(target) > GIVE_UP_RADIUS_SQ
+                } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
                         && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
                     success = true;
                 }
@@ -303,7 +285,7 @@ public strictfp class LauncherRobot extends Robot {
                 target = nearest.getLocation();
                 targetWeight = FOUND_BASE_WEIGHT;
             } else {
-                if (nearestReportedEnemy != null && turnsSinceInCombat >= STAY_IN_COMBAT_TURNS) {
+                if (nearestReportedEnemy != null) {
                     target = nearestReportedEnemy;
                     targetWeight = FOUND_BASE_WEIGHT;
                 }

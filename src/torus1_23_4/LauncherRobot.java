@@ -1,20 +1,18 @@
-package torus;
+package torus1_23_4;
 
 import battlecode.common.*;
 
 public strictfp class LauncherRobot extends Robot {
     public static final double RANDOM_LOC_WEIGHT = 100;
-    public static final double HQ_LOC_WEIGHT = 120;
     public static final double INITIAL_LOC_WEIGHT = 100;
     public static final double FOUND_BASE_WEIGHT = 100;
-    public static final double REPORTED_BASE_WEIGHT = 80;
     public static final double GIVE_UP_WEIGHT = 10;
     public static final int GIVE_UP_RADIUS_SQ = 2;
-    private static final int EXECUTE_THRESHOLD = 20; // increased priority against robots with this hp or under
+    private static final int EXECUTE_THRESHOLD = 6; // increased priority against robots with this hp or under
     private static final int RESOURCE_THRESHOLD = 30; // increased priority on resource holding carriers
-    public static final int EXECUTE_MODIFIER = 10;
+    public static final int EXECUTE_MODIFIER = 100;
+    public static final int DAMAGED_MODIFIER = 15;
     public static final int ISLAND_MODIFIER = 0;
-    public static final int ANCHOR_MODIFIER = 10;
     public static final boolean USE_NEW_MICRO = true;
     public static final int STAY_IN_COMBAT_TURNS = 6;
     public static final int HEAL_HEALTH = 133;
@@ -57,7 +55,6 @@ public strictfp class LauncherRobot extends Robot {
         Communications.readIslands(rc, cache);
         Communications.reportIsland(rc, cache);
         hqLocs.updateHQSymms(rc);
-        hqLocs.updateSymmsFromComms();
 
         nearestReportedEnemy = Communications.getNearestEnemy(rc);
 
@@ -123,9 +120,6 @@ public strictfp class LauncherRobot extends Robot {
                     enemyHQCount++;
                     break;
                 } else {
-                    if (robot.type.damage > 0) {
-                        turnsSinceInCombat = 0;
-                    }
                     Communications.tryAddEnemy(rc, robot.location);
                 }
             }
@@ -148,6 +142,7 @@ public strictfp class LauncherRobot extends Robot {
         MapLocation target = getTarget(rc);
         if (target != null && rc.canAttack(target)) {
             rc.attack(target);
+            turnsSinceInCombat = 0;
             return true;
         }
         return false;
@@ -168,39 +163,26 @@ public strictfp class LauncherRobot extends Robot {
 
         if (USE_NEW_MICRO) {
             if (target != null) {
-                if (rc.canSenseLocation(target)) {
-                    if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
-                        hqLocs.markVisited(target);
-                        target = null;
-                    } else {
-                        RobotInfo robot = rc.senseRobotAtLocation(target);
-                        if (robot != null && robot.type == RobotType.HEADQUARTERS) {
-                            hqLocs.markVisited(target);
-                            target = null;
-                        }
+                if ((curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) && rc.canSenseLocation(target))
+                        || targetWeight < GIVE_UP_WEIGHT) {
+                    if (target.equals(hqTarget)) {
+                        hqTarget = hqLocs.getHQRushLocation(rc);
                     }
-                }
-            }
-
-            if (targetWeight == REPORTED_BASE_WEIGHT) {
-                if (nearestReportedEnemy != null && target.distanceSquaredTo(nearestReportedEnemy) > 4) {
                     target = null;
-                } else {
-                    target = nearestReportedEnemy;
+
                 }
             }
 
-            if (target == null || targetWeight == HQ_LOC_WEIGHT) {
+            if (target == null) {
                 // target = randomLocation();
                 // target = new MapLocation(rc.getMapWidth() - curr.x - 1, rc.getMapHeight() -
                 // curr.y - 1);
                 // targetWeight = RANDOM_LOC_WEIGHT;
-                /*if (hqTarget == null) {
+                if (hqTarget == null) {
                     hqTarget = hqLocs.getHQRushLocation(rc);
-                }*/
-                target = hqLocs.getHQRushLocation(rc);
-                //rc.setIndicatorLine(curr, target, 255, 0, 0);
-                targetWeight = HQ_LOC_WEIGHT;
+                }
+                target = hqTarget;
+                targetWeight = RANDOM_LOC_WEIGHT;
             }
 
             RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
@@ -219,34 +201,30 @@ public strictfp class LauncherRobot extends Robot {
                     }
                 }
             }
-            
 
             if (nearest != null) {
                 target = nearest;
                 targetWeight = FOUND_BASE_WEIGHT;
             } else {
-                if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS && nearestReportedEnemy != null
-                        && nearestReportedEnemy.distanceSquaredTo(curr) < target.distanceSquaredTo(curr)) {
+                if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS && nearestReportedEnemy != null) {
                     target = nearestReportedEnemy;
-                    targetWeight = REPORTED_BASE_WEIGHT;
+                    targetWeight = FOUND_BASE_WEIGHT;
                 }
             }
 
             boolean success = false;
 
-            //targetWeight *= 0.8;
+            targetWeight *= 0.8;
 
             if (turnsSinceInCombat < STAY_IN_COMBAT_TURNS) {
                 success = micro.doMicro(target, otherLeader, prevRoundTargets);
             } else {
-                if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
-                else rc.setIndicatorLine(curr, target, 255, 0, 0);
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                        && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
+                        && (rc.getRoundNum() % 3 != 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
-                } else if (curr.distanceSquaredTo(target) > GIVE_UP_RADIUS_SQ
-                        && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
+                } else if (curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
+                        && rc.getRoundNum() % 3 != 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
                     success = true;
                 }
             }
@@ -303,7 +281,7 @@ public strictfp class LauncherRobot extends Robot {
                 target = nearest.getLocation();
                 targetWeight = FOUND_BASE_WEIGHT;
             } else {
-                if (nearestReportedEnemy != null && turnsSinceInCombat >= STAY_IN_COMBAT_TURNS) {
+                if (nearestReportedEnemy != null) {
                     target = nearestReportedEnemy;
                     targetWeight = FOUND_BASE_WEIGHT;
                 }
@@ -406,7 +384,7 @@ public strictfp class LauncherRobot extends Robot {
     }
 
     public double scoreTarget(RobotInfo info) throws GameActionException {
-        double score = 0.005 / info.ID;
+        double score = 1.0 / info.ID;
 
         switch (info.getType()) {
         case AMPLIFIER:
@@ -419,8 +397,6 @@ public strictfp class LauncherRobot extends Robot {
             if (info.getResourceAmount(ResourceType.ADAMANTIUM) + info.getResourceAmount(ResourceType.ELIXIR)
                     + info.getResourceAmount(ResourceType.MANA) > RESOURCE_THRESHOLD) {
                 score += 3;
-            } else if (info.getTotalAnchors() > 0) {
-                score += 10;
             } else {
                 score += 1; // could rewrite this to set to 1 then add if conditions are met
             }
@@ -431,7 +407,7 @@ public strictfp class LauncherRobot extends Robot {
         case HEADQUARTERS:
             return 0; // can't attack HQ
         case LAUNCHER:
-            score += 6;
+            score += 2;
             break;
         }
 
@@ -439,7 +415,9 @@ public strictfp class LauncherRobot extends Robot {
             score += ISLAND_MODIFIER;
         }
 
-        score += 1.0 / info.health;
+        if (info.getHealth() < info.getType().getMaxHealth()) {
+            score += DAMAGED_MODIFIER;
+        }
 
         if (info.getHealth() <= EXECUTE_THRESHOLD) {
             score += EXECUTE_MODIFIER; // could add variable for this too

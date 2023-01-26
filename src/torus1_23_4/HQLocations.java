@@ -1,4 +1,4 @@
-package torus;
+package torus1_23_4;
 
 import battlecode.common.*;
 
@@ -9,9 +9,6 @@ public strictfp class HQLocations {
     static MapLocation[] hqs_vsymm;
     static MapLocation[] hqs_hsymm;
     static MapLocation[] hqs_rsymm;
-    static int[] vsymm_visited;
-    static int[] hsymm_visited;
-    static int[] rsymm_visited;
 
     static Team team;
 
@@ -45,10 +42,6 @@ public strictfp class HQLocations {
         hqs_hsymm = new MapLocation[hqs.length];
         hqs_rsymm = new MapLocation[hqs.length];
 
-        vsymm_visited = new int[hqs.length];
-        hsymm_visited = new int[hqs.length];
-        rsymm_visited = new int[hqs.length];
-
         for (int i = hqs.length; --i >= 0;) {
             hqs_vsymm[i] = reflectVertical(hqs[i]);
             hqs_hsymm[i] = reflectHorizontal(hqs[i]);
@@ -65,7 +58,6 @@ public strictfp class HQLocations {
     }
 
     public void updateHQSymms(RobotController rc) throws GameActionException {
-        if (isSymmetryDetermined()) return;
         RobotInfo sensed;
         for (int i = hqs.length; --i >= 0;) {
             if (v && rc.canSenseLocation(hqs_vsymm[i])) {
@@ -90,10 +82,9 @@ public strictfp class HQLocations {
     }
 
     public void eliminateSymms(RobotController rc) throws GameActionException {
-        if (isSymmetryDetermined()) return;
         MapLocation m;
-        int dx;
-        int dy;
+        int rx;
+        int ry;
         MapLocation curr = rc.getLocation();
         for (MapInfo mi : rc.senseNearbyMapInfos()) {
             m = mi.getMapLocation();
@@ -102,39 +93,41 @@ public strictfp class HQLocations {
 
             if (sensed.indexOf(m.toString()) >= 0) continue;
 
-            sensed.append(m);
+            sensed.append(m.toString()).append("|");
             
-            dx = mapWidth - 2 * m.x - 1;
-            dy = mapHeight - 2 * m.y - 1;
+            rx = mapWidth - m.x - 1;
+            ry = mapHeight - m.y - 1;
             if (mi.isPassable()) {
                 passable.append(m);
 
-                if (r && notPassable.indexOf(m.translate(dx, dy).toString()) >= 0) {
+                if (r && notPassable.indexOf(new MapLocation(rx, ry).toString()) >= 0) {
                     r = false;
                     //System.out.println(m.toString() + " passable eliminated rotational (" + rx + ", " + (ry60 / 60) + " not passable)");
                 }
-                if (v && notPassable.indexOf(m.translate(0, dy).toString()) >= 0) {
+                if (v && notPassable.indexOf(new MapLocation(m.x, ry).toString()) >= 0) {
                     v = false;
                     //System.out.println(m.toString() + " passable eliminated vertical (" + m.x + ", " +  (ry60 / 60) + " not passable)");
                 }
-                if (h && notPassable.indexOf(m.translate(dx, 0).toString()) >= 0) {
+                if (h && notPassable.indexOf(new MapLocation(rx, m.y).toString()) >= 0) {
                     h = false;
-                    //System.out.println(m.toString() + " passable eliminated horizontal (" + rx + ", " + m.y + " not passable)");
+                    System.out.println(m.toString() + " passable eliminated horizontal (" + rx + ", " + m.y + " not passable)");
+                    System.out.println(notPassable);
                 }
             } else {
                 notPassable.append(m);
 
-                if (r && passable.indexOf(m.translate(dx, dy).toString()) >= 0) {
+                if (r && passable.indexOf(new MapLocation(rx, ry).toString()) >= 0) {
                     r = false;
                     //System.out.println(m.toString() + " not passable eliminated rotational (" + rx + ", " + (ry60 / 60) + " passable)");
                 }
-                if (v && passable.indexOf(m.translate(0, dy).toString()) >= 0) {
+                if (v && passable.indexOf(new MapLocation(m.x, ry).toString()) >= 0) {
                     v = false;
                     //System.out.println(m.toString() + " not passable eliminated vertical (" + m.x + ", " +  (ry60 / 60) + " passable)");
                 }
-                if (h && passable.indexOf(m.translate(dx, 0).toString()) >= 0) {
+                if (h && passable.indexOf(new MapLocation(rx, m.y).toString()) >= 0) {
                     h = false;
-                    //System.out.println(m.toString() + " not passable eliminated horizontal (" + rx + ", " + m.y + " passable)");
+                    System.out.println(m.toString() + " not passable eliminated horizontal (" + rx + ", " + m.y + " passable)");
+                    System.out.println(passable);
                 }
             }
             /*if (mi.hasCloud()) {
@@ -178,87 +171,22 @@ public strictfp class HQLocations {
     }
 
     public MapLocation getHQRushLocation(RobotController rc) {
-        MapLocation ret = null;
-        MapLocation curr = rc.getLocation();
-        double bestScore = 1000000;
-        double score;
         if (r) {
-            for (int i = hqs.length; i-->0;) {
-                score = rsymm_visited[i] - 0.9 / hqs_rsymm[i].distanceSquaredTo(curr);
-                if (score < bestScore) {
-                    ret = hqs_rsymm[i];
-                    bestScore = score;
-                }
-            }
+            MapLocation ret = hqs_rsymm[rushIndex];
+            rushIndex = (rushIndex + 1) % hqs.length;
+            return ret;
         }
         if (h) {
-            for (int i = hqs.length; i-->0;) {
-                score = hsymm_visited[i] - 0.9 / hqs_hsymm[i].distanceSquaredTo(curr);
-                if (score < bestScore) {
-                    ret = hqs_hsymm[i];
-                    bestScore = score;
-                }
-            }
+            MapLocation ret = hqs_hsymm[rushIndex];
+            rushIndex = (rushIndex + 1) % hqs.length;
+            return ret;
         }
         if (v) {
-            for (int i = hqs.length; i-->0;) {
-                score = vsymm_visited[i] - 0.9 / hqs_vsymm[i].distanceSquaredTo(curr);
-                if (score < bestScore) {
-                    ret = hqs_vsymm[i];
-                    bestScore = score;
-                }
-            }
+            MapLocation ret = hqs_vsymm[rushIndex];
+            rushIndex = (rushIndex + 1) % hqs.length;
+            return ret;
         }
-        return ret;
-    }
-
-    public MapLocation getNearestPossibleEnemyHQ(RobotController rc) {
-        MapLocation nearest = null;
-        MapLocation curr = rc.getLocation();
-        int nearestDist = 1000000;
-        int dist;
-        if (r) {
-            for (int i = hqs.length; i-->0;) {
-                dist = hqs_rsymm[i].distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = hqs_rsymm[i];
-                    nearestDist = dist;
-                }
-            }
-        }
-        if (h) {
-            for (int i = hqs.length; i-->0;) {
-                dist = hqs_hsymm[i].distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = hqs_hsymm[i];
-                    nearestDist = dist;
-                }
-            }
-        }
-        if (v) {
-            for (int i = hqs.length; i-->0;) {
-                dist = hqs_vsymm[i].distanceSquaredTo(curr);
-                if (dist < nearestDist) {
-                    nearest = hqs_vsymm[i];
-                    nearestDist = dist;
-                }
-            }
-        }
-        return nearest;
-    }
-
-    public void markVisited(MapLocation l) {
-        for (int i = hqs.length; i-->0;) {
-            if (r && hqs_rsymm[i].equals(l)) {
-                rsymm_visited[i]++;
-            }
-            if (h && hqs_hsymm[i].equals(l)) {
-                hsymm_visited[i]++;
-            }
-            if (v && hqs_vsymm[i].equals(l)) {
-                vsymm_visited[i]++;
-            }
-        }
+        return null;
     }
 
     public void debugSymms() {
@@ -274,33 +202,6 @@ public strictfp class HQLocations {
         if (!r && !h && !v) {
             System.out.println("Something's wrong, all symmetries have been eliminated!");
         }
-    }
-
-    public void updateSymmsFromComms() throws GameActionException {
-        if (Communications.isRotationalSymmetryEliminated(rc)) {
-            r = false;
-        } else if (!r) {
-            Communications.eliminateRotationalSymmetry(rc);
-        }
-        if (Communications.isHorizontalSymmetryEliminated(rc)) {
-            h = false;
-        } else if (!h) {
-            Communications.eliminateHorizontalSymmetry(rc);
-        }
-        if (Communications.isVerticalSymmetryEliminated(rc)) {
-            v = false;
-        } else if (!v) {
-            Communications.eliminateVerticalSymmetry(rc);
-        }
-    }
-
-    public boolean isSymmetryDetermined() {
-        return (r? !h && !v : !h || !v);
-        /*if (r) {
-            return !h && !v;
-        } else {
-            return !h || !v;
-        }*/
     }
 
 }

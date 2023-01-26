@@ -1,4 +1,4 @@
-package torus;
+package torus1_25_3;
 
 import battlecode.common.*;
 
@@ -18,7 +18,6 @@ public strictfp class CarrierRobot extends Robot {
     public static final int IS_ENEMY_BLACKLIST_ROUNDS = 20;
     public static final int PREFER_HQ_KG = 30;
     public static final int DO_THE_SHUFFLE_THRESHOLD = 6;
-    public static final int THRESHOLD_AD_DISTANCE = 20;
 
     public static MapLocation[] hqs;
     MapLocation[] nearbyEnemyHQs;
@@ -34,16 +33,12 @@ public strictfp class CarrierRobot extends Robot {
     int blacklistRound = 0;
     int nearbyCarriers;
     MapLocation nearestHQ;
-    HQLocations hqLocs;
 
-    int roundCollectAdamantium; // minimum round before starting to collect ad
-
-    public CarrierRobot(RobotController rc) throws GameActionException {
+    public CarrierRobot(RobotController rc) {
         super(rc);
         hqs = null;
         cache = new MapCache(rc, 16);
         snav = new StinkyNavigation(rc);
-        hqLocs = new HQLocations(rc);
     }
 
     public void run() throws GameActionException {
@@ -58,9 +53,6 @@ public strictfp class CarrierRobot extends Robot {
         Communications.readIslands(rc, cache);
         cache.updateIslandCache();
         Communications.reportIsland(rc, cache);
-        hqLocs.updateHQSymms(rc);
-        hqLocs.updateSymmsFromComms();
-        
 
         processNearbyRobots();
 
@@ -97,11 +89,6 @@ public strictfp class CarrierRobot extends Robot {
             if (getWeight() == GameConstants.CARRIER_CAPACITY) {
                 tryTransferHQ();
             }
-        }
-
-        if (Clock.getBytecodesLeft() > 4000) {
-            //System.out.println("Carrier is updating symms.");
-            hqLocs.eliminateSymms(rc);
         }
 
 
@@ -339,12 +326,10 @@ public strictfp class CarrierRobot extends Robot {
                 }
                 break;
             case ADAMANTIUM:
-                if (round >= roundCollectAdamantium) {
                 if (prevResource != ResourceType.ADAMANTIUM) {
                     score = 1.5;
                 } else {
                     score = 1;
-                }
                 }
                 break;
             case ELIXIR:
@@ -415,13 +400,6 @@ public strictfp class CarrierRobot extends Robot {
             if (carriers + blocked > WELL_SATURATED_THRESHOLD) {
                 BlacklistMap.blacklist(collectTarget.x, collectTarget.y, rc.getRoundNum() + BLACKLIST_ROUNDS);
             }
-        }
-
-
-        if (hqLocs.getNearestPossibleEnemyHQ(rc).distanceSquaredTo(curr) < THRESHOLD_AD_DISTANCE) {
-            roundCollectAdamantium = 20;
-        } else {
-            roundCollectAdamantium = 0;
         }
             
         MapLocation selectedWell = selectWell();

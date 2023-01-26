@@ -1,4 +1,4 @@
-package torus;
+package torus1_25_1;
 
 import battlecode.common.*;
 
@@ -85,7 +85,7 @@ public strictfp class StinkyNavigation {
 
         for (int i = 0; i < avoidHQs.length; i++) {
             if (loc.distanceSquaredTo(avoidHQs[i]) <= 9) {
-                //System.out.println("debug hq pathfinding score: " + (9 - loc.distanceSquaredTo(avoidHQs[i])));
+                System.out.println("debug hq pathfinding score: " + (9 - loc.distanceSquaredTo(avoidHQs[i])));
                 return (9 - loc.distanceSquaredTo(avoidHQs[i])) * 1000;
             }
         }

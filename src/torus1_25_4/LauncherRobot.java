@@ -1,4 +1,4 @@
-package torus;
+package torus1_25_4;
 
 import battlecode.common.*;
 
@@ -168,17 +168,11 @@ public strictfp class LauncherRobot extends Robot {
 
         if (USE_NEW_MICRO) {
             if (target != null) {
-                if (rc.canSenseLocation(target)) {
-                    if (curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) || targetWeight < GIVE_UP_WEIGHT) {
-                        hqLocs.markVisited(target);
-                        target = null;
-                    } else {
-                        RobotInfo robot = rc.senseRobotAtLocation(target);
-                        if (robot != null && robot.type == RobotType.HEADQUARTERS) {
-                            hqLocs.markVisited(target);
-                            target = null;
-                        }
-                    }
+                if ((curr.isWithinDistanceSquared(target, GIVE_UP_RADIUS_SQ) && rc.canSenseLocation(target))
+                        || targetWeight < GIVE_UP_WEIGHT) {
+                    hqLocs.markVisited(hqTarget);
+                    target = null;
+
                 }
             }
 
