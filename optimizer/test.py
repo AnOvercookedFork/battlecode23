@@ -4,12 +4,12 @@ import os
 import time
 
 # these constants are probably fine
-maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Clown', 'DefaultMap', 'Diagonal', 'Eyelands', 'Frog', 'Hah', 'Jail', 'KingdomRush', 'SmallElements', 'maptestsmall', 'Minefield', 'Movepls', 'Orbit', 'Pathfind', 'Pit', 'Pizza', 'Quiet', 'Scatter', 'Sun', 'Tacocat']
-
-
+maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Clown', 'DefaultMap', 'Diagonal', 'Eyelands', 'Frog', 'Greivance', 'Hah', 'Jail', 'KingdomRush', 'SmallElements', 'maptestsmall', 'Minefield', 'Movepls', 'Orbit', 'Pathfind', 'Pit', 'Pizza', 'Quiet', 'Scatter', 'Sun', 'Tacocat']
+maps2 = ['AllElements','ArtistRendition','BatSignal','BattleSuns','BowAndArrow','Cat','Checkmate2','Clown','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Forest','FourNations','Frog','Grievance','Hah','HideAndSeek','HorizontallySymmetric','Jail','KingdomRush','Lantern','Lines','maptestsmall','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Quiet','Rectangle','Rewind','Risk','Scatter','Sine','SmallElements','Snowflake','SomethingFishy','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','TicTacToe','Turtle','USA','VerticallySymmetric']
+maps = maps2
 # set these
 teamA = 'torus'
-teamB = 'sprint2'
+teamB = 'torus1_25_5'
 
 def get_winner(data):
     return data[-6].split(' ')[-4]

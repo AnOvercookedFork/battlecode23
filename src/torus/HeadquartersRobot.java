@@ -73,7 +73,11 @@ public strictfp class HeadquartersRobot extends Robot {
             rc.buildAnchor(Anchor.STANDARD);
             anchorBuildCooldown = ANCHOR_BUILD_COOLDOWN;
         }
-
+        
+        // if(!buildAnchor && rc.getRoundNum() > 400 && Communications.getAmpCount() <= rc.getRobotCount() / 30 && Communications.getAmpCount() <= 4) {
+        //     tryBuildAmplifier();
+        // }
+        
         while ((!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) && (!pool_mana || rc.getResourceAmount(ResourceType.MANA) > MANA_POOL_AMOUNT) && tryBuildLauncher()) {}
 
         while ((!buildAnchor || rc.getResourceAmount(ResourceType.ADAMANTIUM) >= RobotType.CARRIER.buildCostAdamantium + Anchor.STANDARD.adamantiumCost)
@@ -535,6 +539,44 @@ public strictfp class HeadquartersRobot extends Robot {
         MapLocation chosenBuildLocation = closestBuildLocation(RobotType.CARRIER, target);
         if (chosenBuildLocation != null) {
             rc.buildRobot(RobotType.CARRIER, chosenBuildLocation);
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean tryBuildAmplifier() throws GameActionException {
+        MapLocation leader = null;
+        double highestHealth = 0;
+        double health;
+        RobotInfo[] allies = rc.senseNearbyRobots(-1, rc.getTeam());
+        for (RobotInfo ally : allies) {
+            if (ally.type == RobotType.LAUNCHER) {
+                health = ally.health + 1.0 / ally.ID;
+                if (health > highestHealth) {
+                    highestHealth = health;
+                    leader = ally.location;
+                }
+            }
+        }
+
+        MapLocation target;
+        boolean close = true;
+        if (leader != null) {
+            target = leader;
+        } else if (nearestDangerous != null) {
+            target = nearestDangerous;
+            close = false;
+        } else {
+            target = randomLocation();
+        }
+        MapLocation chosenBuildLocation;
+        if (close) {
+            chosenBuildLocation = closestBuildLocation(RobotType.AMPLIFIER, target);
+        } else {
+            chosenBuildLocation = farthestBuildLocation(RobotType.AMPLIFIER, target);
+        }
+        if (chosenBuildLocation != null) {
+            rc.buildRobot(RobotType.AMPLIFIER, chosenBuildLocation);
             return true;
         }
         return false;
