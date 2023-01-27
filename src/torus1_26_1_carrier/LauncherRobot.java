@@ -1,4 +1,4 @@
-package torus;
+package torus1_26_1_carrier;
 
 import battlecode.common.*;
 
@@ -18,7 +18,6 @@ public strictfp class LauncherRobot extends Robot {
     public static final boolean USE_NEW_MICRO = true;
     public static final int STAY_IN_COMBAT_TURNS = 6;
     public static final int HEAL_HEALTH = 133;
-    public static final int LEADER_DIST = 13;
 
     MapLocation target;
     double targetWeight;
@@ -102,7 +101,7 @@ public strictfp class LauncherRobot extends Robot {
         Team team = rc.getTeam();
         leader = null;
         double highestHealth = 0;
-        double health;
+        double health = 0;
         MapLocation[] tempEnemyHQs = {null, null, null, null};
         int enemyHQCount = 0;
         
@@ -133,8 +132,7 @@ public strictfp class LauncherRobot extends Robot {
         }
         
         otherLeader = leader;
-        if (highestHealth < rc.getHealth() + 1.0 / rc.getID()) {
-            rc.setIndicatorString("I'm the leader!");
+        if (health < rc.getHealth() + 1.0 / rc.getID()) {
             leader = null;
         }
         
@@ -243,7 +241,7 @@ public strictfp class LauncherRobot extends Robot {
             } else {
                 if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
                 else rc.setIndicatorLine(curr, target, 255, 0, 0);
-                if (leader != null && curr.distanceSquaredTo(leader) > LEADER_DIST
+                if (leader != null && curr.distanceSquaredTo(leader) >= 2
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;

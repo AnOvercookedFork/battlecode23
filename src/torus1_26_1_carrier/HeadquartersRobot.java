@@ -1,4 +1,4 @@
-package torus;
+package torus1_26_1_carrier;
 
 import battlecode.common.*;
 import java.util.ArrayList;
@@ -507,7 +507,7 @@ public strictfp class HeadquartersRobot extends Robot {
             target = nearestDangerous;
             close = false;
         } else {
-            target = hqLocs.getNearestPossibleEnemyHQ(rc);
+            target = randomLocation();
         }
         MapLocation chosenBuildLocation;
         if (close) {
