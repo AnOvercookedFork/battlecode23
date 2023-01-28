@@ -92,7 +92,7 @@ public strictfp class AmplifierRobot extends Robot {
         }
         
         if (nearestEnemyDist <= 25) {
-            Direction d = nearest.getLocation().directionTo(curr);
+            Direction d = nearestEnemy.getLocation().directionTo(curr);
             success = tryFuzzy(d);
         }
         else if (nearest != null) {

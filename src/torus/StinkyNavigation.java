@@ -36,30 +36,6 @@ public strictfp class StinkyNavigation {
         return 0;
     }
 
-    /*public MapLocation getDestination(MapLocation loc) throws GameActionException {
-        return getDestination(loc, 0, 2);
-    }
-    
-    public MapLocation getDestination(MapLocation loc, int depth, int maxDepth) throws GameActionException {
-        if (depth >= maxDepth || !rc.canSenseLocation(loc)) {
-            return loc;
-        }
-        MapInfo info = rc.senseMapInfo(loc);
-        if (info.getCurrentDirection() == Direction.CENTER) {
-            return loc;
-        } else {
-            MapLocation next = loc.add(info.getCurrentDirection());
-            if (rc.canSenseRobotAtLocation(next)) {
-                if (rc.senseRobotAtLocation(next) != null) {
-                    return loc;
-                }
-
-                return getDestination(next, depth + 1, maxDepth);
-            }
-            return next;
-        }
-    }*/
-
     public MapLocation getDestination(MapLocation loc) throws GameActionException {
         if (rc.canSenseLocation(loc)) {
             loc = loc.add(rc.senseMapInfo(loc).getCurrentDirection());
