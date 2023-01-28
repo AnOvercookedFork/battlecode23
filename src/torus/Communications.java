@@ -332,6 +332,11 @@ public strictfp class Communications {
         rc.writeSharedArray(AMP_INDEX, array[AMP_INDEX]);
     }
     
+    public static void reportBuiltAmp(RobotController rc) throws GameActionException {
+        array[AMP_INDEX + 1] += 1;
+        rc.writeSharedArray(AMP_INDEX + 1, array[AMP_INDEX + 1]);
+    }
+    
     public static void tryAddEnemy(RobotController rc, MapLocation location) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
             int code = location.x + (location.y << 6) + 1;
