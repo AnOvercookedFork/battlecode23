@@ -1,4 +1,4 @@
-package torus;
+package torus1_26_2;
 
 import battlecode.common.*;
 
@@ -367,12 +367,11 @@ public strictfp class LauncherRobot extends Robot {
             RobotInfo[] targets = rc.senseNearbyRobots(-1, rc.getTeam().opponent()); // costs about 100 bytecode
             MapLocation finalTarget = null;
             double maxScore = -1;
-            double score;
             MapLocation curr = rc.getLocation();
             for (RobotInfo target : targets) { // find max score (can optimize for bytecode if needed later)
                 if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
                     continue;
-                score = scoreTarget(target);
+                double score = scoreTarget(target);
                 if (score > maxScore) {
                     maxScore = score;
                     finalTarget = target.location;
@@ -383,7 +382,7 @@ public strictfp class LauncherRobot extends Robot {
                     if (!target.location.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared))
                         continue;
 
-                    score = scoreTarget(target);
+                    double score = scoreTarget(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = target.location;
@@ -393,119 +392,16 @@ public strictfp class LauncherRobot extends Robot {
 
             prevTargets = targets;
 
-            if (maxScore > 0) {
+            if (maxScore > 0 && finalTarget != null) {
                 return finalTarget;
             }
 
-            if (!rc.isMovementReady()) {
-                if (nearestReportedEnemy != null && nearestReportedEnemy.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared) && !rc.canSenseLocation(nearestReportedEnemy)) {
+
+            /*if (!rc.isMovementReady() && maxScore <= 0 && rc.getActionCooldownTurns() == 0) {
+                if (nearestReportedEnemy != null && nearestReportedEnemy.isWithinDistanceSquared(curr, RobotType.LAUNCHER.actionRadiusSquared)) {
                     return nearestReportedEnemy;
                 }
-
-                /*for (MapLocation l : rc.getAllLocationsWithinRadiusSquared(curr, RobotType.LAUNCHER.actionRadiusSquared)) {
-                    if (!rc.canSenseLocation(l)) {
-                        System.out.println("GOT RANDO TARGET");
-                        rc.setIndicatorDot(l, 0, 255, 0);
-                        return l;
-                    } else {
-                        rc.setIndicatorDot(l, 200, 0, 0);
-                    }
-                }
-                System.out.println("NO TARGETS?");*/
-
-                MapLocation l;
-                l = curr.translate(0, 3);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(0, 4);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(1, 2);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(1, 3);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(2, 1);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(2, 2);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(2, 3);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(3, 0);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(3, 1);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(3, 2);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                l = curr.translate(4, 0);
-                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        finalTarget = l;
-                    }
-                }
-                if (maxScore > 0) {
-                    return finalTarget;
-                }
-            }
+            }*/
 
             return null;
         }

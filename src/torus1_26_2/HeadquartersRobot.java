@@ -1,4 +1,4 @@
-package torus;
+package torus1_26_2;
 
 import battlecode.common.*;
 import java.util.ArrayList;
@@ -45,6 +45,9 @@ public strictfp class HeadquartersRobot extends Robot {
         Communications.readArray(rc);
         hqLocs.updateHQSymms(rc);
         hqLocs.updateSymmsFromComms();
+        System.out.println("IS HORIZONTAL ELIMINATED? " + Communications.isHorizontalSymmetryEliminated(rc));
+        System.out.println("IS VERTICAL ELIMINATED? " + Communications.isVerticalSymmetryEliminated(rc));
+        System.out.println("IS ROTATIONAL ELIMINATED? " + Communications.isRotationalSymmetryEliminated(rc));
         
         
         if (Communications.isFirstHQ(rc)) {
