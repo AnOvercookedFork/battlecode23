@@ -414,9 +414,153 @@ public strictfp class LauncherRobot extends Robot {
                 System.out.println("NO TARGETS?");*/
 
                 MapLocation l;
+                l = curr.translate(-4, 0);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-3, -2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-3, -1);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-3, 0);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-3, 1);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-3, 2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-2, -3);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-2, -2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-2, -1);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-2, 1);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-2, 2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-2, 3);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-1, -3);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-1, -2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-1, 2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(-1, 3);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(0, -4);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(0, -3);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
                 l = curr.translate(0, 3);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -424,7 +568,23 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(0, 4);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(1, -3);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(1, -2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -432,7 +592,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(1, 2);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -440,7 +600,31 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(1, 3);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(2, -3);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(2, -2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(2, -1);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -448,7 +632,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(2, 1);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -456,7 +640,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(2, 2);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -464,7 +648,23 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(2, 3);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(3, -2);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
+                    if (score > maxScore) {
+                        maxScore = score;
+                        finalTarget = l;
+                    }
+                }
+                l = curr.translate(3, -1);
+                if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -472,7 +672,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(3, 0);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -480,7 +680,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(3, 1);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -488,7 +688,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(3, 2);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
@@ -496,7 +696,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
                 l = curr.translate(4, 0);
                 if (!rc.canSenseLocation(l) && HQLocations.notPassable.indexOf(l.toString()) < 0) {
-                    score = (HQLocations.passable.indexOf(l.toString()) >= 0? 1.0 : 0.0) + 0.9 / l.distanceSquaredTo(target);
+                    score = 1.0 / l.distanceSquaredTo(target);
                     if (score > maxScore) {
                         maxScore = score;
                         finalTarget = l;
