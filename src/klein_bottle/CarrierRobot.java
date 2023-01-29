@@ -319,12 +319,66 @@ public strictfp class CarrierRobot extends Robot {
             rc.collectResource(curr, -1);
             success = true;
         }
-        for (Direction d : directions) {
-            MapLocation adj = curr.add(d);
-            if (rc.canCollectResource(adj, -1)) {
-                rc.collectResource(adj, -1);
-                success = true;
+        Direction d = Direction.NORTH;
+        if (collectTarget != null) {
+            d = curr.directionTo(collectTarget);
+        }
+        if (d == Direction.CENTER) {
+            if (rc.canCollectResource(curr, -1)) {
+                rc.collectResource(curr, -1);
+                return true;
             }
+        }
+
+        MapLocation adj = curr.add(d);
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
+        }
+        Direction l = d.rotateLeft();
+        d = d.rotateRight();
+        adj = curr.add(d);
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
+        }
+        adj = curr.add(l);
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
+        }
+        if (rc.canCollectResource(curr, -1)) {
+            rc.collectResource(curr, -1);
+            return true;
+        }
+        l = d.rotateLeft();
+        d = d.rotateRight();
+        adj = curr.add(d);
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
+        }
+        adj = curr.add(l);
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
+        }
+        l = d.rotateLeft();
+        d = d.rotateRight();
+        adj = curr.add(d);
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
+        }
+        adj = curr.add(l);
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
+        }
+        adj = curr.add(d.rotateRight());
+        if (rc.canCollectResource(adj, -1)) {
+            rc.collectResource(adj, -1);
+            return true;
         }
         return success;
     }
@@ -424,11 +478,11 @@ public strictfp class CarrierRobot extends Robot {
         }
 
 
-        if (hqLocs.getNearestPossibleEnemyHQ(rc).distanceSquaredTo(curr) < THRESHOLD_AD_DISTANCE) {
+        /*if (hqLocs.getNearestPossibleEnemyHQ(rc).distanceSquaredTo(curr) < THRESHOLD_AD_DISTANCE) {
             roundCollectAdamantium = 20;
         } else {
             roundCollectAdamantium = 0;
-        }
+        }*/
             
         MapLocation selectedWell = selectWell();
         if (selectedWell != null) {
