@@ -49,6 +49,9 @@ public strictfp class AmplifierRobot extends Robot {
 
     public boolean tryMove() throws GameActionException {
         MapLocation curr = rc.getLocation();
+        Team team = rc.getTeam();
+        leader = null;
+        int lowestID = Integer.MAX_VALUE;
         boolean success = false;
 
         RobotInfo[] targets = rc.senseNearbyRobots(-1);
@@ -60,15 +63,24 @@ public strictfp class AmplifierRobot extends Robot {
         MapLocation[] tempEnemyHQs = new MapLocation[4];
         int enemyHQCt = 0;
         for (RobotInfo target : targets) {
-            if(target.team == rc.getTeam()) {
-                // should try to avoid allied hqs and amps
-                if (target.type == RobotType.HEADQUARTERS || target.type == RobotType.AMPLIFIER) {
+            if(target.team == team) {
+                switch(target.type) {
+                case HEADQUARTERS:
+                case AMPLIFIER:
                     dist = target.getLocation().distanceSquaredTo(curr);
                     if (dist < nearestDist) {
                         nearest = target;
                         nearestDist = dist;
                     }
+                    break;
+                case LAUNCHER:
+                    if (target.ID < lowestID) {
+                        lowestID = target.ID;
+                        leader = target.location;
+                    }
+                    break;
                 }
+                // should try to avoid allied hqs and amps
             }
             else {
                 if (target.type != RobotType.HEADQUARTERS) {
@@ -91,21 +103,25 @@ public strictfp class AmplifierRobot extends Robot {
             enemyHQs[i] = tempEnemyHQs[i];
         }
         
-        if (nearestEnemyDist <= 25) {
+        if (nearestEnemy != null) {
+            rc.setIndicatorString("fleeing");
             Direction d = nearestEnemy.getLocation().directionTo(curr);
             success = tryFuzzy(d);
+        }
+        else if (leader != null) {
+            success = snav.tryNavigate(leader, enemyHQs);
+            rc.setIndicatorString("following leader");
         }
         else if (nearest != null) {
             Direction d = nearest.getLocation().directionTo(curr);
             success = tryFuzzy(d);
+            rc.setIndicatorString("leaving allied amp");
         } 
-        else if (leader != null) {
-            success = snav.tryNavigate(leader, enemyHQs);
-        }
         else {
             
             Direction d = Direction.allDirections()[rng.nextInt(8)];
             success = tryFuzzy(d);
+            rc.setIndicatorString("moving randomly");
         }
         return success;
     }

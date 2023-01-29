@@ -71,9 +71,11 @@ public strictfp class HeadquartersRobot extends Robot {
             anchorBuildCooldown = ANCHOR_BUILD_COOLDOWN;
         }
         
-        // if(!buildAnchor && rc.getRoundNum() > 400 && Communications.getAmpCount() <= rc.getRobotCount() / 30 && Communications.getAmpCount() <= 4) {
-        //     tryBuildAmplifier();
-        // }
+         if(!buildAnchor && rc.getRoundNum() % 20 == 0 && Communications.getAmpCount() <= rc.getRobotCount() / 30 && Communications.getAmpCount() <  1) {
+             if(tryBuildAmplifier()) {
+                 Communications.reportBuiltAmp(rc);
+             }
+         }
         
         while ((!buildAnchor || rc.getResourceAmount(ResourceType.MANA) >= RobotType.LAUNCHER.buildCostMana + Anchor.STANDARD.manaCost) && (!pool_mana || rc.getResourceAmount(ResourceType.MANA) > MANA_POOL_AMOUNT) && tryBuildLauncher()) {}
 

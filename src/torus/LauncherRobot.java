@@ -75,11 +75,11 @@ public strictfp class LauncherRobot extends Robot {
 
         if (Clock.getBytecodesLeft() > 4000) {
             hqLocs.eliminateSymms(rc);
-            //hqLocs.debugSymms();
+            // hqLocs.debugSymms();
         } else {
             System.out.println("Skipping symmetry detection");
         }
-
+        
         // rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
         //
         if (Clock.getBytecodesLeft() > 1000) {
@@ -91,8 +91,6 @@ public strictfp class LauncherRobot extends Robot {
         }
 
         prevRoundTargets = prevTargets;
-
-
     }
 
     /**
@@ -137,7 +135,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
             }
         }
-        
+
         otherLeader = leader;
         if (highestHealth < rc.getHealth() + 1.0 / rc.getID()) {
             rc.setIndicatorString("I'm the leader!");
@@ -151,7 +149,7 @@ public strictfp class LauncherRobot extends Robot {
             }
         }
         // cache.updateEnemyCache(nearbyRobots);
-        //cache.debugIslandCache();
+        // cache.debugIslandCache();
     }
 
     public boolean tryAttack() throws GameActionException {
@@ -171,7 +169,8 @@ public strictfp class LauncherRobot extends Robot {
                 int health = rc.getHealth();
                 if (rc.getHealth() <= HEAL_HEALTH
                         || (health < RobotType.LAUNCHER.health && islandTarget.distanceSquaredTo(curr) <= 8)) {
-                    return rc.getLocation().distanceSquaredTo(islandTarget) > 0 && snav.tryNavigate(islandTarget, nearbyEnemyHQs);
+                    return rc.getLocation().distanceSquaredTo(islandTarget) > 0
+                            && snav.tryNavigate(islandTarget, nearbyEnemyHQs);
                 }
             }
         }
@@ -205,11 +204,11 @@ public strictfp class LauncherRobot extends Robot {
                 // target = new MapLocation(rc.getMapWidth() - curr.x - 1, rc.getMapHeight() -
                 // curr.y - 1);
                 // targetWeight = RANDOM_LOC_WEIGHT;
-                /*if (hqTarget == null) {
-                    hqTarget = hqLocs.getHQRushLocation(rc);
-                }*/
+                /*
+                 * if (hqTarget == null) { hqTarget = hqLocs.getHQRushLocation(rc); }
+                 */
                 target = hqLocs.getHQRushLocation(rc);
-                //rc.setIndicatorLine(curr, target, 255, 0, 0);
+                // rc.setIndicatorLine(curr, target, 255, 0, 0);
                 targetWeight = HQ_LOC_WEIGHT;
             }
 
@@ -229,7 +228,6 @@ public strictfp class LauncherRobot extends Robot {
                     }
                 }
             }
-            
 
             if (nearest != null) {
                 target = nearest;
@@ -244,13 +242,15 @@ public strictfp class LauncherRobot extends Robot {
 
             boolean success = false;
 
-            //targetWeight *= 0.8;
+            // targetWeight *= 0.8;
 
             if (turnsSinceInCombat < MICRO_TURNS) {
                 success = micro.doMicro(target, otherLeader, prevRoundTargets, allies);
             } else {
-                if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
-                else rc.setIndicatorLine(curr, target, 255, 0, 0);
+                if (leader != null)
+                    rc.setIndicatorLine(curr, leader, 0, 255, 0);
+                else
+                    rc.setIndicatorLine(curr, target, 255, 0, 0);
                 if (leader != null && curr.distanceSquaredTo(leader) > LEADER_DIST
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
@@ -327,19 +327,21 @@ public strictfp class LauncherRobot extends Robot {
                 success = tryFuzzy(away);
             } else {
                 if (leader != null && curr.distanceSquaredTo(leader) >= 2
-                        && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0) && snav.tryNavigate(leader, nearbyEnemyHQs)) {
+                        && (rc.getRoundNum() % 2 == 0 || numAttackingOpponents == 0)
+                        && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     /*
                      * if (turnsSinceInCombat >= STAY_IN_COMBAT_TURNS) { success =
                      * snav.tryNavigate(leader); } else { success = stnav.tryNavigate(leader); }
                      */
                     success = true;
                 } else if ((curr.distanceSquaredTo(target) > RobotType.LAUNCHER.actionRadiusSquared
-                        || targets.length == 0) && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
+                        || targets.length == 0) && rc.getRoundNum() % 2 == 0
+                        && snav.tryNavigate(target, nearbyEnemyHQs)) {
                     success = true;
                 }
             }
 
-            //rc.setIndicatorLine(curr, target, 255, 0, 0);
+            // rc.setIndicatorLine(curr, target, 255, 0, 0);
 
             return success;
         }
@@ -398,7 +400,7 @@ public strictfp class LauncherRobot extends Robot {
                 }
             }
 
-            prevTargets = targets;
+        prevTargets = targets;
 
             if (maxScore > 0) {
                 return finalTarget;
@@ -713,9 +715,8 @@ public strictfp class LauncherRobot extends Robot {
                     return finalTarget;
                 }
             }
-
-            return null;
         }
+        return null;
     }
 
     public double scoreTarget(RobotInfo info) throws GameActionException {

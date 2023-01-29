@@ -60,7 +60,7 @@ public strictfp class AmplifierRobot extends Robot {
         MapLocation[] tempEnemyHQs = new MapLocation[4];
         int enemyHQCt = 0;
         for (RobotInfo target : targets) {
-            if(target.team == rc.getTeam()) {
+            if (target.team == rc.getTeam()) {
                 // should try to avoid allied hqs and amps
                 if (target.type == RobotType.HEADQUARTERS || target.type == RobotType.AMPLIFIER) {
                     dist = target.getLocation().distanceSquaredTo(curr);
@@ -69,41 +69,36 @@ public strictfp class AmplifierRobot extends Robot {
                         nearestDist = dist;
                     }
                 }
-            }
-            else {
+            } else {
                 if (target.type != RobotType.HEADQUARTERS) {
                     dist = target.getLocation().distanceSquaredTo(curr);
                     if (dist < nearestEnemyDist) {
                         nearestEnemy = target;
                         nearestEnemyDist = dist;
                     }
-                }
-                else {
+                } else {
                     tempEnemyHQs[enemyHQCt] = target.getLocation();
                     enemyHQCt++;
                 }
             }
 
         }
-        
+
         enemyHQs = new MapLocation[enemyHQCt];
-        for(int i = 0; i < enemyHQCt; i++) {
+        for (int i = 0; i < enemyHQCt; i++) {
             enemyHQs[i] = tempEnemyHQs[i];
         }
-        
+
         if (nearestEnemyDist <= 25) {
             Direction d = nearest.getLocation().directionTo(curr);
             success = tryFuzzy(d);
-        }
-        else if (nearest != null) {
+        } else if (nearest != null) {
             Direction d = nearest.getLocation().directionTo(curr);
             success = tryFuzzy(d);
-        } 
-        else if (leader != null) {
+        } else if (leader != null) {
             success = snav.tryNavigate(leader, enemyHQs);
-        }
-        else {
-            
+        } else {
+
             Direction d = Direction.allDirections()[rng.nextInt(8)];
             success = tryFuzzy(d);
         }

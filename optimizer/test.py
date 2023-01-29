@@ -9,10 +9,17 @@ maps2 = ['AllElements','ArtistRendition','BatSignal','BattleSuns','BowAndArrow',
 maps = maps2
 # set these
 teamA = 'torus'
-teamB = 'torus1_25_5'
+teamB = 'torus1_26_2'
 
 def get_winner(data):
-    return data[-6].split(' ')[-4]
+    # does weird stuff if client is open, opened, or closed
+    result = data[-5].split(' ')[-4]
+    if result == 'A' or result == 'B':
+        return result
+    result = data[-6].split(' ')[-4]
+    if result == 'A' or result == 'B':
+        return result
+    return data[-7].split(' ')[-4]
 
 def run_matches(teamA, teamB, score):
     map_score = {}
