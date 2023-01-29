@@ -8,18 +8,18 @@ maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Cl
 maps2 = ['AllElements','ArtistRendition','BatSignal','BattleSuns','BowAndArrow','Cat','Checkmate2','Clown','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Forest','FourNations','Frog','Grievance','Hah','HideAndSeek','HorizontallySymmetric','Jail','KingdomRush','Lantern','Lines','maptestsmall','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Quiet','Rectangle','Rewind','Risk','Scatter','Sine','SmallElements','Snowflake','SomethingFishy','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','TicTacToe','Turtle','USA','VerticallySymmetric']
 maps = maps2
 # set these
-teamA = 'torus'
-teamB = 'torus1_26_2'
+teamA = 'torus1_28_2'
+teamB = 'torus1_28_4'
 
 def get_winner(data):
     # does weird stuff if client is open, opened, or closed
-    result = data[-5].split(' ')[-4]
+    result = data[-5].split(' ')[-4][1:2]
     if result == 'A' or result == 'B':
         return result
-    result = data[-6].split(' ')[-4]
+    result = data[-6].split(' ')[-4][1:2]
     if result == 'A' or result == 'B':
         return result
-    return data[-7].split(' ')[-4]
+    return data[-7].split(' ')[-4][1:2]
 
 def run_matches(teamA, teamB, score):
     map_score = {}
@@ -27,7 +27,7 @@ def run_matches(teamA, teamB, score):
         current = time.time()
         result = os.popen('gradlew run -Pmaps={map} -PteamA={a} -PteamB={b} -Pdebug=false -Penableprofiler=false -PoutputVerbose=false -PshowIndicators=false'.format(map = map, a = teamA, b = teamB)).read().splitlines()
         print('Last round {} took {} seconds'.format(map, time.time() - current))
-        winner = get_winner(result)[1:2]
+        winner = get_winner(result)
         if winner == 'A':
             score[0] += 1
             map_score[map] = teamA
