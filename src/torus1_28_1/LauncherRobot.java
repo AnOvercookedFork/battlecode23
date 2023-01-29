@@ -1,4 +1,4 @@
-package torus;
+package torus1_28_1;
 
 import battlecode.common.*;
 
@@ -17,7 +17,6 @@ public strictfp class LauncherRobot extends Robot {
     public static final int ANCHOR_MODIFIER = 10;
     public static final boolean USE_NEW_MICRO = true;
     public static final int STAY_IN_COMBAT_TURNS = 6;
-    public static final int MICRO_TURNS = 6;
     public static final int HEAL_HEALTH = 133;
     public static final int LEADER_DIST = 13;
 
@@ -36,7 +35,6 @@ public strictfp class LauncherRobot extends Robot {
     MapLocation hqTarget;
     Micro micro;
     MapLocation nearestReportedEnemy;
-    int allies;
 
     RobotInfo[] prevTargets;
     RobotInfo[] prevRoundTargets = null;
@@ -105,10 +103,8 @@ public strictfp class LauncherRobot extends Robot {
         leader = null;
         double highestHealth = 0;
         double health;
-        nearbyEnemyHQs = hqLocs.getEnemyHQLocations();
         MapLocation[] tempEnemyHQs = {null, null, null, null};
         int enemyHQCount = 0;
-        allies = 0;
         
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
@@ -119,16 +115,14 @@ public strictfp class LauncherRobot extends Robot {
                         leader = robot.location;
                         highestHealth = health;
                     }
-                    allies++;
 
                     break;
                 }
             } else {
                 if (robot.type == RobotType.HEADQUARTERS) {
-                    if (nearbyEnemyHQs == null) {
-                        tempEnemyHQs[enemyHQCount] = robot.getLocation();
-                        enemyHQCount++;
-                    }
+                    tempEnemyHQs[enemyHQCount] = robot.getLocation();
+                    enemyHQCount++;
+                    break;
                 } else {
                     if (robot.type.damage > 0) {
                         turnsSinceInCombat = 0;
@@ -144,11 +138,9 @@ public strictfp class LauncherRobot extends Robot {
             leader = null;
         }
         
-        if (nearbyEnemyHQs == null) {
-            nearbyEnemyHQs = new MapLocation[enemyHQCount];
-            for(int i = 0; i < enemyHQCount; i++) {
-                nearbyEnemyHQs[i] = tempEnemyHQs[i];
-            }
+        nearbyEnemyHQs = new MapLocation[enemyHQCount];
+        for(int i = 0; i < enemyHQCount; i++) {
+            nearbyEnemyHQs[i] = tempEnemyHQs[i];
         }
         // cache.updateEnemyCache(nearbyRobots);
         //cache.debugIslandCache();
@@ -246,8 +238,8 @@ public strictfp class LauncherRobot extends Robot {
 
             //targetWeight *= 0.8;
 
-            if (turnsSinceInCombat < MICRO_TURNS) {
-                success = micro.doMicro(target, otherLeader, prevRoundTargets, allies);
+            if (turnsSinceInCombat < STAY_IN_COMBAT_TURNS) {
+                success = micro.doMicro(target, otherLeader, prevRoundTargets);
             } else {
                 if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
                 else rc.setIndicatorLine(curr, target, 255, 0, 0);
@@ -255,7 +247,8 @@ public strictfp class LauncherRobot extends Robot {
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
-                } else if (rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
+                } else if (curr.distanceSquaredTo(target) > GIVE_UP_RADIUS_SQ
+                        && rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
                     success = true;
                 }
             }

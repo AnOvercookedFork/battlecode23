@@ -1,4 +1,4 @@
-package torus;
+package torus1_28_1;
 
 import battlecode.common.*;
 
@@ -82,7 +82,7 @@ public strictfp class StinkyNavigation {
         }
         lastTarget = loc;
 
-        double bestScore = Math.sqrt(curr.distanceSquaredTo(loc)) + stinkyFactor(curr, round) + isInHQRange(curr, avoidHQs);
+        double bestScore = Math.sqrt(curr.distanceSquaredTo(loc)) + stinkyFactor(curr, round);
 
         MapLocation next;
         if (rc.canMove(Direction.NORTH)) {

@@ -1,4 +1,4 @@
-package torus;
+package torus1_28_3_navchanges;
 
 import battlecode.common.*;
 
@@ -17,7 +17,6 @@ public strictfp class LauncherRobot extends Robot {
     public static final int ANCHOR_MODIFIER = 10;
     public static final boolean USE_NEW_MICRO = true;
     public static final int STAY_IN_COMBAT_TURNS = 6;
-    public static final int MICRO_TURNS = 6;
     public static final int HEAL_HEALTH = 133;
     public static final int LEADER_DIST = 13;
 
@@ -36,7 +35,6 @@ public strictfp class LauncherRobot extends Robot {
     MapLocation hqTarget;
     Micro micro;
     MapLocation nearestReportedEnemy;
-    int allies;
 
     RobotInfo[] prevTargets;
     RobotInfo[] prevRoundTargets = null;
@@ -108,7 +106,6 @@ public strictfp class LauncherRobot extends Robot {
         nearbyEnemyHQs = hqLocs.getEnemyHQLocations();
         MapLocation[] tempEnemyHQs = {null, null, null, null};
         int enemyHQCount = 0;
-        allies = 0;
         
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
@@ -119,7 +116,6 @@ public strictfp class LauncherRobot extends Robot {
                         leader = robot.location;
                         highestHealth = health;
                     }
-                    allies++;
 
                     break;
                 }
@@ -246,8 +242,8 @@ public strictfp class LauncherRobot extends Robot {
 
             //targetWeight *= 0.8;
 
-            if (turnsSinceInCombat < MICRO_TURNS) {
-                success = micro.doMicro(target, otherLeader, prevRoundTargets, allies);
+            if (turnsSinceInCombat < STAY_IN_COMBAT_TURNS) {
+                success = micro.doMicro(target, otherLeader, prevRoundTargets);
             } else {
                 if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
                 else rc.setIndicatorLine(curr, target, 255, 0, 0);

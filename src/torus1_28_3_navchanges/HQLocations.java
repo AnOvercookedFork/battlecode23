@@ -1,4 +1,4 @@
-package torus;
+package torus1_28_3_navchanges;
 
 import battlecode.common.*;
 

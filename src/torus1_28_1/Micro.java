@@ -1,4 +1,4 @@
-package torus;
+package torus1_28_1;
 
 import battlecode.common.*;
 
@@ -144,8 +144,8 @@ public strictfp class Micro {
         double safety() {
             //if (hurt) {
                 if (enemiesAttacking > 0) return 0.9 / enemiesAttacking;
-                if (hurt && enemiesTargeting > 0) return 1 + 0.9 / enemiesTargeting;
-                if (hurt && potentialAttackers > 0) return 2 + 0.9 / potentialAttackers;
+                if (enemiesTargeting > 0) return 1 + 0.9 / enemiesTargeting;
+                if (potentialAttackers > 0) return 2 + 0.9 / potentialAttackers;
                 return 3;
             /*} else {
                 if (enemiesAttacking > 0) return 1;
@@ -157,69 +157,29 @@ public strictfp class Micro {
             return (d == Direction.CENTER ? 2 : 1);*/
         }
 
-        double chargeScore() {
-
-            if (enemiesAttacking <= 1 && inRange > 0) {
-                switch (d) {
-                    case CENTER:
-                    case NORTH:
-                    case EAST:
-                    case SOUTH:
-                    case WEST:
-                        return inRange + 0.5;
-                    case NORTHEAST:
-                    case SOUTHEAST:
-                    case SOUTHWEST:
-                    case NORTHWEST:
-                        return inRange;
-                }
-                return inRange;
-            }
-            return 0;
-        }
-
-        int dxdy() {
-            switch (d) {
-                case CENTER:
-                    return 0;
-                case NORTH:
-                case EAST:
-                case SOUTH:
-                case WEST:
-                    return 1;
-                case NORTHEAST:
-                case SOUTHEAST:
-                case SOUTHWEST:
-                case NORTHWEST:
-                    return 2;
-            }
-            return 0;
-        }
-
         boolean betterThan(MicroInfo other) {
             if (!canMove) return false;
             if (!other.canMove) return true;
 
 
             if (shouldCharge) {
-                if (chargeScore() > other.chargeScore()) return true;
-                if (chargeScore() < other.chargeScore()) return false;
+                if (inRange > other.inRange) return true;
+                if (inRange < other.inRange) return false;
             }
 
             if (safety() > other.safety()) return true;
             if (safety() < other.safety()) return false;
 
+            if (enemiesAttacking > 0) {
+                if (minDistToDangerousEnemy > other.minDistToDangerousEnemy) return true;
+                if (minDistToDangerousEnemy < other.minDistToDangerousEnemy) return false;
+            }
 
-            if (shouldMoveLeader) {
+            if (!dangerousEnemiesInSight || shouldMoveLeader) {
                 if (leaderDist < other.leaderDist) return true;
                 if (leaderDist > other.leaderDist) return false;
             }
-            if (dxdy() > other.dxdy()) return false;
-            if (dxdy() < other.dxdy()) return true;
 
-
-            if (minDistToDangerousEnemy > other.minDistToDangerousEnemy) return true;
-            if (minDistToDangerousEnemy < other.minDistToDangerousEnemy) return false;
 
             if (inRange < 2) {
                 if (minDistToEnemy < other.minDistToEnemy) return true;
@@ -237,16 +197,12 @@ public strictfp class Micro {
     }
 
 
-    boolean doMicro(MapLocation targ, MapLocation lead, RobotInfo[] prev, int allies) throws GameActionException {
+    boolean doMicro(MapLocation targ, MapLocation lead, RobotInfo[] prev) throws GameActionException {
         curr = rc.getLocation();
         hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
-        if (allies == 0) {
-            shouldCharge = canAttack && !hurt && lead != null;
-        } else {
-            shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt && lead != null;
-        }
-        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) > 13;
+        shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt && lead != null;
+        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) >= 2;
         else shouldMoveLeader = false;
         leader = lead;
         target = targ;
@@ -301,7 +257,7 @@ public strictfp class Micro {
             //}
         }
 
-        if (prevRobots != null) {
+        if (prevRobots != null && !canAttack) {
             for (RobotInfo robot : prevRobots) {
                 if (robot.type.damage > 0 && robotIDs.indexOf(Integer.toString(robot.ID)) < 0) {
                     robotActionRadius = robot.type.actionRadiusSquared;

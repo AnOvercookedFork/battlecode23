@@ -1,4 +1,4 @@
-package torus;
+package torus1_28_1;
 
 import battlecode.common.*;
 
@@ -27,11 +27,9 @@ public strictfp class BugNavigation {
     }
 
     public boolean canMove(Direction d, MapLocation dest) throws GameActionException {
-        //if (visited.indexOf(dest.add(rc.senseMapInfo(dest).getCurrentDirection()).toString()) >= 0) {
-        /*if (visited.indexOf(dest.toString()) >= 0) {
+        if (visited.indexOf(dest.add(rc.senseMapInfo(dest).getCurrentDirection()).toString()) >= 0) {
             return false;
-        }*/
-        if (rc.senseMapInfo(dest).getCurrentDirection() != Direction.CENTER) return false;
+        }
         return rc.canMove(d);
     }
 

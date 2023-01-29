@@ -1,4 +1,4 @@
-package torus;
+package torus1_28_1;
 
 import battlecode.common.*;
 
@@ -245,14 +245,6 @@ public strictfp class HQLocations {
             }
         }
         return nearest;
-    }
-
-    public MapLocation[] getEnemyHQLocations() {
-        if (!isSymmetryDetermined()) return null;
-        if (r) return hqs_rsymm;
-        if (h) return hqs_hsymm;
-        if (v) return hqs_vsymm;
-        return null;
     }
 
     public void markVisited(MapLocation l) {
