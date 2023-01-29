@@ -15,11 +15,17 @@ public strictfp class AmplifierRobot extends Robot {
     }
 
     public void run() throws GameActionException {
+        
         Communications.readArray(rc);
         Communications.incrementAmpCount(rc);
         while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryMove()) {
 //            processNearbyRobots(); // easier to do this in try move, since movement will depend entirely on where robots are
         }
+        Communications.readWells(rc, cache);
+        Communications.reportWell(rc, cache);
+        cache.updateIslandCache();
+        Communications.readIslands(rc, cache);
+        Communications.reportIsland(rc, cache);
     }
 
     public void processNearbyRobots() throws GameActionException {
