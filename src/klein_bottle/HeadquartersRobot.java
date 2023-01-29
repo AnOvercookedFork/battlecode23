@@ -28,6 +28,15 @@ public strictfp class HeadquartersRobot extends Robot {
     MapLocation nearestDangerous = null;
     HQLocations hqLocs;
 
+    double manaIncome = 0;
+    double adIncome = 0;
+    int prevMana = 0;
+    int prevAd = 0;
+    int manaCarriersBuilt = 0;
+    int adCarriersBuilt = 0;
+
+    static final double INCOME_DECAY = 0.8;
+
     MapCache cache;
     
     
@@ -59,6 +68,9 @@ public strictfp class HeadquartersRobot extends Robot {
             Communications.readWells(rc, cache);
         }
 
+        manaIncome = INCOME_DECAY * manaIncome + (1 - INCOME_DECAY) * (rc.getResourceAmount(ResourceType.MANA) - prevMana);
+        adIncome = INCOME_DECAY * adIncome + (1 - INCOME_DECAY) * (rc.getResourceAmount(ResourceType.ADAMANTIUM) - prevAd);
+
         processNearbyRobots();
         
         MapLocation curr = rc.getLocation();
@@ -86,6 +98,9 @@ public strictfp class HeadquartersRobot extends Robot {
         if (anchorBuildCooldown > 0) anchorBuildCooldown--;
 
         cache.debugIslandCache();
+
+        prevMana = rc.getResourceAmount(ResourceType.MANA);
+        prevAd = rc.getResourceAmount(ResourceType.ADAMANTIUM);
 
     }
 
@@ -699,19 +714,61 @@ public strictfp class HeadquartersRobot extends Robot {
         }
     }
 
+    public MapLocation nearestWell(ResourceType type) throws GameActionException {
+        MapLocation nearest = null;
+        int dist;
+        int nearestDist = 1000000;
+        MapLocation curr = rc.getLocation();
+        for (MapCache.WellData wdata : cache.wellCache) {
+            if (wdata != null) {
+                if (type == wdata.type) {
+                    dist = curr.distanceSquaredTo(wdata.location);
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearest = wdata.location;
+                    }
+                }
+            }
+        }
+        return nearest;
+    }
+
+    public ResourceType getPreferredResource() {
+        System.out.println("MANA INCOME: " + manaIncome + ", AD INCOME: " + adIncome);
+        if (manaIncome < 2 * adIncome) {
+            return ResourceType.MANA;
+        }
+        if (manaIncome > 2 * adIncome) {
+            return ResourceType.ADAMANTIUM;
+        }
+        if (manaCarriersBuilt <= 2 * adCarriersBuilt) {
+            return ResourceType.MANA;
+        } else {
+            return ResourceType.ADAMANTIUM;
+        }
+    }
+
 
     public boolean tryBuildCarrier() throws GameActionException {
-        WellInfo[] wells = rc.senseNearbyWells();
-        MapLocation target;
-        if (wells.length > 0) {
-            int idx = rng.nextInt(wells.length);
-            target = wells[idx].getMapLocation();
-        } else {
+        ResourceType preferredResource = getPreferredResource();
+        MapLocation target = nearestWell(preferredResource);
+        if (target == null) {
             target = randomLocation();
         }
-        MapLocation chosenBuildLocation = closestBuildLocation(RobotType.CARRIER, target);
+        MapLocation chosenBuildLocation = null;
+        if (preferredResource == ResourceType.MANA) {
+            chosenBuildLocation = closestEvenBuildLocation(RobotType.CARRIER, target);
+        } else {
+            chosenBuildLocation = closestOddBuildLocation(RobotType.CARRIER, target);
+        }
         if (chosenBuildLocation != null) {
             rc.buildRobot(RobotType.CARRIER, chosenBuildLocation);
+            if (preferredResource == ResourceType.MANA) {
+                manaCarriersBuilt++;
+            }
+            if (preferredResource == ResourceType.ADAMANTIUM) {
+                adCarriersBuilt++;
+            }
             return true;
         }
         return false;

@@ -19,6 +19,7 @@ public strictfp class CarrierRobot extends Robot {
     public static final int PREFER_HQ_KG = 30;
     public static final int DO_THE_SHUFFLE_THRESHOLD = 6;
     public static final int THRESHOLD_AD_DISTANCE = 20;
+    public static final int SCOUT_ASSIGNED_RESOURCE_ROUNDS = 30;
 
     public static MapLocation[] hqs;
     MapLocation[] nearbyEnemyHQs;
@@ -28,13 +29,14 @@ public strictfp class CarrierRobot extends Robot {
     MapLocation enemyLastSeenLoc = null;
     StinkyNavigation snav;
     MapCache cache;
-    ResourceType prevResource = ResourceType.ADAMANTIUM;
+    ResourceType assignedResource;
 
     MapLocation blacklist = EMPTY;
     int blacklistRound = 0;
     int nearbyCarriers;
     MapLocation nearestHQ;
     HQLocations hqLocs;
+    int turnsSinceBuilt;
 
     int roundCollectAdamantium; // minimum round before starting to collect ad
 
@@ -44,6 +46,13 @@ public strictfp class CarrierRobot extends Robot {
         cache = new MapCache(rc, 16);
         snav = new StinkyNavigation(rc);
         hqLocs = new HQLocations(rc);
+        MapLocation curr = rc.getLocation();
+        if ((curr.x + curr.y) % 2 == 0) {
+            assignedResource = ResourceType.MANA;
+        } else {
+            assignedResource = ResourceType.ADAMANTIUM;
+        }
+        turnsSinceBuilt = 0;
     }
 
     public void run() throws GameActionException {
@@ -107,6 +116,7 @@ public strictfp class CarrierRobot extends Robot {
 
         //cache.debugWellCache();
         //cache.debugIslandCache();
+        turnsSinceBuilt++;
     }
     
     /**
@@ -215,6 +225,8 @@ public strictfp class CarrierRobot extends Robot {
             while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryFuzzy(fleeDir)) {
             }
         }
+
+        rc.setIndicatorString("my assigned resource is: " + assignedResource);
     }
     
     /**
@@ -332,19 +344,13 @@ public strictfp class CarrierRobot extends Robot {
                 continue;
             switch (wdata.type) {
             case MANA:
-                if (prevResource != ResourceType.MANA) {
+                if (turnsSinceBuilt > SCOUT_ASSIGNED_RESOURCE_ROUNDS || assignedResource == ResourceType.MANA) {
                     score = 1.5;
-                } else {
-                    score = 1;
                 }
                 break;
             case ADAMANTIUM:
-                if (round >= roundCollectAdamantium) {
-                if (prevResource != ResourceType.ADAMANTIUM) {
-                    score = 1.5;
-                } else {
+                if (turnsSinceBuilt > SCOUT_ASSIGNED_RESOURCE_ROUNDS || assignedResource == ResourceType.ADAMANTIUM) {
                     score = 1;
-                }
                 }
                 break;
             case ELIXIR:
@@ -559,7 +565,6 @@ public strictfp class CarrierRobot extends Robot {
                     continue;
                 if (rc.canTransferResource(hqLoc, type, amount)) {
                     rc.transferResource(hqLoc, type, amount);
-                    prevResource = type;
                     collectTarget = null;
                     collectTargetWeight = 0;
                     success = true;
