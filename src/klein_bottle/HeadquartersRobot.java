@@ -30,8 +30,8 @@ public strictfp class HeadquartersRobot extends Robot {
 
     double manaIncome = 0;
     double adIncome = 0;
-    int prevMana = 0;
-    int prevAd = 0;
+    int prevMana = GameConstants.INITIAL_MN_AMOUNT;
+    int prevAd = GameConstants.INITIAL_AD_AMOUNT;
     int manaCarriersBuilt = 0;
     int adCarriersBuilt = 0;
 
