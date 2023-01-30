@@ -8,8 +8,8 @@ maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Cl
 maps2 = ['AllElements','ArtistRendition','BatSignal','BattleSuns','BowAndArrow','Cat','Checkmate2','Clown','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Forest','FourNations','Frog','Grievance','Hah','HideAndSeek','HorizontallySymmetric','Jail','KingdomRush','Lantern','Lines','maptestsmall','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Quiet','Rectangle','Rewind','Risk','Scatter','Sine','SmallElements','Snowflake','SomethingFishy','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','TicTacToe','Turtle','USA','VerticallySymmetric']
 maps = maps2
 # set these
-teamA = 'torus1_28_2'
-teamB = 'torus1_28_4'
+teamA = 'klein_bottle'
+teamB = 'torus1_28_2'
 
 def get_winner(data):
     # does weird stuff if client is open, opened, or closed
