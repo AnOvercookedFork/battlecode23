@@ -37,6 +37,11 @@ public strictfp class StinkyNavigation {
     }
 
     public MapLocation getDestination(MapLocation loc) throws GameActionException {
+        // if(rc.getType() == RobotType.CARRIER) {
+        //     if(rc.getMovementCooldownTurns() + 5 + (int) (3 * rc.getWeight() / 8) < GameConstants.COOLDOWN_LIMIT) {
+        //         return loc;
+        //     }
+        // }
         if (rc.canSenseLocation(loc)) {
             loc = loc.add(rc.senseMapInfo(loc).getCurrentDirection());
             /*if (rc.canSenseLocation(loc)) {

@@ -107,7 +107,7 @@ public strictfp class CarrierRobot extends Robot {
                 tryTransferHQ();
             }
         }
-
+        
         if (Clock.getBytecodesLeft() > 4000) {
             //System.out.println("Carrier is updating symms.");
             hqLocs.eliminateSymms(rc);

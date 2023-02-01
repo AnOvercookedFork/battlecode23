@@ -734,7 +734,7 @@ public strictfp class HeadquartersRobot extends Robot {
     }
 
     public ResourceType getPreferredResource() {
-        System.out.println("MANA INCOME: " + manaIncome + ", AD INCOME: " + adIncome);
+        //System.out.println("MANA INCOME: " + manaIncome + ", AD INCOME: " + adIncome);
         if (manaIncome < 2 * adIncome) {
             return ResourceType.MANA;
         }
