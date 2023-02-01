@@ -25,22 +25,32 @@ public class CachedPathfind {
         }
     }
     
-    public void add(MapLocation ml, Direction d) {
-        for(int i = 0; i < 9; i++) {
-            if(directions[ml.y][ml.x][i] == Direction.CENTER) {
-                directions[ml.y][ml.x][i] = d;
-                return;
+    public Direction[] pathHome(MapLocation loc) {
+        int count = 0;
+        int best = Integer.MAX_VALUE;
+        MapLocation check;
+        for(Direction d: Micro.dirs) {
+            check = loc.add(d);
+            if(distance[check.y][check.x] < best) {
+                best = distance[check.y][check.x];
+                count = 1;
+            }
+            else if (distance[check.y][check.x] == best){
+                count++;
             }
         }
-    }
-    
-    public Direction[] pathHome(MapLocation loc) {
-        if(directions[loc.y][loc.x][0] != Direction.CENTER) {
-            return directions[loc.y][loc.x];
+        
+        Direction[] moves = new Direction[count];
+        count = 0; // reusing, is not the same thing as before
+        for(Direction d: Micro.dirs) {
+            check = loc.add(d);
+            if(distance[check.y][check.x] == best) {
+                moves[count] = d;
+                count++;
+            }
         }
-        else {
-            return null;
-        }
+        
+        return moves;
     }
     
     public MapLocation getDestination(MapLocation loc) throws GameActionException {

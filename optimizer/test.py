@@ -4,12 +4,10 @@ import os
 import time
 
 # these constants are probably fine
-maps = ['AllElements', 'ArtistRendition', 'BatSignal', 'BowAndArrow', 'Cat', 'Clown', 'DefaultMap', 'Diagonal', 'Eyelands', 'Frog', 'Greivance', 'Hah', 'Jail', 'KingdomRush', 'SmallElements', 'maptestsmall', 'Minefield', 'Movepls', 'Orbit', 'Pathfind', 'Pit', 'Pizza', 'Quiet', 'Scatter', 'Sun', 'Tacocat']
-maps2 = ['AllElements','ArtistRendition','BatSignal','BattleSuns','BowAndArrow','Cat','Checkmate2','Clown','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Forest','FourNations','Frog','Grievance','Hah','HideAndSeek','HorizontallySymmetric','Jail','KingdomRush','Lantern','Lines','maptestsmall','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Quiet','Rectangle','Rewind','Risk','Scatter','Sine','SmallElements','Snowflake','SomethingFishy','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','TicTacToe','Turtle','USA','VerticallySymmetric']
-maps = maps2
+maps = ['AllElements','ArtistRendition','Barcode','BatSignal','BattleSuns','BowAndArrow','Cat','Checkmate2','Clown','Contraction','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Flower','Forest','FourNations','Frog','Grapes','Grievance','Hah','HideAndSeek','HorizontallySymmetric','IslandHopping','Jail','KingdomRush','Lantern','Lines','maptestsmall','Marsh','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Quiet','RaceToTheTop','Rectangle','Repetition','Rewind','Risk','River','RockWall','Sakura','Scatter','Sine','SmallElements','Snowflake','SomethingFishy','SoundWave','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','ThirtyFive','TicTacToe','TimesUp','TreasureMap','Turtle','USA','VerticallySymmetric']
 # set these
 teamA = 'klein_bottle'
-teamB = 'torus1_28_2'
+teamB = 'quals'
 
 def get_winner(data):
     # does weird stuff if client is open, opened, or closed
