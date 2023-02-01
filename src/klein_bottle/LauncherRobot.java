@@ -18,7 +18,8 @@ public strictfp class LauncherRobot extends Robot {
     public static final boolean USE_NEW_MICRO = true;
     public static final int STAY_IN_COMBAT_TURNS = 6;
     public static final int HEAL_HEALTH = 133;
-    public static final int LEADER_DIST = 200;
+    public static final int LEADER_DIST = 13;
+    public static final int INF = 1000000;
 
     MapLocation target;
     double targetWeight;
@@ -30,6 +31,7 @@ public strictfp class LauncherRobot extends Robot {
     int hqTargetIndex = 0;
     int turnsSinceInCombat = 9001;
     MapLocation[] nearbyEnemyHQs;
+    int nearestAllyDist;
 
     HQLocations hqLocs;
     MapLocation hqTarget;
@@ -106,6 +108,8 @@ public strictfp class LauncherRobot extends Robot {
         nearbyEnemyHQs = hqLocs.getEnemyHQLocations();
         MapLocation[] tempEnemyHQs = {null, null, null, null};
         int enemyHQCount = 0;
+        int allyDist;
+        nearestAllyDist = INF;
         
         for (RobotInfo robot : nearbyRobots) {
             if (robot.team == team) {
@@ -116,7 +120,10 @@ public strictfp class LauncherRobot extends Robot {
                         leader = robot.location;
                         highestHealth = health;
                     }
-
+                    allyDist = robot.location.distanceSquaredTo(curr);
+                    if (allyDist < nearestAllyDist) {
+                        nearestAllyDist = allyDist;
+                    }
                     break;
                 }
             } else {
@@ -247,7 +254,8 @@ public strictfp class LauncherRobot extends Robot {
             } else {
                 if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
                 else rc.setIndicatorLine(curr, target, 255, 0, 0);
-                if (leader != null && curr.distanceSquaredTo(leader) > LEADER_DIST
+                if (leader != null && (nearestAllyDist > LEADER_DIST
+                        && leader.distanceSquaredTo(target) >= curr.distanceSquaredTo(target))
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
