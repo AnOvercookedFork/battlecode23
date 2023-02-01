@@ -27,11 +27,9 @@ public strictfp class BugNavigation {
     }
 
     public boolean canMove(Direction d, MapLocation dest) throws GameActionException {
-        //if (visited.indexOf(dest.add(rc.senseMapInfo(dest).getCurrentDirection()).toString()) >= 0) {
-        /*if (visited.indexOf(dest.toString()) >= 0) {
+        if (visited.indexOf(dest.add(rc.senseMapInfo(dest).getCurrentDirection()).toString()) >= 0) {
             return false;
-        }*/
-        if (rc.senseMapInfo(dest).getCurrentDirection() != Direction.CENTER) return false;
+        }
         return rc.canMove(d);
     }
 
@@ -41,7 +39,7 @@ public strictfp class BugNavigation {
     }
 
     public boolean tryNavigate(MapLocation target, MapLocation[] hqs) throws GameActionException {
-        if (lastTarget == null || target.distanceSquaredTo(lastTarget) > 2) {
+        if (lastTarget == null || target.distanceSquaredTo(lastTarget) > 0) {
             reset();
         }
 
@@ -65,6 +63,77 @@ public strictfp class BugNavigation {
             reset();
             rc.move(d);
             return true;
+        } else if (lastObstacle == null) {
+            MapLocation dest;
+            Direction l = d;
+            MapLocation destLeft = null;
+            MapLocation loLeft = curr.add(d);
+            for (int i = 7; i-->0;) {
+                l = l.rotateLeft();
+                dest = curr.add(l);
+                if (!rc.onTheMap(dest)) {
+                    break;
+                }
+                if (canMove(l, dest)) {
+                    destLeft = dest;
+                    break;
+                } else if (!rc.sensePassability(dest)) {
+                    loLeft = dest;
+                }
+            }
+            Direction r = d;
+            MapLocation destRight = null;
+            MapLocation loRight = curr.add(d);
+            for (int i = 7; i-->0;) {
+                r = r.rotateRight();
+                dest = curr.add(r);
+                if (!rc.onTheMap(dest)) {
+                    break;
+                }
+                if (canMove(r, dest)) {
+                    destRight = dest;
+                    break;
+                } else if (!rc.sensePassability(dest)) {
+                    loRight = dest;
+                }
+            }
+            if (destLeft == null) {
+                if (destRight != null) {
+                    rc.move(r);
+                    if (loRight != null) {
+                        right = true;
+                        lastObstacle = loRight;
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                if (destRight != null) {
+                    if (destRight.distanceSquaredTo(target) <= destLeft.distanceSquaredTo(target)) {
+                        rc.move(r);
+                        if (loRight != null) {
+                            right = true;
+                            lastObstacle = loRight;
+                        }
+                        return true;
+                    } else {
+                        rc.move(l);
+                        if (loLeft != null) {
+                            right = false;
+                            lastObstacle = loLeft;
+                        }
+                        return true;
+                    }
+                } else {
+                    rc.move(l);
+                    if (loLeft != null) {
+                        right = false;
+                        lastObstacle = loLeft;
+                    }
+                    return true;
+                }
+            }
         }
         
         MapLocation dest;
@@ -77,10 +146,10 @@ public strictfp class BugNavigation {
                 if (canMove(d, dest)) {
                     rc.move(d);
                     return true;
+                } else if (!rc.sensePassability(dest)) {
+                    lastObstacle = dest;
                 }
-                lastObstacle = dest;
             }
-
         }
 
         return false;

@@ -19,6 +19,8 @@ public strictfp class Micro {
     static boolean dangerousEnemiesInSight;
     static MapLocation leader;
     static MapLocation target;
+    static int numAllies;
+    static boolean areObscuredLocations;
     
     static Team enemyTeam;
     static double robotDPS;
@@ -145,7 +147,7 @@ public strictfp class Micro {
             //if (hurt) {
                 if (enemiesAttacking > 0) return 0.9 / enemiesAttacking;
                 if (hurt && enemiesTargeting > 0) return 1 + 0.9 / enemiesTargeting;
-                if (hurt && potentialAttackers > 0) return 2 + 0.9 / potentialAttackers;
+                if (potentialAttackers > 0) return 2 + 0.9 / potentialAttackers;
                 return 3;
             /*} else {
                 if (enemiesAttacking > 0) return 1;
@@ -181,7 +183,7 @@ public strictfp class Micro {
         int dxdy() {
             switch (d) {
                 case CENTER:
-                    return 0;
+                    if (dangerousEnemiesInSight && numAllies > 1) return 0;
                 case NORTH:
                 case EAST:
                 case SOUTH:
@@ -209,17 +211,26 @@ public strictfp class Micro {
             if (safety() > other.safety()) return true;
             if (safety() < other.safety()) return false;
 
+            if (dangerousEnemiesInSight && enemiesAttacking == 0 && !hurt && numAllies > 1) {
+                if (d == Direction.CENTER) return true;
+                if (other.d == Direction.CENTER) return false;
+            }
+            
+            
+            /*if (shouldMoveLeader) {
+                if (minDistToDangerousEnemy + other.leaderDist > other.minDistToDangerousEnemy + leaderDist) return true;
+                if (minDistToDangerousEnemy + other.leaderDist < other.minDistToDangerousEnemy + leaderDist) return false;
+            }*/
+            if (enemiesAttacking > 0 || (enemiesTargeting > 0 && hurt)) {
+                if (minDistToDangerousEnemy > other.minDistToDangerousEnemy) return true;
+                if (minDistToDangerousEnemy < other.minDistToDangerousEnemy) return false;
+            }
 
-            if (shouldMoveLeader) {
+
+            if (shouldMoveLeader || !dangerousEnemiesInSight) {
                 if (leaderDist < other.leaderDist) return true;
                 if (leaderDist > other.leaderDist) return false;
             }
-            if (dxdy() > other.dxdy()) return false;
-            if (dxdy() < other.dxdy()) return true;
-
-
-            if (minDistToDangerousEnemy > other.minDistToDangerousEnemy) return true;
-            if (minDistToDangerousEnemy < other.minDistToDangerousEnemy) return false;
 
             if (inRange < 2) {
                 if (minDistToEnemy < other.minDistToEnemy) return true;
@@ -237,21 +248,23 @@ public strictfp class Micro {
     }
 
 
-    boolean doMicro(MapLocation targ, MapLocation lead, RobotInfo[] prev, int allies) throws GameActionException {
+    boolean doMicro(MapLocation targ, MapLocation lead, RobotInfo[] prev, int allies, boolean areObscured) throws GameActionException {
         curr = rc.getLocation();
         hurt = rc.getHealth() <= hurtHealth[myType.ordinal()];
         canAttack = rc.isActionReady();
         if (allies == 0) {
-            shouldCharge = canAttack && !hurt && lead != null;
+            shouldCharge = canAttack;
         } else {
-            shouldCharge = canAttack && rc.getRoundNum() % 2 == 0 && !hurt && lead != null;
+            shouldCharge = canAttack && rc.getRoundNum() % 8 == 0 && !hurt && lead != null;
         }
-        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) > 13;
+        if (lead != null) shouldMoveLeader = canAttack && rc.getRoundNum() % 2 == 0 && curr.distanceSquaredTo(lead) > 2;
         else shouldMoveLeader = false;
         leader = lead;
         target = targ;
         dangerousEnemiesInSight = false;
         prevRobots = prev;
+        numAllies = allies;
+        areObscuredLocations = rc.senseNearbyCloudLocations(curr, RobotType.LAUNCHER.actionRadiusSquared).length > 0;
 
         StringBuilder robotIDs = new StringBuilder();
 
