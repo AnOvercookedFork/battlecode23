@@ -4,10 +4,10 @@ import battlecode.common.*;
 import java.util.ArrayDeque;
 
 public class CachedPathfind {
-    int[][] distance;
+    /*int[][] distance;
     ArrayDeque<MapLocation> fringe;
     RobotController rc;
-    
+
     public CachedPathfind(RobotController rc) {
         distance = new int[rc.getMapHeight()][rc.getMapWidth()];
         fringe = new ArrayDeque<MapLocation>(1000);
@@ -50,6 +50,6 @@ public class CachedPathfind {
         } else {
             return loc;
         }
-    }
+    }*/
 
 }

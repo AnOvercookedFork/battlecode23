@@ -1,4 +1,4 @@
-package klein_bottle;
+package klein_bottle1_29_1;
 
 import battlecode.common.*;
 
@@ -27,7 +27,7 @@ public strictfp class CarrierRobot extends Robot {
     double collectTargetWeight;
     MapLocation collectTarget;
     MapLocation enemyLastSeenLoc = null;
-    BugNavigation snav;
+    StinkyNavigation snav;
     MapCache cache;
     ResourceType assignedResource;
 
@@ -44,7 +44,7 @@ public strictfp class CarrierRobot extends Robot {
         super(rc);
         hqs = null;
         cache = new MapCache(rc, 16);
-        snav = new BugNavigation(rc);
+        snav = new StinkyNavigation(rc);
         hqLocs = new HQLocations(rc);
         MapLocation curr = rc.getLocation();
         if ((curr.x + curr.y) % 2 == 0) {
@@ -82,7 +82,7 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
         if (rc.getAnchor() == null) {
-            if (rc.isMovementReady() && rc.getWeight() == GameConstants.CARRIER_CAPACITY) {
+            if (getWeight() == GameConstants.CARRIER_CAPACITY) {
                 tryTransferHQ();
             }
 
@@ -90,20 +90,20 @@ public strictfp class CarrierRobot extends Robot {
                 tryTakeAnchor();
             }
             boolean finishedDeposit = tryFinishDeposit();
-            while (rc.isActionReady()
+            while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
             }
-            while (finishedDeposit && rc.isMovementReady()
+            while (finishedDeposit && rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                     && getWeight() < GameConstants.CARRIER_CAPACITY && tryFindResources()) {
-                if (rc.isMovementReady()) {
+                if (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT) {
                     processNearbyRobots();
                 }
-                while (rc.isActionReady()
+                while (rc.getActionCooldownTurns() < GameConstants.COOLDOWN_LIMIT
                         && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
                 }
             }
 
-            if (rc.isMovementReady() && rc.getWeight() == GameConstants.CARRIER_CAPACITY) {
+            if (getWeight() == GameConstants.CARRIER_CAPACITY) {
                 tryTransferHQ();
             }
         }
@@ -604,7 +604,7 @@ public strictfp class CarrierRobot extends Robot {
     public boolean tryTransferHQ() throws GameActionException {
         MapLocation hq = selectHQ();
         MapLocation curr = rc.getLocation();
-        while (curr.distanceSquaredTo(hq) > 2 && rc.isMovementReady() && snav.tryNavigate(hq, nearbyEnemyHQs)) {
+        while (curr.distanceSquaredTo(hq) > 2 && snav.tryNavigate(hq, nearbyEnemyHQs)) {
             curr = rc.getLocation();
         }
 

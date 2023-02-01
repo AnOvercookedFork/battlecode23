@@ -1,4 +1,4 @@
-package klein_bottle;
+package klein_bottle1_29_1;
 
 import battlecode.common.*;
 
@@ -181,7 +181,7 @@ public strictfp class MapCache {
     //int enemySamplePtr;
 
     public static int WELL_CACHE_SIZE;
-    public static int ISLAND_CACHE_SIZE = 36;
+    public static int ISLAND_CACHE_SIZE = 35;
     //public static int ENEMY_CACHE_SIZE = 2;
 
     public static final int DEFAULT_WELL_CACHE_SIZE = 8;

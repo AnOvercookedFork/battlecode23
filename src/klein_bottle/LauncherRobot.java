@@ -18,14 +18,14 @@ public strictfp class LauncherRobot extends Robot {
     public static final boolean USE_NEW_MICRO = true;
     public static final int STAY_IN_COMBAT_TURNS = 6;
     public static final int HEAL_HEALTH = 133;
-    public static final int LEADER_DIST = 13;
+    public static final int LEADER_DIST = 200;
 
     MapLocation target;
     double targetWeight;
     MapLocation leader;
     MapLocation otherLeader;
     MapCache cache;
-    StinkyNavigation snav;
+    BugNavigation snav;
     MapLocation[] reflectedHQs;
     int hqTargetIndex = 0;
     int turnsSinceInCombat = 9001;
@@ -41,7 +41,7 @@ public strictfp class LauncherRobot extends Robot {
 
     public LauncherRobot(RobotController rc) throws GameActionException {
         super(rc);
-        snav = new StinkyNavigation(rc);
+        snav = new BugNavigation(rc);
         cache = new MapCache(rc, 4);
         hqLocs = new HQLocations(rc);
         hqTarget = null;
