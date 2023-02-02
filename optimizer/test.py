@@ -2,9 +2,10 @@
 
 import os
 import time
+import signal
 
 # these constants are probably fine
-maps = ['AllElements','ArtistRendition','Barcode','BatSignal','BattleSuns','BowAndArrow','Cat','Checkmate2','Clown','Contraction','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Flower','Forest','FourNations','Frog','Grapes','Grievance','Hah','HideAndSeek','HorizontallySymmetric','IslandHopping','Jail','KingdomRush','Lantern','Lines','maptestsmall','Marsh','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Quiet','RaceToTheTop','Rectangle','Repetition','Rewind','Risk','River','RockWall','Sakura','Scatter','Sine','SmallElements','Snowflake','SomethingFishy','SoundWave','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','ThirtyFive','TicTacToe','TimesUp','TreasureMap','Turtle','USA','VerticallySymmetric']
+maps = ['AbsoluteW','AllElements','ArtistRendition','Barcode','BatSignal','BattleSuns','BowAndArrow','Buggy','Cat','Cave','Cee','Checkmate2','Clown','Contraction','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Flower','Forest','FourNations','Frog','Grapes','Grievance','Hah','Heart','HideAndSeek','HorizontallySymmetric','HotAirBalloon','IslandHopping','IslandHoppingTwo','Jail','KingdomRush','Lantern','LightWork','Lines','maptestsmall','Marsh','MassiveL','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Potions','Quiet','RaceToTheTop','Rainbow','Rectangle','Repetition','Resign','Rewind','Risk','River','RockWall','Sakura','Scatter','Sine','SmallElements','Sneaky','Snowflake','SomethingFishy','SoundWave','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','Target','ThirtyFive','TicTacToe','Tightrope','TimesUp','TreasureMap','Turtle','USA','VerticallySymmetric']
 # set these
 teamA = 'klein_bottle'
 teamB = 'quals'
@@ -35,6 +36,9 @@ def run_matches(teamA, teamB, score):
         else:
             print('I don\'t know who won this, take a look: {}'.format(result))
     return score, map_score
+
+def handle_sigint():
+    exit()
 
 def main():
     os.chdir('..')
