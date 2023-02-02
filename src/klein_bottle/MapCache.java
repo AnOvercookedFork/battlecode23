@@ -385,10 +385,10 @@ public strictfp class MapCache {
      */
     public IslandData sampleIslandCache(boolean excludeComms) {
         IslandData idata;
-        for (int i = 0; i < ISLAND_CACHE_SIZE; i++) {
-            idata = islandCache[(islandSamplePtr + i) % ISLAND_CACHE_SIZE];
+        for (int i = ISLAND_CACHE_SIZE; i-->0;) {
+            idata = islandCache[islandSamplePtr];
+            islandSamplePtr = (islandSamplePtr + i + 1) % ISLAND_CACHE_SIZE;
             if (idata != null && (!excludeComms || !idata.fromComms)) {
-                islandSamplePtr = (islandSamplePtr + i + 1) % ISLAND_CACHE_SIZE;
                 return idata;
             }
         }
