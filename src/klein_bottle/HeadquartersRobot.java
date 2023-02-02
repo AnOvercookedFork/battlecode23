@@ -54,8 +54,7 @@ public strictfp class HeadquartersRobot extends Robot {
         Communications.readArray(rc);
         hqLocs.updateHQSymms(rc);
         hqLocs.updateSymmsFromComms();
-        
-        
+
         if (Communications.isFirstHQ(rc)) {
         }
         cache.updateWellCache(rc.senseNearbyWells());

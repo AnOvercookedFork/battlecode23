@@ -4,19 +4,48 @@ import battlecode.common.*;
 
 public strictfp class BugNavigation {
 
-    RobotController rc;
-    MapLocation lastTarget;
+    static RobotController rc;
+    static MapLocation lastTarget;
 
-    boolean is_bugging;
-    boolean right;
-    int minDist;
-    MapLocation lastObstacle;
-    StringBuilder visited;
+    static boolean is_bugging;
+    static boolean right;
+    static int minDist;
+    static MapLocation lastObstacle;
+    static StringBuilder visited;
+
+    static int maxHQdist;
+    static MapLocation[] enemyHQs;
+    public static final int INF = 1000000;
+    static int[] HQdists;
+    static boolean[] isPassables;
+    static final Direction[] directions = {
+        Direction.NORTH,
+        Direction.NORTHEAST,
+        Direction.EAST,
+        Direction.SOUTHEAST,
+        Direction.SOUTH,
+        Direction.SOUTHWEST,
+        Direction.WEST,
+        Direction.NORTHWEST,
+        Direction.CENTER
+    };
+    static final Direction[] directionsNoCenter = {
+        Direction.NORTH,
+        Direction.NORTHEAST,
+        Direction.EAST,
+        Direction.SOUTHEAST,
+        Direction.SOUTH,
+        Direction.SOUTHWEST,
+        Direction.WEST,
+        Direction.NORTHWEST,
+    };
 
     public BugNavigation(RobotController rc) {
         this.rc = rc;
         lastTarget = null;
         right = true;
+        HQdists = new int[9];
+        isPassables = new boolean[9];
     }
 
     public void reset() {
@@ -26,16 +55,25 @@ public strictfp class BugNavigation {
         visited = new StringBuilder();
     }
 
-    public boolean canMove(Direction d, MapLocation dest) throws GameActionException {
-        if (visited.indexOf(dest.add(rc.senseMapInfo(dest).getCurrentDirection()).toString()) >= 0) {
-            return false;
-        }
-        return rc.canMove(d);
+    public boolean isPassable(Direction d, MapLocation dest) throws GameActionException {
+        return rc.sensePassability(dest) && visited.indexOf(dest.add(rc.senseMapInfo(dest).getCurrentDirection()).toString()) < 0;
     }
 
     public boolean tryNavigate(MapLocation target) throws GameActionException {
         MapLocation[] hqs = new MapLocation[1];
         return tryNavigate(target, hqs);
+    }
+
+    public int minHQDist(MapLocation dest) {
+        int minDist = 10;
+        int dist;
+        for (MapLocation hq : enemyHQs) {
+            dist = dest.distanceSquaredTo(hq);
+            if (dist <= 9 && dist < minDist) {
+                minDist = dist;
+            }
+        }
+        return minDist;
     }
 
     public boolean tryNavigate(MapLocation target, MapLocation[] hqs) throws GameActionException {
@@ -51,6 +89,41 @@ public strictfp class BugNavigation {
 
         if (dist < minDist || visited.indexOf(currStr) >= 0) {reset(); minDist = dist;}
         visited.append(currStr).append("|");
+        
+        enemyHQs = hqs;
+        maxHQdist = 0;
+        
+        MapLocation dirDest;
+        int hqDist;
+        boolean isPassableDir;
+        for (Direction dir : directions) {
+            dirDest = curr.add(dir);
+            if (!rc.onTheMap(dirDest)) continue;
+            hqDist = minHQDist(dirDest);
+            HQdists[dir.ordinal()] = hqDist;
+            isPassableDir = isPassable(dir, curr.add(dir));
+            isPassables[dir.ordinal()] = isPassableDir;
+            if (hqDist > maxHQdist && isPassableDir) {
+                maxHQdist = hqDist;
+            }
+        }
+
+        for (int i = 9; i-->0;) {
+            if (HQdists[i] < maxHQdist) isPassables[i] = false;
+        }
+
+        if (HQdists[Direction.CENTER.ordinal()] <= 9) {
+            reset();
+        }
+
+        /*for (Direction dir : directionsNoCenter) {
+            dirDest = curr.add(dir);
+            if (!rc.onTheMap(dirDest)) continue;
+            isPassables[dir.ordinal()] = isPassable(dir, curr.add(dir));
+            if (isPassables[dir.ordinal()]) {
+                rc.setIndicatorDot(dirDest, 0, 255, 0);
+            }
+        }*/
 
         Direction d;
         if (lastObstacle == null) {
@@ -59,7 +132,7 @@ public strictfp class BugNavigation {
             d = curr.directionTo(lastObstacle);
         }
 
-        if (canMove(d, curr.add(d))) {
+        if (isPassables[d.ordinal()] && rc.canMove(d)) {
             reset();
             rc.move(d);
             return true;
@@ -74,10 +147,12 @@ public strictfp class BugNavigation {
                 if (!rc.onTheMap(dest)) {
                     break;
                 }
-                if (canMove(l, dest)) {
-                    destLeft = dest;
-                    break;
-                } else if (!rc.sensePassability(dest)) {
+                if (isPassables[l.ordinal()]) {
+                    if (rc.canMove(l)) {
+                        destLeft = dest;
+                        break;
+                    }
+                } else {
                     loLeft = dest;
                 }
             }
@@ -90,10 +165,12 @@ public strictfp class BugNavigation {
                 if (!rc.onTheMap(dest)) {
                     break;
                 }
-                if (canMove(r, dest)) {
-                    destRight = dest;
-                    break;
-                } else if (!rc.sensePassability(dest)) {
+                if (isPassables[r.ordinal()]) {
+                    if (rc.canMove(r)) {
+                        destRight = dest;
+                        break;
+                    }
+                } else {
                     loRight = dest;
                 }
             }
@@ -137,16 +214,18 @@ public strictfp class BugNavigation {
         }
         
         MapLocation dest;
-        for (int i = 16; i-- > 0;) {
+        for (int i = 7; i-- > 0;) {
             if (right) d = d.rotateRight();
             else d = d.rotateLeft();
             dest = curr.add(d);
-            if (!rc.onTheMap(dest)) right = !right;
+            if (!rc.onTheMap(dest)) {right = !right; i = 7;}
             else {
-                if (canMove(d, dest)) {
-                    rc.move(d);
-                    return true;
-                } else if (!rc.sensePassability(dest)) {
+                if (isPassables[d.ordinal()]) {
+                    if (rc.canMove(d)) {
+                        rc.move(d);
+                        return true;
+                    }
+                } else {
                     lastObstacle = dest;
                 }
             }
