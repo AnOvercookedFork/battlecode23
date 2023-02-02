@@ -255,7 +255,7 @@ public strictfp class LauncherRobot extends Robot {
                 if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
                 else rc.setIndicatorLine(curr, target, 255, 0, 0);
                 if (leader != null && nearestAllyDist > LEADER_DIST
-                        && leader.distanceSquaredTo(target) >= curr.distanceSquaredTo(target)
+                        //&& leader.distanceSquaredTo(target) >= curr.distanceSquaredTo(target)
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
