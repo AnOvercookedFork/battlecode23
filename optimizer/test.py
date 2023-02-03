@@ -5,10 +5,10 @@ import time
 import signal
 
 # these constants are probably fine
-maps = ['AbsoluteW','AllElements','ArtistRendition','Barcode','BatSignal','BattleSuns','BowAndArrow','Buggy','Cat','Cave','Cee','Checkmate2','Clown','Contraction','Cornucopia','Crossword','Cube','DefaultMap','Diagonal','Divergence','Dreamy','Eyelands','Flower','Forest','FourNations','Frog','Grapes','Grievance','Hah','Heart','HideAndSeek','HorizontallySymmetric','HotAirBalloon','IslandHopping','IslandHoppingTwo','Jail','KingdomRush','Lantern','LightWork','Lines','maptestsmall','Marsh','MassiveL','Maze','Minefield','Movepls','Orbit','PairedProgramming','Pakbot','Pathfind','Piglets','Pit','Pizza','Potions','Quiet','RaceToTheTop','Rainbow','Rectangle','Repetition','Resign','Rewind','Risk','River','RockWall','Sakura','Scatter','Sine','SmallElements','Sneaky','Snowflake','SomethingFishy','SoundWave','Spin','Spiral','Squares','Star','Sun','Sus','SweetDreams','Tacocat','Target','ThirtyFive','TicTacToe','Tightrope','TimesUp','TreasureMap','Turtle','USA','VerticallySymmetric']
+maps = ['AbsoluteW', 'Buggy', 'BuildSite', 'Cave', 'Cee', 'CrownJewels', 'Elephant', 'ExtremelyMid', 'FishCake', 'Fractured', 'Heart', 'HotAirBalloon', 'IslandHoppingTwo', 'LightWork', 'LookinGlass', 'MassiveL', 'MoonPhases', 'Pillars', 'PipesAndParabolas', 'Potions', 'Rainbow', 'Resign', 'ReverseFunnel', 'Sneaky', 'Spiderweb', 'Spots', 'Swooshy', 'Target', 'Tightrope', 'VeryReasonable', 'Zig', 'BatSignal']
 # set these
-teamA = 'klein_bottle'
-teamB = 'quals'
+teamA = 'mittens'
+teamB = 'klein_bottle2_2_1'
 
 def get_winner(data):
     # does weird stuff if client is open, opened, or closed

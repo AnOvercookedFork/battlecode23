@@ -10,7 +10,7 @@ maps = ['AbsoluteW','AllElements','ArtistRendition','Barcode','BatSignal','Battl
 max_subprocesses = 1
 
 # set these
-teamA = 'klein_bottle'
+teamA = 'klein_bottle2_02_2'
 teamB = 'quals'
 
 

@@ -1,4 +1,4 @@
-package klein_bottle;
+package resignbot;
 
 import battlecode.common.*;
 
@@ -91,15 +91,15 @@ public strictfp class CarrierRobot extends Robot {
             }
             boolean finishedDeposit = tryFinishDeposit();
             while (rc.isActionReady()
-                    && rc.getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
+                    && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
             }
             while (finishedDeposit && rc.isMovementReady()
-                    && rc.getWeight() < GameConstants.CARRIER_CAPACITY && tryFindResources()) {
+                    && getWeight() < GameConstants.CARRIER_CAPACITY && tryFindResources()) {
                 if (rc.isMovementReady()) {
                     processNearbyRobots();
                 }
                 while (rc.isActionReady()
-                        && rc.getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
+                        && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
                 }
             }
 
@@ -108,8 +108,10 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
         
+        if (Clock.getBytecodesLeft() > 4000) {
             //System.out.println("Carrier is updating symms.");
-        hqLocs.eliminateSymms(rc);
+            hqLocs.eliminateSymms(rc);
+        }
 
 
         //cache.debugWellCache();
@@ -219,7 +221,9 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         if (enemyLastSeenLoc != null && turnsSinceSeenEnemy <= FLEE_TURNS) {
-            collectTarget = randomLocation();
+            if(collectTargetWeight == RANDOM_LOC_WEIGHT) {
+                collectTarget = randomLocation();
+            }
             Direction fleeDir = enemyLastSeenLoc.directionTo(curr);
             while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryFuzzy(fleeDir)) {
             }
