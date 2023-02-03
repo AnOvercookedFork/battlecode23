@@ -1,4 +1,4 @@
-package klein_bottle;
+package klein_bottle2_02_1;
 
 import battlecode.common.*;
 
@@ -18,6 +18,8 @@ public strictfp class BugNavigation {
     public static final int INF = 1000000;
     static int[] HQdists;
     static boolean[] isPassables;
+    static MapLocation[] destinations;
+
     static final Direction[] directions = {
         Direction.NORTH,
         Direction.NORTHEAST,
@@ -46,18 +48,17 @@ public strictfp class BugNavigation {
         right = true;
         HQdists = new int[9];
         isPassables = new boolean[9];
+        destinations = new MapLocation[9];
     }
 
     public void reset() {
         is_bugging = false;
-        minDist = 1000000;
         lastObstacle = null;
-        visited = new StringBuilder();
     }
 
-    /*public boolean isPassable(Direction d, MapLocation dest) throws GameActionException {
-        return ;
-    }*/
+    public boolean isPassable(Direction d, MapLocation dest) throws GameActionException {
+        return rc.sensePassability(dest) && visited.indexOf(dest.toString()) < 0;
+    }
 
     public boolean tryNavigate(MapLocation target) throws GameActionException {
         MapLocation[] hqs = new MapLocation[1];
@@ -78,7 +79,8 @@ public strictfp class BugNavigation {
 
     public boolean tryNavigate(MapLocation target, MapLocation[] hqs) throws GameActionException {
         if (lastTarget == null || target.distanceSquaredTo(lastTarget) > 0) {
-            reset();
+            minDist = INF;
+            visited = new StringBuilder();
         }
 
         lastTarget = target;
@@ -87,46 +89,126 @@ public strictfp class BugNavigation {
         String currStr = curr.toString();
         int dist = curr.distanceSquaredTo(target);
 
-        if (dist < minDist || visited.indexOf(currStr) >= 0) {reset(); minDist = dist;}
+        if (dist < minDist) {lastObstacle = null; minDist = dist; is_bugging = false;}
+        else if (visited.indexOf(currStr) >= 0) {
+            if (is_bugging) visited = new StringBuilder();
+            is_bugging = true;
+        }
         visited.append(currStr).append("|");
         
         enemyHQs = hqs;
         maxHQdist = 0;
 
-        MapLocation nearestHQ = new MapLocation(-50, -50);
-        int nearestHQdist = 1000000;
-        int hqDist;
-        for (MapLocation hqLoc : hqs) {
-            hqDist = hqLoc.distanceSquaredTo(curr);
-            if (hqDist < nearestHQdist) {
-                nearestHQ = hqLoc;
-                nearestHQdist = hqDist;
-            }
-        }
-        
+        rc.setIndicatorLine(curr, target, 100, 100, 100);
+
         MapLocation dirDest;
-        MapLocation currDest;
+        MapLocation destCurr;
+        int hqDist;
         boolean isPassableDir;
         for (Direction dir : directions) {
             dirDest = curr.add(dir);
             if (!rc.onTheMap(dirDest)) continue;
-            //hqDist = minHQDist(dirDest);
-            hqDist = nearestHQ.distanceSquaredTo(dirDest);
+            hqDist = minHQDist(dirDest);
             HQdists[dir.ordinal()] = hqDist;
-            currDest = dirDest.add(rc.senseMapInfo(dirDest).getCurrentDirection());
-            isPassableDir = rc.sensePassability(dirDest) && visited.indexOf(currDest.toString()) < 0 && currDest.distanceSquaredTo(target) <= dirDest.distanceSquaredTo(target);
+            destCurr = dirDest.add(rc.senseMapInfo(dirDest).getCurrentDirection());
+            destinations[dir.ordinal()] = destCurr;
+            isPassableDir = rc.sensePassability(dirDest) && visited.indexOf(destCurr.toString()) < 0 && destCurr.distanceSquaredTo(target) <= dirDest.distanceSquaredTo(target);
             isPassables[dir.ordinal()] = isPassableDir;
             if (hqDist > maxHQdist && isPassableDir) {
                 maxHQdist = hqDist;
             }
         }
 
+
         for (int i = 9; i-->0;) {
-            if (HQdists[i] <= 9 && HQdists[i] < maxHQdist) isPassables[i] = false;
+            if (HQdists[i] < maxHQdist) isPassables[i] = false;
         }
 
         if (HQdists[Direction.CENTER.ordinal()] <= 9) {
-            reset();
+            lastObstacle = null;
+            is_bugging = true;
+            visited = new StringBuilder();
+        }
+
+        rc.setIndicatorString("is bug? " + is_bugging + ", md: " + minDist);
+
+        if (!is_bugging) {
+            Direction dirTo = curr.directionTo(target);
+            Direction bestDir = Direction.CENTER;
+            int bestScore = minDist;
+            int score;
+            Direction d = dirTo;
+            boolean isObstacle = false;
+            if (isPassables[d.ordinal()]) {
+                score = destinations[d.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = d;
+                }
+            } else {
+                isObstacle = true;
+            }
+            d = dirTo.rotateRight();
+            if (isPassables[d.ordinal()]) {
+                score = destinations[d.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = d;
+                }
+            } else {
+                isObstacle = true;
+            }
+            d = dirTo.rotateLeft();
+            if (isPassables[d.ordinal()]) {
+                score = destinations[d.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = d;
+                }
+            } else {
+                isObstacle = true;
+            }
+            /*if (rc.canMove(Direction.SOUTHEAST) && HQdists[Direction.SOUTHEAST.ordinal()] > 9) {
+                score = destinations[Direction.SOUTHEAST.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = Direction.SOUTHEAST;
+                }
+            }
+            if (rc.canMove(Direction.SOUTH) && HQdists[Direction.SOUTH.ordinal()] > 9) {
+                score = destinations[Direction.SOUTH.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = Direction.SOUTH;
+                }
+            }
+            if (rc.canMove(Direction.SOUTHWEST) && HQdists[Direction.SOUTHWEST.ordinal()] > 9) {
+                score = destinations[Direction.SOUTHWEST.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = Direction.SOUTHWEST;
+                }
+            }
+            if (rc.canMove(Direction.WEST) && HQdists[Direction.WEST.ordinal()] > 9) {
+                score = destinations[Direction.WEST.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = Direction.WEST;
+                }
+            }
+            if (rc.canMove(Direction.NORTHWEST) && HQdists[Direction.NORTHWEST.ordinal()] > 9) {
+                score = destinations[Direction.NORTHWEST.ordinal()].distanceSquaredTo(target);
+                if (score < bestScore) {
+                    bestScore = score;
+                    bestDir = Direction.NORTHWEST;
+                }
+            }*/
+            if (bestDir == Direction.CENTER || isObstacle || !rc.canMove(bestDir)) {
+                is_bugging = true;
+            } else {
+                rc.move(bestDir);
+                return true;
+            }
         }
 
         /*for (Direction dir : directionsNoCenter) {
@@ -146,7 +228,9 @@ public strictfp class BugNavigation {
         }
 
         if (isPassables[d.ordinal()] && rc.canMove(d)) {
-            reset();
+            lastObstacle = null;
+            //visited = new StringBuilder();
+            //is_bugging = false;
             rc.move(d);
             return true;
         } else if (lastObstacle == null) {

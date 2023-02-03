@@ -1,4 +1,4 @@
-package klein_bottle;
+package klein_bottle2_02_1;
 
 import battlecode.common.*;
 
@@ -28,7 +28,6 @@ public strictfp class HQLocations {
     static StringBuilder noClouds;
     static int mapWidth;
     static int mapHeight;
-    static final int BYTECODES_STOP = 200;
 
     public HQLocations(RobotController rc) throws GameActionException {
         Communications.readArray(rc);
@@ -163,7 +162,6 @@ public strictfp class HQLocations {
                     h = false;
                 }
             }*/
-            if (Clock.getBytecodesLeft() < BYTECODES_STOP) return;
         }
     }
 

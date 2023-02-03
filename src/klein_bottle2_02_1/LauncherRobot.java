@@ -1,4 +1,4 @@
-package klein_bottle;
+package klein_bottle2_02_1;
 
 import battlecode.common.*;
 
@@ -73,7 +73,12 @@ public strictfp class LauncherRobot extends Robot {
 
         turnsSinceInCombat++;
 
-        hqLocs.eliminateSymms(rc);
+        if (Clock.getBytecodesLeft() > 4000) {
+            hqLocs.eliminateSymms(rc);
+            //hqLocs.debugSymms();
+        } else {
+            System.out.println("Skipping symmetry detection");
+        }
 
         // rc.setIndicatorLine(rc.getLocation(), target, 255, 255, 0);
         //
@@ -250,7 +255,7 @@ public strictfp class LauncherRobot extends Robot {
                 if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
                 else rc.setIndicatorLine(curr, target, 255, 0, 0);
                 if (leader != null && nearestAllyDist > LEADER_DIST
-                        && leader.distanceSquaredTo(target) >= curr.distanceSquaredTo(target)
+                        //&& leader.distanceSquaredTo(target) >= curr.distanceSquaredTo(target)
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
