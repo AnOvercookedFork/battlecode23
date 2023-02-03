@@ -18,7 +18,7 @@ public strictfp class LauncherRobot extends Robot {
     public static final boolean USE_NEW_MICRO = true;
     public static final int STAY_IN_COMBAT_TURNS = 6;
     public static final int HEAL_HEALTH = 133;
-    public static final int LEADER_DIST = 13;
+    public static final int LEADER_DIST = 200;
     public static final int INF = 1000000;
 
     MapLocation target;
@@ -247,14 +247,14 @@ public strictfp class LauncherRobot extends Robot {
             if (turnsSinceInCombat < STAY_IN_COMBAT_TURNS) {
                 success = micro.doMicro(target, otherLeader, prevRoundTargets);
             } else {
-                if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
+                /*if (leader != null) rc.setIndicatorLine(curr, leader, 0, 255, 0);
                 else rc.setIndicatorLine(curr, target, 255, 0, 0);
                 if (leader != null && nearestAllyDist > LEADER_DIST
-                        && leader.distanceSquaredTo(target) >= curr.distanceSquaredTo(target)
+                        //&& leader.distanceSquaredTo(target) >= curr.distanceSquaredTo(target)
                         && (rc.getRoundNum() % 2 == 0 || (attackableEnemies == 0 && rc.isActionReady()))
                         && snav.tryNavigate(leader, nearbyEnemyHQs)) {
                     success = true;
-                } else if (rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
+                } else */if (rc.getRoundNum() % 2 == 0 && snav.tryNavigate(target, nearbyEnemyHQs)) {
                     success = true;
                 }
             }

@@ -227,11 +227,11 @@ public strictfp class BugNavigation {
         }
         
         MapLocation dest;
-        for (int i = 7; i-- > 0;) {
+        for (int i = 16; i-- > 0;) {
             if (right) d = d.rotateRight();
             else d = d.rotateLeft();
             dest = curr.add(d);
-            if (!rc.onTheMap(dest)) {right = !right; i = 7;}
+            if (!rc.onTheMap(dest)) {right = !right;}
             else {
                 if (isPassables[d.ordinal()]) {
                     if (rc.canMove(d)) {
