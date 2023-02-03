@@ -3,9 +3,11 @@
 import os
 import time
 import signal
+import random
 
 # these constants are probably fine
 maps = ['AbsoluteW', 'Buggy', 'BuildSite', 'Cave', 'Cee', 'CrownJewels', 'Elephant', 'ExtremelyMid', 'FishCake', 'Fractured', 'Heart', 'HotAirBalloon', 'IslandHoppingTwo', 'LightWork', 'LookingGlass', 'MassiveL', 'MoonPhases', 'Pillars', 'PipesAndParabolas', 'Potions', 'Rainbow', 'Resign', 'ReverseFunnel', 'Sneaky', 'Spiderweb', 'Spots', 'Swooshy', 'Target', 'Tightrope', 'VeryReasonable', 'Zig', 'BatSignal']
+random.shuffle(maps)
 # set these
 teamA = 'mittens'
 teamB = 'klein_bottle2_2_1'
@@ -35,6 +37,19 @@ def run_matches(teamA, teamB, score):
             map_score[map] = teamB
         else:
             print('I don\'t know who won this, take a look: {}'.format(result))
+        
+        result = os.popen('gradlew run -Pmaps={map} -PteamA={b} -PteamB={a} -Pdebug=false -Penableprofiler=false -PoutputVerbose=false -PshowIndicators=false'.format(map = map, a = teamA, b = teamB)).read().splitlines()
+        if winner == 'A':
+            score[1] += 1
+            if map_score[map] == teamB:
+                print('{} won both sides on {}'.format(teamB, map))
+        elif winner == 'B':
+            score[0] += 1
+            if map_score[map] == teamA:
+                print('{} won both sides on {}'.format(teamA, map))
+        else:
+            print('I don\'t know who won this, take a look: {}'.format(result))
+        
     return score, map_score
 
 def handle_sigint():
@@ -48,16 +63,16 @@ def main():
     current = time.time()
     score1 = run_matches(teamA, teamB, [0, 0])
     print('Match 1 score ({} vs {}): {}'.format(teamA, teamB, score1[0]))
-    print('Match 1 maps: {}'.format(score1[1]))
-    score2 = run_matches(teamB, teamA, [0, 0])
-    print('Match 2 score ({} vs {}): {}'.format(teamB, teamA, score2[0]))
-    print('Match 2 maps: {}'.format(score2[1]))
-    final_score = [score1[0][0] + score2[0][1], score1[0][1] + score2[0][0]]
-    print('Final score ({} vs {}): {}'.format(teamA, teamB, final_score))
+    # print('Match 1 maps: {}'.format(score1[1]))
+    # score2 = run_matches(teamB, teamA, [0, 0])
+    # print('Match 2 score ({} vs {}): {}'.format(teamB, teamA, score2[0]))
+    # print('Match 2 maps: {}'.format(score2[1]))
+    # final_score = [score1[0][0] + score2[0][1], score1[0][1] + score2[0][0]]
+    # print('Final score ({} vs {}): {}'.format(teamA, teamB, final_score))
 
-    for key in score1[1].keys():
-        if score1[1][key] == score2[1][key]:
-            print('{} won both sides on {}'.format(score1[1][key], key))
+    # for key in score1[1].keys():
+    #     if score1[1][key] == score2[1][key]:
+    #         print('{} won both sides on {}'.format(score1[1][key], key))
 
     print('Total runtime was {} seconds'.format(time.time() - current))
 
