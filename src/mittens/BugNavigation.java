@@ -60,7 +60,6 @@ public strictfp class BugNavigation {
         }
 
         if (canMove(d, curr.add(d))) {
-            reset();
             rc.move(d);
             return true;
         } else if (lastObstacle == null) {
