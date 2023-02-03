@@ -9,8 +9,8 @@ import random
 maps = ['AbsoluteW', 'Buggy', 'BuildSite', 'Cave', 'Cee', 'CrownJewels', 'Elephant', 'ExtremelyMid', 'FishCake', 'Fractured', 'Heart', 'HotAirBalloon', 'IslandHoppingTwo', 'LightWork', 'LookingGlass', 'MassiveL', 'MoonPhases', 'Pillars', 'PipesAndParabolas', 'Potions', 'Rainbow', 'Resign', 'ReverseFunnel', 'Sneaky', 'Spiderweb', 'Spots', 'Swooshy', 'Target', 'Tightrope', 'VeryReasonable', 'Zig', 'BatSignal']
 random.shuffle(maps)
 # set these
-teamA = 'mittens'
-teamB = 'klein_bottle2_2_1'
+teamA = 'klein_bottle2_03_1'
+teamB = 'mittens'
 
 def get_winner(data):
     # does weird stuff if client is open, opened, or closed

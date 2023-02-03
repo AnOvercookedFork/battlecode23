@@ -11,7 +11,7 @@ public strictfp class HeadquartersRobot extends Robot {
     public static final int MAX_ANCHORS = 1;
     public static final int MIN_TURN_BUILD_HEAL_ANCHOR = 300;
     public static final int ANCHOR_BUILD_COOLDOWN = 50;
-    public static final int MIN_TURN_BUILD_ANCHOR = 750;
+    public static final int MIN_TURN_BUILD_ANCHOR = 500;
     public static final int CARRIER_SATURATION = 50;
     public static final int MAX_ENEMIES_TO_REPORT = 6;
     public static final int MANA_POOL_AMOUNT = 4 * RobotType.LAUNCHER.buildCostMana;

@@ -219,6 +219,9 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         if (enemyLastSeenLoc != null && turnsSinceSeenEnemy <= FLEE_TURNS) {
+            if(collectTargetWeight == RANDOM_LOC_WEIGHT) {
+                collectTarget = randomLocation();
+            }
             Direction fleeDir = enemyLastSeenLoc.directionTo(curr);
             while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryFuzzy(fleeDir)) {
             }
