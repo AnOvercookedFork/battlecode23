@@ -186,7 +186,7 @@ public strictfp class HQLocations {
         double score;
         if (r) {
             for (int i = hqs.length; i-->0;) {
-                score = rsymm_visited[i] - 0.9 / hqs_rsymm[i].distanceSquaredTo(curr);
+                score = rsymm_visited[i] - 0.9 / hqs_rsymm[i].distanceSquaredTo(curr) * 100;
                 if (score < bestScore) {
                     ret = hqs_rsymm[i];
                     bestScore = score;

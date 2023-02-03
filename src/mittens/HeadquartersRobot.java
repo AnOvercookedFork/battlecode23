@@ -1,4 +1,4 @@
-package klein_bottle2_2_1;
+package mittens;
 
 import battlecode.common.*;
 import java.util.ArrayList;

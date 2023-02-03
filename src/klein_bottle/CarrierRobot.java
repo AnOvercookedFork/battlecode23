@@ -219,6 +219,7 @@ public strictfp class CarrierRobot extends Robot {
         }
 
         if (enemyLastSeenLoc != null && turnsSinceSeenEnemy <= FLEE_TURNS) {
+            collectTarget = randomLocation();
             Direction fleeDir = enemyLastSeenLoc.directionTo(curr);
             while (rc.getMovementCooldownTurns() < GameConstants.COOLDOWN_LIMIT && tryFuzzy(fleeDir)) {
             }

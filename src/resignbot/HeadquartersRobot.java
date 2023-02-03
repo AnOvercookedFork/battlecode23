@@ -1,4 +1,4 @@
-package klein_bottle2_2_1;
+package resignbot;
 
 import battlecode.common.*;
 import java.util.ArrayList;
@@ -42,6 +42,7 @@ public strictfp class HeadquartersRobot extends Robot {
     
     public HeadquartersRobot(RobotController rc) throws GameActionException {
         super(rc);
+        rc.resign();
         Communications.canAlwaysWrite = true;
         cache = new MapCache(rc, 32);
         Communications.readArray(rc);

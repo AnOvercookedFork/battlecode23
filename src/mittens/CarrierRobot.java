@@ -1,4 +1,4 @@
-package klein_bottle2_02_2;
+package mittens;
 
 import battlecode.common.*;
 
@@ -91,15 +91,15 @@ public strictfp class CarrierRobot extends Robot {
             }
             boolean finishedDeposit = tryFinishDeposit();
             while (rc.isActionReady()
-                    && rc.getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
+                    && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
             }
             while (finishedDeposit && rc.isMovementReady()
-                    && rc.getWeight() < GameConstants.CARRIER_CAPACITY && tryFindResources()) {
+                    && getWeight() < GameConstants.CARRIER_CAPACITY && tryFindResources()) {
                 if (rc.isMovementReady()) {
                     processNearbyRobots();
                 }
                 while (rc.isActionReady()
-                        && rc.getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
+                        && getWeight() < GameConstants.CARRIER_CAPACITY && tryCollect()) {
                 }
             }
 
@@ -108,8 +108,10 @@ public strictfp class CarrierRobot extends Robot {
             }
         }
         
+        if (Clock.getBytecodesLeft() > 4000) {
             //System.out.println("Carrier is updating symms.");
-        hqLocs.eliminateSymms(rc);
+            hqLocs.eliminateSymms(rc);
+        }
 
 
         //cache.debugWellCache();
