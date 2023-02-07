@@ -33,6 +33,7 @@ def get_winner(data):
     return data[-7].split(' ')[-4][1:2]
 
 def run_matches(teamA, teamB, score):
+    global curTA, curTB, current_map_score, current_score
     curTA = teamA
     curTB = teamB
 
